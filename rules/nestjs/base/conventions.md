@@ -47,7 +47,10 @@ class OrderCreateDataResponseDto {
 
 - **Entity Encapsulation**: DB 스키마와 API 응답 노출을 분리
 - **Example Values**: `@ApiProperty` 에 `example` 지정
-- **Union Type Rules**: `T | null` (원시 / `Date`) 허용 — `Date` 는 `type: String, format: 'date-time'` 명시.
+- **Union Type Rules**: `T | null` (원시 / `Date`) 허용 — 유니온은 리플렉션 추론이 안 되므로(미지정 시 OpenAPI 스키마가 `type: object` 로 생성됨) `@ApiProperty` 에 `type` 을 항상 명시한다.
+  - `number | null` → `type: Number`
+  - `boolean | null` → `type: Boolean`
+  - `Date | null` → `type: String, format: 'date-time'`
 
 ## Testing Strategy
 

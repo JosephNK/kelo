@@ -159,12 +159,14 @@ export const baseBoundaryRules = [
   {
     // Route Handler (HTTP 진입점): 얇은 어댑터 — 도메인 서비스 호출에 집중.
     // UI 레이어(shared-ui/page-component) import 금지 (서버 코드 경계 위반).
+    // 프록시·핸들러에서 로케일 검증/협상을 위해 i18n-config 허용.
     from: { type: "route-handler" },
     allow: [
       { to: { type: "domain-model" } },
       { to: { type: "domain-error" } },
       { to: { type: "domain-service" } },
       { to: { type: "shared-type" } },
+      { to: { type: "i18n-config" } },
     ],
   },
   {

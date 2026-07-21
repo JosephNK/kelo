@@ -574,7 +574,7 @@ export async function GET(
 | `i18n-config` | `dictionary`, `i18n-config` |
 | `shared-type` | `dictionary` |
 | `email-template` | `dictionary`, `shared-type` |
-| `route-handler` | `domain-model`, `domain-error`, `domain-service`, `shared-type` |
+| `route-handler` | `domain-model`, `domain-error`, `domain-service`, `shared-type`, `i18n-config` |
 | `page` | `page-component`, `page-provider`, `shared-ui`, `dictionary`, `shared-type`, `i18n-config`, `style`, `theme`, `page` |
 
 ## Restricted Patterns (Import 금지 패턴)

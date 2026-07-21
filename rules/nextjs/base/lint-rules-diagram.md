@@ -102,6 +102,7 @@ graph LR
   route_handler --> domain_error
   route_handler --> domain_service
   route_handler --> shared_type
+  route_handler --> i18n_config
   page --> page_component
   page --> page_provider
   page --> shared_ui

@@ -52,11 +52,13 @@ auth.ts → api-helper만 허용 (DB 어댑터 초기화·콜백 내 조회 등)
 ## Boundary Allow Patches (base 규칙 추가 허용)
 
 기존 레이어 → auth 허용 패치: api-helper·page에서 `auth()` 세션 조회.
+route-handler는 `[...nextauth]/route.ts`에서 `handlers` re-export를 위해 auth 허용.
 
 | From | 추가 허용 (To) |
 | --- | --- |
 | `api-helper` | `auth` |
 | `page` | `auth` |
+| `route-handler` | `auth` |
 
 ## Domain Purity (도메인 순수성)
 

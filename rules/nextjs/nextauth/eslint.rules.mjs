@@ -48,8 +48,12 @@ export const nextauthBoundaryRules = [
   { from: { type: "auth" }, allow: [{ to: { type: "api-helper" } }] },
 ];
 
-/** 기존 레이어 → auth 허용 패치: api-helper·page에서 `auth()` 세션 조회. */
+/**
+ * 기존 레이어 → auth 허용 패치: api-helper·page에서 `auth()` 세션 조회.
+ * route-handler는 `[...nextauth]/route.ts`에서 `handlers` re-export를 위해 auth 허용.
+ */
 export const nextauthBoundaryAllowPatches = [
   { from: "api-helper", allow: { to: { type: "auth" } } },
   { from: "page", allow: { to: { type: "auth" } } },
+  { from: "route-handler", allow: { to: { type: "auth" } } },
 ];

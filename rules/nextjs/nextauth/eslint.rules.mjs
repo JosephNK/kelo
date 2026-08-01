@@ -23,11 +23,11 @@ export const nextauthLayerSemantics = {
     ],
     forbids: [
       "`next-auth` import를 auth 파일 밖으로 누출 (다른 레이어에서 직접 import 금지)",
-      "domain/UI 레이어 직접 import (세션 조회는 api-helper 경유)",
+      "domain/UI 레이어 직접 import (세션 조회는 route-handler·page 경유)",
       "런타임 비즈니스 로직 (설정 구성·세션 조회 이외)",
     ],
     scope:
-      "외부에서 세션이 필요하면 `api-helper` 또는 `page` 레이어에서 `auth()` 호출 (nextauthBoundaryAllowPatches 참조).",
+      "외부에서 세션이 필요하면 `route-handler` 또는 `page` 레이어에서 `auth()` 호출 (nextauthBoundaryAllowPatches 참조).",
     example: [
       "// src/auth.ts",
       "import NextAuth from 'next-auth';",
@@ -43,17 +43,16 @@ export const nextauthLayerSemantics = {
   },
 };
 
-/** auth.ts → api-helper만 허용 (DB 어댑터 초기화·콜백 내 조회 등). */
+/** auth.ts → db만 허용 (DB 어댑터 초기화·콜백 내 조회 등). */
 export const nextauthBoundaryRules = [
-  { from: { type: "auth" }, allow: [{ to: { type: "api-helper" } }] },
+  { from: { type: "auth" }, allow: [{ to: { type: "db" } }] },
 ];
 
 /**
- * 기존 레이어 → auth 허용 패치: api-helper·page에서 `auth()` 세션 조회.
- * route-handler는 `[...nextauth]/route.ts`에서 `handlers` re-export를 위해 auth 허용.
+ * 기존 레이어 → auth 허용 패치: page·route-handler에서 `auth()` 세션 조회.
+ * route-handler 허용은 `[...nextauth]/route.ts`의 `handlers` re-export도 커버한다.
  */
 export const nextauthBoundaryAllowPatches = [
-  { from: "api-helper", allow: { to: { type: "auth" } } },
   { from: "page", allow: { to: { type: "auth" } } },
   { from: "route-handler", allow: { to: { type: "auth" } } },
 ];

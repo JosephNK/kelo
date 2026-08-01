@@ -19,10 +19,10 @@
 **Forbids**
 
 - `next-auth` import를 auth 파일 밖으로 누출 (다른 레이어에서 직접 import 금지)
-- domain/UI 레이어 직접 import (세션 조회는 api-helper 경유)
+- domain/UI 레이어 직접 import (세션 조회는 route-handler·page 경유)
 - 런타임 비즈니스 로직 (설정 구성·세션 조회 이외)
 
-**Scope** — 외부에서 세션이 필요하면 `api-helper` 또는 `page` 레이어에서 `auth()` 호출 (nextauthBoundaryAllowPatches 참조).
+**Scope** — 외부에서 세션이 필요하면 `route-handler` 또는 `page` 레이어에서 `auth()` 호출 (nextauthBoundaryAllowPatches 참조).
 
 ```ts
 // src/auth.ts
@@ -39,7 +39,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
 ## 의존성 규칙 (Dependency Rules)
 
-auth.ts → api-helper만 허용 (DB 어댑터 초기화·콜백 내 조회 등).
+auth.ts → db만 허용 (DB 어댑터 초기화·콜백 내 조회 등).
 
 시각화된 의존성 그래프는 `lint-rules-diagram.md` 참조.
 
@@ -47,16 +47,15 @@ auth.ts → api-helper만 허용 (DB 어댑터 초기화·콜백 내 조회 등)
 
 | From | Allow → To |
 | --- | --- |
-| `auth` | `api-helper` |
+| `auth` | `db` |
 
 ## Boundary Allow Patches (base 규칙 추가 허용)
 
-기존 레이어 → auth 허용 패치: api-helper·page에서 `auth()` 세션 조회.
-route-handler는 `[...nextauth]/route.ts`에서 `handlers` re-export를 위해 auth 허용.
+기존 레이어 → auth 허용 패치: page·route-handler에서 `auth()` 세션 조회.
+route-handler 허용은 `[...nextauth]/route.ts`의 `handlers` re-export도 커버한다.
 
 | From | 추가 허용 (To) |
 | --- | --- |
-| `api-helper` | `auth` |
 | `page` | `auth` |
 | `route-handler` | `auth` |
 

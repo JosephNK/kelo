@@ -10,6 +10,6 @@
 ```mermaid
 graph LR
   auth["auth"]
-  api_helper["api-helper"]
-  auth --> api_helper
+  db["db"]
+  auth --> db
 ```

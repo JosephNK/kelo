@@ -1,5 +1,5 @@
 name: leaf_kit_lint
-version: 0.4.6
+version: 0.4.7
 description: Flutter Leaf Kit (bloc) architecture linter (analysis_server_plugin).
 
 publish_to: "none"

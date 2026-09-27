@@ -1,6 +1,6 @@
 {
   "name": "kelo",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "private": true,
   "description": "Kelo Claude Code plugin — lint rule sources, generators, and skills. ESLint configs are published from rules/nextjs and rules/nestjs.",
   "type": "module",

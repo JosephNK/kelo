@@ -207,6 +207,7 @@ fi
 
 # 6. Husky hooks (.husky/pre-commit에 $ENTRY_DIR이 인라인 치환됨, .husky/commit-msg)
 #    + package.json에 husky/@commitlint devDeps와 scripts.prepare 주입
+#    모노레포(git 루트 ≠ 프로젝트)면 scripts/kelo-pre-commit.sh를 만들고 루트 .husky/pre-commit에 호출 한 줄만 추가
 $KELO_DIR/scripts/gen-husky.mjs flutter -p . -entry "$ENTRY_DIR"
 
 # 7. commitlint.config.mjs (Conventional Commits + 프로젝트 허용 타입 강제)

@@ -14,6 +14,12 @@
 // hook files (used by flutter templates to bake the entry directory into
 // the pre-commit script).
 //
+// Flutter in a monorepo (git root ≠ <output-dir>): the monorepo root owns
+// .husky/ and commitlint, so instead of creating <output-dir>/.husky the
+// pre-commit template is written to <output-dir>/scripts/kelo-pre-commit.sh
+// ({{PROJECT}} = path from git root) and the root .husky/pre-commit gets one
+// line that calls it. package.json is left untouched.
+//
 // Usage:
 //   gen-husky.mjs <framework> -p <output-dir> [-entry <dir>]
 // =============================================================================
@@ -21,6 +27,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import { setDep } from "./common.mjs";
@@ -122,6 +129,62 @@ function parseArgs(argv) {
   return args;
 }
 
+function renderHook(content, entry, project) {
+  if (entry) content = content.replaceAll("{{ENTRY}}", entry);
+  return content.replaceAll("{{PROJECT}}", project);
+}
+
+// <outputDir>가 git 저장소 루트가 아니면 루트 기준 상대 경로(예: "apps/app"), 아니면 "".
+function projectPathFromGitRoot(outputDir) {
+  try {
+    const top = execFileSync("git", ["rev-parse", "--show-toplevel"], {
+      cwd: outputDir,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+    }).trim();
+    const rel = path.relative(
+      fs.realpathSync(top),
+      fs.realpathSync(path.resolve(outputDir)),
+    );
+    return {
+      gitRoot: top,
+      rel: rel === "" ? "" : rel.split(path.sep).join("/"),
+    };
+  } catch {
+    return { gitRoot: "", rel: "" };
+  }
+}
+
+// 모노레포 Flutter: 앱 안에 검사 스크립트를 두고 루트 .husky/pre-commit이 부르게 한다.
+function wireMonorepoFlutter(huskySrc, outputDir, entry, gitRoot, rel) {
+  const scriptRel = `${rel}/scripts/kelo-pre-commit.sh`;
+  const scriptPath = path.join(outputDir, "scripts", "kelo-pre-commit.sh");
+  fs.mkdirSync(path.dirname(scriptPath), { recursive: true });
+  const tpl = fs.readFileSync(path.join(huskySrc, "pre-commit"), "utf8");
+  fs.writeFileSync(scriptPath, renderHook(tpl, entry, `${rel}/`));
+  fs.chmodSync(scriptPath, 0o755);
+  process.stdout.write(`Generated: ${scriptPath}\n`);
+
+  const rootHook = path.join(gitRoot, ".husky", "pre-commit");
+  const call = `bash ${scriptRel}`;
+  if (!fs.existsSync(rootHook)) {
+    process.stdout.write(
+      `  Note:      ${rootHook} 없음 — 모노레포 루트 husky에 다음 줄을 추가하세요: ${call}\n`,
+    );
+    return;
+  }
+  const hook = fs.readFileSync(rootHook, "utf8");
+  if (hook.includes(scriptRel)) {
+    process.stdout.write(
+      `  Unchanged: ${rootHook} (${scriptRel} already called)\n`,
+    );
+    return;
+  }
+  const block = `\n# kelo: ${rel} Flutter 검사 (gen-husky가 추가 — 해당 경로에 staged 파일이 없으면 바로 끝남)\n${call}\n`;
+  fs.writeFileSync(rootHook, hook.replace(/\n*$/, "\n") + block);
+  process.stdout.write(`  Appended:  ${rootHook} → ${call}\n`);
+}
+
 function copyHooks(huskySrc, huskyDest, entry) {
   fs.mkdirSync(huskyDest, { recursive: true });
 
@@ -133,10 +196,7 @@ function copyHooks(huskySrc, huskyDest, entry) {
     if (!fs.statSync(src).isFile()) continue;
 
     const dest = path.join(huskyDest, hookName);
-    let content = fs.readFileSync(src, "utf8");
-    if (entry) {
-      content = content.replaceAll("{{ENTRY}}", entry);
-    }
+    const content = renderHook(fs.readFileSync(src, "utf8"), entry, "");
     fs.writeFileSync(dest, content);
     fs.chmodSync(dest, 0o755);
     process.stdout.write(`Generated: ${dest}\n`);
@@ -216,6 +276,17 @@ function main() {
   if (!fs.existsSync(huskySrc) || !fs.statSync(huskySrc).isDirectory()) {
     process.stderr.write(`Error: Husky templates not found: ${huskySrc}\n`);
     process.exit(1);
+  }
+
+  if (args.framework === "flutter") {
+    const { gitRoot, rel } = projectPathFromGitRoot(args.outputDir);
+    if (rel) {
+      process.stdout.write(
+        `Monorepo detected (${rel} under ${gitRoot}) — root .husky / package.json are left to the monorepo.\n`,
+      );
+      wireMonorepoFlutter(huskySrc, args.outputDir, args.entry, gitRoot, rel);
+      return;
+    }
   }
 
   // Fail-fast: verify package.json exists before writing any hook files so

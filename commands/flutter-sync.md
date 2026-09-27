@@ -170,7 +170,9 @@ $KELO_DIR/scripts/gen-husky.mjs flutter -p . -entry "$ENTRY_DIR"
 [ -f commitlint.config.mjs ] || $KELO_DIR/scripts/gen-commitlint.mjs -p .
 ```
 
-> `package.json`이 없으면 스크립트가 fail합니다 — Flutter 프로젝트에 husky를 처음 적용하려면 `/kelo-flutter-init`을 먼저 실행하세요.
+> `package.json`이 없으면 스크립트가 fail합니다 — Flutter 프로젝트에 husky를 처음 적용하려면 `/kelo:flutter-init`을 먼저 실행하세요.
+>
+> **모노레포** (git 루트가 `$PROJECT_ROOT`가 아닐 때, 예: `apps/app`): gen-husky가 자동으로 감지해 `.husky/`를 만들지 않고 `<프로젝트>/scripts/kelo-pre-commit.sh`를 생성한 뒤, 루트 `.husky/pre-commit`에 `bash <프로젝트>/scripts/kelo-pre-commit.sh` 한 줄을 추가합니다 (이미 있으면 그대로). `package.json`·commit-msg는 모노레포 루트 소유라 건드리지 않으므로 아래 install과 commitlint 부트스트랩은 건너뜁니다.
 
 `package.json` devDeps가 갱신되었으면 install을 실행해 새 husky/@commitlint 버전을 설치하고 `scripts.prepare` → `husky`로 git 훅을 활성화합니다:
 

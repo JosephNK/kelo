@@ -192,7 +192,7 @@ for i in $(seq 0 $((WS_COUNT - 1))); do
 done
 ```
 
-> 각 워크스페이스는 해당 framework의 `*-sync` 커맨드와 동일한 generator 시퀀스를 실행합니다. **단, `gen-husky`/`gen-commitlint`는 워크스페이스에서 호출하지 않습니다** — husky 훅과 commitlint config는 monorepo 루트 한 곳에서만 관리해야 root와 중복·충돌이 없습니다. 필요하면 monorepo 루트에서 직접 `node $KELO_DIR/scripts/gen-husky.mjs <framework> -p .` 및 `node $KELO_DIR/scripts/gen-commitlint.mjs -p .`을 한 번 실행하세요. `AGENTS.md`, `AGENTS.PROJECT.md`, `CONVENTIONS.PROJECT.md`, `tsconfig.json`은 sync 대상이 아닙니다.
+> 각 워크스페이스는 해당 framework의 `*-sync` 커맨드와 동일한 generator 시퀀스를 실행합니다. **단, `gen-husky`/`gen-commitlint`는 워크스페이스에서 호출하지 않습니다** — husky 훅과 commitlint config는 monorepo 루트 한 곳에서만 관리해야 root와 중복·충돌이 없습니다. 필요하면 monorepo 루트에서 직접 `node $KELO_DIR/scripts/gen-husky.mjs <framework> -p .` 및 `node $KELO_DIR/scripts/gen-commitlint.mjs -p .`을 한 번 실행하세요. Flutter 워크스페이스(이 커맨드 대상 아님)는 `/kelo:flutter-sync`의 gen-husky가 모노레포를 감지해 `<앱>/scripts/kelo-pre-commit.sh` + 루트 `.husky/pre-commit` 호출 한 줄로 연결합니다. `AGENTS.md`, `AGENTS.PROJECT.md`, `CONVENTIONS.PROJECT.md`, `tsconfig.json`은 sync 대상이 아닙니다.
 
 ### 3. 의존성 재설치 (모노레포 루트에서 한 번)
 

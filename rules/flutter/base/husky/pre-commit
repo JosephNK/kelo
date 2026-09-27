@@ -1,15 +1,24 @@
 #!/usr/bin/env bash
 set -e
 
+# 모노레포에서는 gen-husky가 git 루트 기준 프로젝트 경로(예: apps/app/)를 넣는다. 단독 프로젝트는 빈 값.
+ROOT="$(git rev-parse --show-toplevel)"
+PROJECT_PREFIX="{{PROJECT}}"
+ENTRY="{{ENTRY}}"
+if [ "$ENTRY" = "." ]; then ENTRY_PREFIX="$PROJECT_PREFIX"; else ENTRY_PREFIX="${PROJECT_PREFIX}${ENTRY}/"; fi
+cd "$ROOT"
+
 # kelo 분석 규칙 약화 검사 (analysis_options.yaml 오버라이드, // ignore: 주석 등).
 # .dart 또는 analysis_options.yaml / pubspec.yaml 변경이 staged일 때 실행.
-staged_lint_inputs=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '(\.dart|analysis_options\.yaml|pubspec\.yaml)$' || true)
+staged_lint_inputs=$(git diff --cached --name-only --diff-filter=ACMR | grep "^${PROJECT_PREFIX}" | grep -E '(\.dart|analysis_options\.yaml|pubspec\.yaml)$' || true)
 if [ -n "$staged_lint_inputs" ]; then
-  (cd {{ENTRY}} && dart run kelo_analysis:verify -p "$(git rev-parse --show-toplevel)")
+  (cd "${ENTRY_PREFIX:-.}" && dart run kelo_analysis:verify -p "$ROOT/${PROJECT_PREFIX}.")
 fi
 
 # Only run when .dart files are staged.
-staged_dart=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.dart$' || true)
+# vendoring된 .kelo/plugins/**는 제외 — kelo 소스를 그대로 복사한 것이라 프로젝트가 포맷·수정하면
+# .kelo-vendor.json 해시와 달라져 verify가 실패한다 (무결성은 위 verify가 검사).
+staged_dart=$(git diff --cached --name-only --diff-filter=ACMR | grep "^${PROJECT_PREFIX}" | grep '\.dart$' | grep -vE '(^|/)\.kelo/' || true)
 if [ -z "$staged_dart" ]; then
   exit 0
 fi
@@ -23,10 +32,10 @@ echo "$staged_dart" | xargs dart format --set-exit-if-changed
 # flutter analyze는 plugin 진단을 보고하지 않으므로 사용하지 않는다 (flutter/flutter#187999).
 # 디렉터리 인자도 plugin 진단이 빠지므로 파일 목록으로 넘긴다.
 # 주의: cross-file 의존 룰(예: 잘못된 import를 하는 쪽이 staged 안 된 경우)은 검출되지 않을 수 있다.
-staged_in_entry=$(echo "$staged_dart" | grep "^{{ENTRY}}/" | sed "s|^{{ENTRY}}/||" || true)
+staged_in_entry=$(echo "$staged_dart" | grep "^${ENTRY_PREFIX}" | sed "s|^${ENTRY_PREFIX}||" || true)
 if [ -n "$staged_in_entry" ]; then
-  (cd {{ENTRY}} && echo "$staged_in_entry" | xargs dart analyze --fatal-infos)
+  (cd "${ENTRY_PREFIX:-.}" && echo "$staged_in_entry" | xargs dart analyze --fatal-infos)
 fi
 
 # flutter test (related only)
-(cd {{ENTRY}} && tf=$(git diff --cached --name-only --diff-filter=ACMR | grep "^{{ENTRY}}/.*\.dart$" | sed "s|^{{ENTRY}}/||" | while read f; do if [[ $f == test/*_test.dart ]]; then echo "$f"; elif [[ $f == lib/* ]]; then t="test/${f#lib/}"; t="${t%.dart}_test.dart"; [ -f "$t" ] && echo "$t"; fi; done | sort -u); if [ -n "$tf" ]; then flutter test $tf; else echo "No related tests found, skipping"; fi)
+(cd "${ENTRY_PREFIX:-.}" && tf=$(echo "$staged_in_entry" | while read -r f; do [ -z "$f" ] && continue; if [[ $f == test/*_test.dart ]]; then echo "$f"; elif [[ $f == lib/* ]]; then t="test/${f#lib/}"; t="${t%.dart}_test.dart"; [ -f "$t" ] && echo "$t"; fi; done | sort -u); if [ -n "$tf" ]; then flutter test $tf; else echo "No related tests found, skipping"; fi)

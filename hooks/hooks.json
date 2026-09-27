@@ -41,7 +41,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-lint-config-edits.sh\"",
-            "description": "Block shell writes to kelo-managed lint config files (eslint.config.mjs, stylelint.config.mjs, kelo.lint.json, analysis_options.yaml, .kelo/plugins/**)"
+            "description": "Block shell writes to kelo-managed lint config files (eslint.config.mjs, stylelint.config.mjs, analysis_options.yaml with a kelo header; .kelo/plugins/**)"
           }
         ]
       },
@@ -51,7 +51,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-lint-config-edits.sh\"",
-            "description": "Block edits to kelo-managed lint config files (eslint.config.mjs, stylelint.config.mjs, kelo.lint.json, analysis_options.yaml, .kelo/plugins/**)"
+            "description": "Block edits to kelo-managed lint config files (eslint.config.mjs, stylelint.config.mjs, analysis_options.yaml with a kelo header; .kelo/plugins/**)"
           }
         ]
       }

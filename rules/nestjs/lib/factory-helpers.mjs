@@ -20,9 +20,51 @@ const LINT_CONFIG_KEYS = new Set([
   "ignores",
 ]);
 
+// kelo.lint.json은 프로젝트가 직접 편집하는 파일이라, 규칙을 사실상 끄는 넓은 제외 패턴은
+// 로드 단계에서 거부한다 (전체, 소스 루트 전체, 소스 확장자 전체).
+const BROAD_SOURCE_ROOTS = new Set([
+  "src",
+  "app",
+  "lib",
+  "pages",
+  "components",
+]);
+const SOURCE_EXT_RE =
+  /^(\*\*\/)?\*\.(\{[a-z,]+\}|ts|tsx|js|jsx|mjs|cjs|mts|cts)$/;
+
+function isOverlyBroadIgnore(pattern) {
+  if (typeof pattern !== "string" || pattern.startsWith("!")) return false;
+  let p = pattern.trim().replace(/^\.\//, "");
+  let prev;
+  do {
+    prev = p;
+    p = p.replace(/\/(\*\*|\*)$/, "").replace(/\/$/, "");
+  } while (p !== prev);
+  return (
+    p === "" ||
+    p === "**" ||
+    p === "*" ||
+    BROAD_SOURCE_ROOTS.has(p) ||
+    SOURCE_EXT_RE.test(p)
+  );
+}
+
+function assertNarrowIgnores(file, data) {
+  for (const key of ["ignores", "boundaryIgnores"]) {
+    const broad = (data[key] ?? []).filter(isOverlyBroadIgnore);
+    if (broad.length > 0) {
+      throw new Error(
+        `[kelo] ${file}: ${key}에 너무 넓은 제외 패턴이 있습니다: ${broad.join(", ")}\n` +
+          "kelo 규칙을 사실상 끄는 패턴(전체, src/·app/ 등 소스 루트 전체, 소스 확장자 전체)은 허용되지 않습니다. " +
+          "빌드 산출물·생성 코드처럼 필요한 경로만 좁게 지정하세요.",
+      );
+    }
+  }
+}
+
 /**
  * `<root>/kelo.lint.json`을 읽는다. 파일이 없으면 빈 설정(스택 없음)으로 동작한다.
- * 알 수 없는 키는 오타일 가능성이 높으므로 에러로 처리한다.
+ * 알 수 없는 키는 오타일 가능성이 높으므로 에러로 처리하고, 너무 넓은 제외 패턴은 거부한다.
  */
 export function loadLintConfig(root) {
   const file = path.join(root, LINT_CONFIG_FILE);
@@ -41,6 +83,7 @@ export function loadLintConfig(root) {
       `[kelo] ${file}: 알 수 없는 키 ${unknown.join(", ")} (허용: ${[...LINT_CONFIG_KEYS].join(", ")})`,
     );
   }
+  assertNarrowIgnores(file, data);
   return data;
 }
 

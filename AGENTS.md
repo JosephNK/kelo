@@ -137,7 +137,7 @@ export const baseDomainBannedPackages = [...];
 - `scripts/typescript/gen-stylelint.mjs` — 출력(소비 프로젝트): `stylelint.config.mjs`(`eslint-config-kelo-nextjs/stylelint` re-export) + stylelint devDeps.
 - `scripts/flutter/gen-analysis-options.mjs` — 출력(소비 프로젝트): include 한 줄짜리 `analysis_options.yaml` + 엔트리 `pubspec.yaml`의 `kelo_analysis` git 의존성(`ref: v<plugin-version>`). 미배포 체크아웃 검증은 `-analysis-path <dir>`로 path 의존성 사용.
 - `scripts/flutter/custom_lint/inject-custom-lint.mjs` (gen-custom-lint가 호출) — Flutter lint 플러그인 소스를 소비 프로젝트의 `.kelo/plugins/<package>/`로 vendoring(+ `.kelo-vendor.json` sha256)하고 `plugins:`에 상대 `path:`로 등록. `git:`/절대 경로는 이식성·동작 문제로 쓰지 않는다.
-- `hooks/block-lint-config-edits.sh` — 소비 프로젝트의 `eslint.config.mjs`/`stylelint.config.mjs`/`kelo.lint.json`/`analysis_options.yaml`, `.kelo/plugins/**`를 에이전트가 수정하지 못하게 차단 (이 저장소 내부 경로와 `KELO_ALLOW_LINT_CONFIG_EDIT=1`은 예외).
+- `hooks/block-lint-config-edits.sh` — 소비 프로젝트에서 kelo 관리 헤더(`Managed by kelo` 등)가 있는 `eslint.config.mjs`/`stylelint.config.mjs`/`analysis_options.yaml`과 `.kelo/plugins/**`를 에이전트가 수정하지 못하게 차단. `kelo.lint.json`은 대상이 아니며(ignores·boundary* 는 프로젝트 소유), 너무 넓은 제외 패턴은 `lib/factory-helpers.mjs`가 로드 단계에서 거부 (이 저장소 내부 경로와 `KELO_ALLOW_LINT_CONFIG_EDIT=1`은 예외).
 
 - `scripts/gen-agents.mjs` — 입력: `rules/<framework>/base/agents.template.md` → 출력: `AGENTS.md`, `CLAUDE.md→AGENTS.md`. 템플릿을 렌더링해 프로젝트 루트의 에이전트 문서 생성.
 - `scripts/gen-architecture.mjs` — 입력: `rules/<framework>/base/architecture.md` → 출력: `ARCHITECTURE.md`. base 아키텍처 문서를 프로젝트 문서로 복사.

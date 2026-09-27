@@ -1,11 +1,10 @@
 #!/usr/bin/env node
 // =============================================================================
-// architecture_lint(및 leaf_kit_lint, freezed_lint) 의 git ref 버전을
-// `analysis_options.yaml` 의 top-level `plugins:` 섹션에서 업데이트한다.
-//
-// analysis_server_plugin 마이그레이션 이후, 이 lint 패키지들은 `pubspec.yaml`
-// 의 dev_dependencies 가 아닌 `analysis_options.yaml` 의 `plugins:` 섹션에
-// 등록된다.
+// Flutter 프로젝트의 jkit 분석 의존성 ref를 갱신한다.
+//   - pubspec.yaml `dev_dependencies.jkit_analysis` (git) 의 ref → 새 버전
+//   - analysis_options.yaml `plugins:` 의 architecture_lint / leaf_kit_lint /
+//     freezed_lint 는 프로젝트 안 .jkit/plugins/ 에 vendoring 되므로 ref가 없다.
+//     등록 방식을 점검해 안내만 한다 (갱신·전환은 /jkit:flutter-sync).
 //
 // Usage:
 //   update-architecture-lint-ref.mjs <ref> --project-dir <dir> [--dry-run]
@@ -26,8 +25,8 @@ const LINT_PACKAGE_NAMES = [
 
 const HELP = `Usage: update-architecture-lint-ref.mjs [<ref>] --project-dir <dir> [--dry-run]
 
-모든 analysis_options.yaml 의 plugins: 섹션에서 architecture_lint /
-leaf_kit_lint / freezed_lint 의 git ref 를 업데이트합니다.
+모든 pubspec.yaml 의 jkit_analysis git ref 를 업데이트하고, analysis_options.yaml
+plugins: 의 jkit lint 플러그인(vendoring) 상태를 점검합니다.
 
 Arguments:
   <ref>              선택. 새로운 git ref 값 (예: v0.3.1, 0.3.1, main).
@@ -126,7 +125,7 @@ function resolvePluginVersion() {
   return normalizeRef(version);
 }
 
-function findAnalysisOptionsFiles(projectRoot) {
+function findFiles(projectRoot, fileName) {
   const results = [];
   const walk = (dir) => {
     let entries;
@@ -144,65 +143,63 @@ function findAnalysisOptionsFiles(projectRoot) {
         continue;
       }
       const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-      } else if (entry.isFile() && entry.name === "analysis_options.yaml") {
-        results.push(full);
-      }
+      if (entry.isDirectory()) walk(full);
+      else if (entry.isFile() && entry.name === fileName) results.push(full);
     }
   };
   walk(projectRoot);
   return results.sort();
 }
 
-function updateLintPluginRefs(analysisPath, newRef, dryRun) {
-  const raw = fs.readFileSync(analysisPath, "utf-8");
-  const doc = YAML.parseDocument(raw);
+// pubspec.yaml dev_dependencies.jkit_analysis.git.ref 갱신
+function updateJkitAnalysisRef(pubspecPath, newRef, dryRun) {
+  const doc = YAML.parseDocument(fs.readFileSync(pubspecPath, "utf-8"));
   if (doc.contents === null) return 0;
+  const gitNode = doc.getIn(["dev_dependencies", "jkit_analysis", "git"]);
+  if (!YAML.isMap(gitNode)) return 0;
 
-  const plugins = doc.get("plugins");
+  const refNode = gitNode.get("ref", true);
+  const oldRef = YAML.isScalar(refNode) ? String(refNode.value) : null;
+  if (oldRef === newRef) {
+    process.stdout.write(
+      `  ⏭️  ${pubspecPath} [jkit_analysis]: 이미 동일한 ref (${oldRef})\n`,
+    );
+    return 0;
+  }
+  if (YAML.isScalar(refNode)) refNode.value = newRef;
+  else gitNode.set("ref", newRef);
+
+  const mark = dryRun ? "🔍" : "✅";
+  process.stdout.write(
+    `  ${mark} ${pubspecPath} [jkit_analysis]: ${oldRef ?? "(없음)"} → ${newRef}${dryRun ? " (dry-run)" : ""}\n`,
+  );
+  if (!dryRun) fs.writeFileSync(pubspecPath, String(doc));
+  return 1;
+}
+
+// analysis_options.yaml plugins: 의 jkit 플러그인 등록 방식 점검 (수정하지 않음)
+function reportLintPlugins(analysisPath) {
+  const doc = YAML.parseDocument(fs.readFileSync(analysisPath, "utf-8"));
+  const plugins = doc.contents === null ? null : doc.get("plugins");
   if (!YAML.isMap(plugins)) return 0;
-
-  let updated = 0;
-
+  let legacy = 0;
   for (const pkgName of LINT_PACKAGE_NAMES) {
-    const pluginEntry = plugins.get(pkgName);
-    if (!YAML.isMap(pluginEntry)) continue;
-
-    const gitNode = pluginEntry.get("git");
-    if (!YAML.isMap(gitNode)) continue;
-
-    const refNode = gitNode.get("ref", true);
-    const oldRef = YAML.isScalar(refNode) ? String(refNode.value) : null;
-    if (oldRef === newRef) {
+    const entry = plugins.get(pkgName);
+    if (!YAML.isMap(entry)) continue;
+    const p = entry.get("path");
+    if (typeof p === "string" && !path.isAbsolute(p)) {
       process.stdout.write(
-        `  ⏭️  ${analysisPath} [${pkgName}]: 이미 동일한 ref (${oldRef})\n`,
-      );
-      continue;
-    }
-
-    if (YAML.isScalar(refNode)) {
-      refNode.value = newRef;
-    } else {
-      gitNode.set("ref", newRef);
-    }
-
-    if (dryRun) {
-      process.stdout.write(
-        `  🔍 ${analysisPath} [${pkgName}]: ${oldRef ?? "(없음)"} → ${newRef} (dry-run)\n`,
+        `  📦 ${analysisPath} [${pkgName}]: vendoring (${p}) — 규칙 갱신은 /jkit:flutter-sync\n`,
       );
     } else {
+      legacy += 1;
+      const how = entry.get("git") ? "git" : `절대 경로 ${p}`;
       process.stdout.write(
-        `  ✅ ${analysisPath} [${pkgName}]: ${oldRef ?? "(없음)"} → ${newRef}\n`,
+        `  ⚠️  ${analysisPath} [${pkgName}]: 레거시 등록(${how}) — 다른 PC/CI에서 동작하지 않음. /jkit:flutter-sync로 vendoring 전환 필요\n`,
       );
     }
-    updated += 1;
   }
-
-  if (updated > 0 && !dryRun) {
-    fs.writeFileSync(analysisPath, String(doc));
-  }
-  return updated;
+  return legacy;
 }
 
 function main() {
@@ -224,20 +221,30 @@ function main() {
   if (args.dryRun) process.stdout.write("(dry-run 모드)\n");
   process.stdout.write("\n");
 
-  const files = findAnalysisOptionsFiles(projectRoot);
-  process.stdout.write(`발견된 analysis_options.yaml: ${files.length}개\n\n`);
-
+  const pubspecs = findFiles(projectRoot, "pubspec.yaml");
+  process.stdout.write(`발견된 pubspec.yaml: ${pubspecs.length}개\n\n`);
   let updatedCount = 0;
-  for (const file of files) {
-    updatedCount += updateLintPluginRefs(file, ref, args.dryRun);
+  for (const file of pubspecs) {
+    updatedCount += updateJkitAnalysisRef(file, ref, args.dryRun);
   }
 
   process.stdout.write("\n");
   if (updatedCount === 0) {
-    process.stdout.write("변경된 항목이 없습니다.\n");
+    process.stdout.write("변경된 jkit_analysis ref가 없습니다.\n");
   } else {
     const action = args.dryRun ? "변경 예정" : "업데이트 완료";
     process.stdout.write(`${updatedCount}개 항목 ${action}\n`);
+  }
+
+  process.stdout.write("\n플러그인 점검 (analysis_options.yaml plugins:)\n");
+  let legacy = 0;
+  for (const file of findFiles(projectRoot, "analysis_options.yaml")) {
+    legacy += reportLintPlugins(file);
+  }
+  if (legacy > 0) {
+    process.stdout.write(
+      `\n레거시 등록 ${legacy}건 — /jkit:flutter-sync를 실행해 .jkit/plugins/ vendoring으로 전환하세요.\n`,
+    );
   }
 }
 

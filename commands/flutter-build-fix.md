@@ -7,8 +7,10 @@ Incrementally fix build and analysis errors with minimal, safe changes.
 Run Flutter build and static analysis:
 
 ```bash
-# Static analysis (lint + type checks)
-flutter analyze
+# Static analysis (lint + type checks + jkit analyzer plugin rules)
+# Use `dart analyze`, not `flutter analyze` — flutter analyze drops analyzer
+# plugin diagnostics (flutter/flutter#187999).
+dart analyze --fatal-infos
 
 # Build check (iOS)
 flutter build ios --no-codesign
@@ -34,7 +36,7 @@ For each error:
 1. **Read the file** — Use Read tool to see error context (10 lines around the error)
 2. **Diagnose** — Identify root cause (missing import, wrong type, syntax error)
 3. **Fix minimally** — Use Edit tool for the smallest change that resolves the error
-4. **Re-run analysis** — `flutter analyze` to verify the error is gone and no new errors introduced
+4. **Re-run analysis** — `dart analyze --fatal-infos` to verify the error is gone and no new errors introduced
 5. **Move to next** — Continue with remaining errors
 
 ## Step 4: Guardrails

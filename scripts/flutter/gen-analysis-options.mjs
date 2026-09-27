@@ -25,6 +25,12 @@
 // `flutter create` or hand-edited), the script logs an INFO line noting the
 // content was replaced.
 //
+// The analyzer/linter policy itself lives in the `jkit_analysis` Dart package
+// (rules/flutter/base/analysis/jkit_analysis/). Templates only `include:` it,
+// and this script adds `jkit_analysis` to the entry's pubspec.yaml
+// dev_dependencies as a git dependency pinned to the plugin version tag
+// (`-analysis-path <dir>` writes a path dependency instead, for local testing).
+//
 // The plugins: section is NOT in any template — it is managed by
 // gen-custom-lint.mjs which runs AFTER this script, adding plugins: into the
 // scaffolded file via YAML round-trip (preserving template content).
@@ -33,7 +39,7 @@
 // from your /flutter-init / /flutter-sync command (fork the command file).
 //
 // Usage:
-//   gen-analysis-options.mjs flutter -p <project-dir> [-entry <dir>]
+//   gen-analysis-options.mjs flutter -p <project-dir> [-entry <dir>] [-analysis-path <dir>]
 // =============================================================================
 
 import fs from "node:fs";
@@ -55,7 +61,7 @@ const TEMPLATE_REL = {
   standalone: "rules/flutter/base/templates/analysis-options.standalone.yaml",
 };
 
-const HELP = `Usage: gen-analysis-options.mjs flutter -p <project-dir> [-entry <dir>]
+const HELP = `Usage: gen-analysis-options.mjs flutter -p <project-dir> [-entry <dir>] [-analysis-path <dir>]
 
 Scaffold or regenerate analysis_options.yaml from jkit templates. In a Dart
 pub workspace, scaffolds both the workspace root and the entry member. In a
@@ -74,6 +80,9 @@ Arguments:
 Options:
   -p <dir>        Project root directory (required)
   -entry <dir>    Flutter entry directory (default: app)
+  -analysis-path <dir>
+                  Use a local path dependency for jkit_analysis instead of the
+                  git tag (local testing of an unreleased jkit checkout)
   -h, --help      Show this help
 
 Examples:
@@ -87,7 +96,12 @@ function usage(code = 1) {
 }
 
 function parseArgs(argv) {
-  const args = { framework: "", projectDir: "", entry: "app" };
+  const args = {
+    framework: "",
+    projectDir: "",
+    entry: "app",
+    analysisPath: "",
+  };
   const rest = argv.slice(2);
 
   if (rest.length >= 1 && !rest[0].startsWith("-")) {
@@ -110,6 +124,13 @@ function parseArgs(argv) {
           usage();
         }
         args.entry = rest.shift();
+        break;
+      case "-analysis-path":
+        if (!rest.length) {
+          process.stderr.write("-analysis-path requires a directory\n");
+          usage();
+        }
+        args.analysisPath = rest.shift();
         break;
       case "-h":
       case "--help":
@@ -201,6 +222,46 @@ function scaffoldFile(targetAbsPath, templateContent, label) {
   return true;
 }
 
+const JKIT_ANALYSIS_PACKAGE = "jkit_analysis";
+const JKIT_ANALYSIS_GIT_URL =
+  "https://github.com/JosephNK/jkit-code-plugin.git";
+const JKIT_ANALYSIS_GIT_PATH = "rules/flutter/base/analysis/jkit_analysis";
+
+function readPluginVersion(pluginRoot) {
+  const pluginJson = path.join(pluginRoot, ".claude-plugin", "plugin.json");
+  const version = JSON.parse(fs.readFileSync(pluginJson, "utf-8")).version;
+  if (typeof version !== "string" || !version) {
+    throw new Error(`version missing in ${pluginJson}`);
+  }
+  return version;
+}
+
+// entry pubspec.yaml의 dev_dependencies에 jkit_analysis를 등록한다 (YAML
+// round-trip으로 나머지 내용 보존). 이미 같은 값이면 건드리지 않는다.
+function ensureJkitAnalysisDep(pubspecPath, spec) {
+  const raw = fs.readFileSync(pubspecPath, "utf-8");
+  const doc = YAML.parseDocument(raw);
+  const current = doc.getIn(["dev_dependencies", JKIT_ANALYSIS_PACKAGE]);
+  const currentJs =
+    current && typeof current.toJSON === "function"
+      ? current.toJSON()
+      : current;
+  if (JSON.stringify(currentJs) === JSON.stringify(spec)) {
+    process.stdout.write(
+      `  ${JKIT_ANALYSIS_PACKAGE} already up-to-date in ${pubspecPath}\n`,
+    );
+    return;
+  }
+  if (!YAML.isMap(doc.get("dev_dependencies"))) {
+    doc.set("dev_dependencies", doc.createNode({}));
+  }
+  doc.setIn(["dev_dependencies", JKIT_ANALYSIS_PACKAGE], doc.createNode(spec));
+  fs.writeFileSync(pubspecPath, doc.toString());
+  process.stdout.write(
+    `  ${currentJs ? "Updated" : "Added"} ${JKIT_ANALYSIS_PACKAGE} in ${pubspecPath}\n`,
+  );
+}
+
 function main() {
   const args = parseArgs(process.argv);
 
@@ -271,9 +332,30 @@ function main() {
       ) && ok;
   }
 
+  // jkit_analysis dev dependency — entry 패키지가 jkit 규칙을 include하므로
+  // entry pubspec에 둔다 (workspace에서도 해석은 공유된다).
+  try {
+    const spec = args.analysisPath
+      ? { path: normalizePath(args.analysisPath) }
+      : {
+          git: {
+            url: JKIT_ANALYSIS_GIT_URL,
+            path: JKIT_ANALYSIS_GIT_PATH,
+            ref: `v${readPluginVersion(pluginRoot)}`,
+          },
+        };
+    ensureJkitAnalysisDep(
+      path.join(projectDir, args.entry, "pubspec.yaml"),
+      spec,
+    );
+  } catch (err) {
+    process.stderr.write(`Error: ${err.message}\n`);
+    ok = false;
+  }
+
   if (ok) {
     process.stdout.write(
-      "Done. Run gen-custom-lint.mjs next to add the plugins: section.\n",
+      "Done. Run 'flutter pub get', then gen-custom-lint.mjs to add the plugins: section.\n",
     );
   } else {
     process.stderr.write("Completed with errors.\n");

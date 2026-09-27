@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
+# jkit 분석 규칙 약화 검사 (analysis_options.yaml 오버라이드, // ignore: 주석 등).
+# .dart 또는 analysis_options.yaml / pubspec.yaml 변경이 staged일 때 실행.
+staged_lint_inputs=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '(\.dart|analysis_options\.yaml|pubspec\.yaml)$' || true)
+if [ -n "$staged_lint_inputs" ]; then
+  (cd {{ENTRY}} && dart run jkit_analysis:verify -p "$(git rev-parse --show-toplevel)")
+fi
+
 # Only run when .dart files are staged.
 staged_dart=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.dart$' || true)
 if [ -z "$staged_dart" ]; then
@@ -10,13 +17,15 @@ fi
 # dart format (fail if any staged .dart file would be reformatted)
 echo "$staged_dart" | xargs dart format --set-exit-if-changed
 
-# flutter analyze (staged dart 파일만 — 속도 우선)
+# dart analyze (staged dart 파일만 — 속도 우선)
 # architecture_lint 및 stack lint 패키지 진단은 analysis_server_plugin이
 # analysis_options.yaml의 plugins: 섹션을 isolate로 로드해 함께 보고한다.
+# flutter analyze는 plugin 진단을 보고하지 않으므로 사용하지 않는다 (flutter/flutter#187999).
+# 디렉터리 인자도 plugin 진단이 빠지므로 파일 목록으로 넘긴다.
 # 주의: cross-file 의존 룰(예: 잘못된 import를 하는 쪽이 staged 안 된 경우)은 검출되지 않을 수 있다.
 staged_in_entry=$(echo "$staged_dart" | grep "^{{ENTRY}}/" | sed "s|^{{ENTRY}}/||" || true)
 if [ -n "$staged_in_entry" ]; then
-  (cd {{ENTRY}} && echo "$staged_in_entry" | xargs flutter analyze --fatal-infos)
+  (cd {{ENTRY}} && echo "$staged_in_entry" | xargs dart analyze --fatal-infos)
 fi
 
 # flutter test (related only)

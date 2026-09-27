@@ -25,3 +25,4 @@ example/**/.last_build_id
 .dart_tool/
 rules/flutter/*/custom-lint/*/pubspec.lock
 rules/flutter/*/custom-lint/*/tools/*/pubspec.lock
+rules/flutter/*/analysis/*/pubspec.lock

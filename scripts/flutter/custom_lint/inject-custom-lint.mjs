@@ -4,18 +4,17 @@
 // `analysis_options.yaml` via the top-level `plugins:` section
 // (analysis_server_plugin, Dart 3.10+).
 //
-// Dependency form: absolute `path:` to the local jkit-code-plugin checkout.
-// The `git:` form in plugins: is parsed by analyzer but not actually wired up
-// for fetch until Dart 3.13 Beta 1+ (dart-lang/sdk#61794), which causes
-// silent plugin load failure on Dart 3.10–3.12. Using `path:` against the
-// already-installed plugin sources works on all supported Dart versions.
-//
-// Caveat: the written path is per-machine absolute. analysis_options.yaml
-// committed to git becomes machine-specific — each developer / CI must run
-// `/flutter-sync` (or this script) once to regenerate with their own path.
-//
-// TODO(jkit): switch back to `git:` deps once Dart 3.13 is stable and widely
-// adopted, restoring portability of analysis_options.yaml across machines.
+// Dependency form: vendored copy + RELATIVE `path:`.
+// Each plugin's sources (pubspec.yaml + lib/) are copied into
+// `<dir of analysis_options.yaml>/.jkit/plugins/<package>/` and registered as
+// `path: .jkit/plugins/<package>`. The copy is committed with the project, so
+// the rules run the same on every machine and in CI.
+//   - `git:` in plugins: resolves but reports no diagnostics (verified on
+//     Dart 3.13.4; dart-lang/sdk#61794) — not usable yet.
+//   - An absolute `path:` to the jkit plugin cache only works on one machine.
+// A `.jkit-vendor.json` manifest (sha256 per file) is written next to each
+// copy; `dart run jkit_analysis:verify` rejects modified copies.
+// Every run replaces the copy (rules update via /jkit:flutter-sync).
 //
 // Each plugin entry is written with both `path:` and a `diagnostics:` enable
 // list (every rule code mapped to `true`). The codes are auto-extracted from
@@ -49,6 +48,7 @@
 //     [--strip-stale-from app/analysis_options.yaml]
 // =============================================================================
 
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -213,9 +213,73 @@ function extractDiagnosticsFor(pluginAbsPath) {
   return [...codes].sort();
 }
 
-function buildPluginEntry(absPath, diagnosticCodes) {
+const VENDOR_DIR = path.join(".jkit", "plugins");
+const VENDOR_MANIFEST = ".jkit-vendor.json";
+
+function listVendorFiles(dir, base = dir) {
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...listVendorFiles(full, base));
+    else if (entry.isFile())
+      out.push(path.relative(base, full).split(path.sep).join("/"));
+  }
+  return out.sort();
+}
+
+// Replace <hostDir>/.jkit/plugins/<name> with a fresh copy of the plugin's
+// pubspec.yaml + lib/ and write a sha256 manifest. Returns the relative path
+// (posix) to register in plugins:.
+function vendorPlugin(srcAbsPath, hostDir, pkg, pluginVersion) {
+  const destRel = path.join(VENDOR_DIR, pkg.name);
+  const dest = path.join(hostDir, destRel);
+  fs.rmSync(dest, { recursive: true, force: true });
+  fs.mkdirSync(dest, { recursive: true });
+  fs.copyFileSync(
+    path.join(srcAbsPath, "pubspec.yaml"),
+    path.join(dest, "pubspec.yaml"),
+  );
+  fs.cpSync(path.join(srcAbsPath, "lib"), path.join(dest, "lib"), {
+    recursive: true,
+  });
+
+  const files = {};
+  for (const rel of listVendorFiles(dest)) {
+    files[rel] = crypto
+      .createHash("sha256")
+      .update(fs.readFileSync(path.join(dest, rel)))
+      .digest("hex");
+  }
+  const manifest = {
+    $comment:
+      "Vendored by jkit — do not edit. Regenerate with /jkit:flutter-sync.",
+    package: pkg.name,
+    source: `jkit-code-plugin@${pluginVersion}/${pkg.subPath}`,
+    files,
+  };
+  fs.writeFileSync(
+    path.join(dest, VENDOR_MANIFEST),
+    JSON.stringify(manifest, null, 2) + "\n",
+  );
+  return destRel.split(path.sep).join("/");
+}
+
+function readPluginVersion(pluginRoot) {
+  try {
+    return JSON.parse(
+      fs.readFileSync(
+        path.join(pluginRoot, ".claude-plugin", "plugin.json"),
+        "utf-8",
+      ),
+    ).version;
+  } catch {
+    return "unknown";
+  }
+}
+
+function buildPluginEntry(relPath, diagnosticCodes) {
   return {
-    path: absPath,
+    path: relPath,
     diagnostics: Object.fromEntries(diagnosticCodes.map((c) => [c, true])),
   };
 }
@@ -337,6 +401,8 @@ function injectAnalysisOptions(analysisPath, pluginRoot, packages) {
   }
 
   let changed = false;
+  const hostDir = path.dirname(analysisPath);
+  const pluginVersion = readPluginVersion(pluginRoot);
 
   for (const pkg of packages) {
     const absPath = path.join(pluginRoot, pkg.subPath);
@@ -353,10 +419,15 @@ function injectAnalysisOptions(analysisPath, pluginRoot, packages) {
       return false;
     }
 
+    const relPath = vendorPlugin(absPath, hostDir, pkg, pluginVersion);
+    process.stdout.write(
+      `  Vendored ${pkg.name} → ${path.join(hostDir, relPath)}\n`,
+    );
+
     const current = YAML.isMap(pluginsMap)
       ? nodeToJs(pluginsMap.get(pkg.name))
       : null;
-    const desired = buildPluginEntry(absPath, codes);
+    const desired = buildPluginEntry(relPath, codes);
     const alreadyPinned =
       current &&
       typeof current === "object" &&
@@ -367,14 +438,14 @@ function injectAnalysisOptions(analysisPath, pluginRoot, packages) {
 
     if (alreadyPinned) {
       process.stdout.write(
-        `  ${pkg.name} already pinned to ${absPath} (${codes.length} diagnostics) in ${analysisPath}\n`,
+        `  ${pkg.name} already registered (path: ${relPath}, ${codes.length} diagnostics) in ${analysisPath}\n`,
       );
       continue;
     }
 
     doc.setIn(["plugins", pkg.name], desired);
     process.stdout.write(
-      `  Registered ${pkg.name} (path: ${absPath}, ${codes.length} diagnostics) in ${analysisPath} plugins:\n`,
+      `  Registered ${pkg.name} (path: ${relPath}, ${codes.length} diagnostics) in ${analysisPath} plugins:\n`,
     );
     changed = true;
   }
@@ -396,8 +467,9 @@ function injectAnalysisOptions(analysisPath, pluginRoot, packages) {
 //   1. Strip our managed `plugins:` entries (single source of truth at root —
 //      direct entries in the member also raise `plugins_in_inner_options`).
 //   2. Strip legacy `analyzer.plugins: [custom_lint]` registration.
-//   3. Prepend `include: <relpath-to-root>` if absent. If the member already
-//      has a non-matching include, warn and preserve (chain it manually).
+//   3. Prepend `include: <relpath-to-root>` if absent (for a list-form include,
+//      prepend it to the list). If the member already has a non-matching
+//      scalar include, warn and preserve (chain it manually).
 function normalizeWorkspaceMember(memberPath, rootPath) {
   const includeRelOs = path.relative(path.dirname(memberPath), rootPath);
   const includeRel = includeRelOs.split(path.sep).join("/");
@@ -483,6 +555,24 @@ function normalizeWorkspaceMember(memberPath, rootPath) {
           `The member won't inherit the workspace root's plugins: until ` +
           `the includes are chained (root analysis_options.yaml should ` +
           `include the existing target, or vice versa).\n`,
+      );
+    }
+  } else if (YAML.isSeq(currentInclude)) {
+    // 목록 형태 include (예: [<root>, package:jkit_analysis/...]) — root가
+    // 없으면 맨 앞에 추가한다.
+    const targets = currentInclude.toJSON().map(String);
+    if (targets.includes(includeRel)) {
+      if (!stripped) {
+        process.stdout.write(
+          `  ${memberPath} already includes ${includeRel}\n`,
+        );
+      }
+    } else {
+      const doc = YAML.parseDocument(bodyAfterStrip);
+      doc.get("include").items.unshift(doc.createNode(includeRel));
+      finalContent = String(doc);
+      process.stdout.write(
+        `  Prepended ${includeRel} to include: list in ${memberPath}\n`,
       );
     }
   } else {

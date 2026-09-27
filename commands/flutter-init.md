@@ -226,7 +226,9 @@ esac
 
 ### 8. analysis_options.yaml scaffold (analyzer/linter 룰 템플릿)
 
-엔트리(+ 워크스페이스 모드에선 워크스페이스 root)의 `analysis_options.yaml`을 jkit 표준 템플릿(`rules/flutter/base/templates/`)으로 **무조건 덮어씀**. `flutter create`가 남긴 기본 파일이나 사용자 수정 파일이 있다면 git history로만 복구 가능합니다. 템플릿 자체를 프로젝트별로 커스터마이즈하려면 jkit 체크아웃의 `rules/flutter/base/templates/*.yaml`을 fork해야 합니다.
+엔트리(+ 워크스페이스 모드에선 워크스페이스 root)의 `analysis_options.yaml`을 jkit 표준 템플릿(`rules/flutter/base/templates/`)으로 **무조건 덮어씀**. `flutter create`가 남긴 기본 파일이나 사용자 수정 파일이 있다면 git history로만 복구 가능합니다.
+
+analyzer/linter 규칙 본체는 `jkit_analysis` Dart 패키지(`rules/flutter/base/analysis/jkit_analysis/`)에 있고, 엔트리의 `analysis_options.yaml`은 `include: package:jkit_analysis/analysis_options.yaml`만 가집니다 (워크스페이스 멤버는 `include: [<root>, package:jkit_analysis/...]`). 스크립트가 엔트리 `pubspec.yaml`의 `dev_dependencies`에 `jkit_analysis`를 git 의존성(`ref: v<plugin-version>`)으로 추가합니다. 규칙 변경은 jkit-code-plugin에서 합니다 — 프로젝트에서 규칙을 끄거나 severity를 낮추면 `dart run jkit_analysis:verify`(pre-commit에 연결)가 실패합니다.
 
 ```bash
 cd "$PROJECT_ROOT"
@@ -237,7 +239,7 @@ $JKIT_DIR/scripts/flutter/gen-analysis-options.mjs flutter -p . -entry "$ENTRY_D
 
 ### 9. architecture_lint 주입 (+ stack lint 패키지)
 
-Flutter 엔트리 프로젝트의 `analysis_options.yaml`의 top-level `plugins:` 섹션에 `architecture_lint`(base, git dep)와 사용자가 선택한 컨벤션 스택에 매칭되는 stack lint 패키지(예: `leaf-kit` 선택 시 `leaf_kit_lint`)를 git dep으로 등록합니다. analysis_server_plugin(Dart 3.10+)이 두 패키지를 독립 isolate로 로드해 IDE 및 `dart analyze`에서 동작합니다. 레거시 `custom_lint` dev dep와 `analyzer.plugins:` 항목은 자동으로 제거됩니다. 이 스텝은 **무조건** 실행되어야 합니다.
+Flutter 엔트리(워크스페이스 모드에선 root)의 `analysis_options.yaml` top-level `plugins:` 섹션에 `architecture_lint`(base)와 선택한 컨벤션 스택의 stack lint 패키지(예: `leaf-kit` → `leaf_kit_lint`)를 등록합니다. 플러그인 소스는 같은 폴더의 `.jkit/plugins/<package>/`로 **복사(vendoring)**되고 상대 경로(`path: .jkit/plugins/<package>`)로 등록되므로, 다른 PC와 CI에서도 동작합니다 — `.jkit/plugins/`는 **git에 커밋**하세요. (`git:` 등록은 Dart 3.13.4에서도 진단이 나오지 않고, 절대 경로는 한 PC에서만 동작합니다.) 복사본은 `.jkit-vendor.json` 해시로 보호되어, 직접 수정하면 `dart run jkit_analysis:verify`가 실패합니다. analysis_server_plugin(Dart 3.10+)이 두 패키지를 독립 isolate로 로드해 IDE 및 `dart analyze`에서 동작합니다. 레거시 `custom_lint` dev dep와 `analyzer.plugins:` 항목은 자동으로 제거됩니다. 이 스텝은 **무조건** 실행되어야 합니다.
 
 ```bash
 cd "$PROJECT_ROOT"
@@ -256,7 +258,7 @@ fi
 cd "$PROJECT_ROOT/$ENTRY_DIR" && dart pub get && cd "$PROJECT_ROOT"
 ```
 
-> `gen-custom-lint.mjs`는 idempotent — 동일 git ref면 skip합니다. git ref는 플러그인의 `plugin.json` version에서 자동 결정됩니다. stack ↔ 패키지 매핑은 `inject-custom-lint.mjs`의 `STACK_PACKAGES`에 정의 (현재 `leaf-kit` → `leaf_kit_lint`, `freezed` → `freezed_lint`).
+> `gen-custom-lint.mjs`는 매번 복사본을 현재 jkit 버전으로 교체하고, `plugins:` 등록은 동일하면 건드리지 않습니다 (idempotent). stack ↔ 패키지 매핑은 `inject-custom-lint.mjs`의 `STACK_PACKAGES`에 정의 (현재 `leaf-kit` → `leaf_kit_lint`, `freezed` → `freezed_lint`).
 
 ### 10. 매니페스트 작성 (`MANIFEST_MODE=prompt`인 경우만)
 
@@ -290,8 +292,9 @@ fi
 - `CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (하단에 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `CONVENTIONS.PROJECT.md` — 사용자 소유 프로젝트 고유 컨벤션 (최초 1회만 생성, 이후 보존)
 - `package.json` — `devDependencies`(`husky`, `@commitlint/cli`, `@commitlint/config-conventional`) + `scripts.prepare: "husky"`
-- `.husky/pre-commit` — husky pre-commit 훅 (dart format, flutter analyze; analyzer가 architecture_lint 진단을 자동 통합; 엔트리 디렉토리가 파일에 베이킹됨)
+- `.husky/pre-commit` — husky pre-commit 훅 (`dart run jkit_analysis:verify`, dart format, `dart analyze --fatal-infos`; 엔트리 디렉토리가 파일에 베이킹됨)
 - `.husky/commit-msg` — husky commit-msg 훅 (`commitlint --edit $1`)
 - `commitlint.config.mjs` — Conventional Commits 설정 (허용 타입: feat, fix, refactor, docs, test, chore, perf, ci)
-- `architecture_lint` (base) — `analysis_options.yaml`의 top-level `plugins:` 섹션에 git dep으로 주입. analysis_server_plugin이 IDE/`dart analyze`에 진단 통합
+- `jkit_analysis` — 엔트리 `pubspec.yaml` dev_dependencies(git dep)에 추가, `analysis_options.yaml`이 include하는 analyzer/linter 규칙 + `verify` CLI
+- `architecture_lint` (base) — `.jkit/plugins/architecture_lint/`에 vendoring, `analysis_options.yaml` `plugins:`에 상대 경로로 등록 (커밋 대상). analysis_server_plugin이 IDE/`dart analyze`에 진단 통합
 - stack lint 패키지(선택한 스택 기반) — `leaf-kit` 선택 시 `leaf_kit_lint`도 동일하게 `plugins:`에 등록

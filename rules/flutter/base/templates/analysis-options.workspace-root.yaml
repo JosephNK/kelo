@@ -1,11 +1,5 @@
 # GENERATED FILE - DO NOT MODIFY BY HAND
-# Managed by jkit gen-analysis-options.mjs (regenerated on /jkit:flutter-init
-# and /jkit:flutter-sync). Edits here are overwritten — to customize, fork
-# the relevant rules/flutter/base/templates/*.yaml in the jkit checkout.
-#
-# Workspace ROOT analysis_options.yaml — provides framework-wide defaults
-# (flutter_lints) and hosts the analyzer plugins: section that
-# gen-custom-lint.mjs writes/maintains. Per-member rule policies live in each
-# workspace member's analysis_options.yaml (which `include:`s this file).
+# Managed by jkit (overwritten by /jkit:flutter-init and -sync).
+# Workspace root: flutter_lints + plugins: (managed by gen-custom-lint.mjs)
 
 include: package:flutter_lints/flutter.yaml

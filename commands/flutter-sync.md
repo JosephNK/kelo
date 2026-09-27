@@ -120,7 +120,7 @@ fi
 
 ### 4. analysis_options.yaml 템플릿 sync
 
-엔트리(+ 워크스페이스 모드에선 root)의 `analysis_options.yaml`을 jkit 표준 템플릿(`rules/flutter/base/templates/`)과 sync — **무조건 덮어씀**. 새 lint 룰이 jkit 릴리스에서 추가되면 sync로 전파됩니다. 사용자 수정 파일도 덮어쓰므로 프로젝트별 커스터마이즈는 jkit 체크아웃의 템플릿 파일 자체를 fork해야 합니다.
+엔트리(+ 워크스페이스 모드에선 root)의 `analysis_options.yaml`을 jkit 표준 템플릿(`rules/flutter/base/templates/`)과 sync — **무조건 덮어씀**. 규칙 본체는 `jkit_analysis` Dart 패키지에 있고 파일은 `include: package:jkit_analysis/analysis_options.yaml`만 가지므로, 새 lint 룰은 엔트리 `pubspec.yaml`의 `jkit_analysis` git ref(`v<plugin-version>`, 스크립트가 갱신) → `dart pub get`으로 전파됩니다. 레거시 템플릿(규칙 전체를 담은 파일)을 쓰던 프로젝트도 이 스텝 한 번으로 전환됩니다. 규칙을 끄거나 severity를 낮추는 로컬 수정은 `dart run jkit_analysis:verify`(pre-commit)가 거부합니다.
 
 ```bash
 cd "$PROJECT_ROOT"
@@ -131,7 +131,7 @@ $JKIT_DIR/scripts/flutter/gen-analysis-options.mjs flutter -p . -entry "$ENTRY_D
 
 ### 5. architecture_lint pin 갱신 (+ stack lint 패키지)
 
-엔트리 프로젝트의 `pubspec.yaml`에 박힌 `architecture_lint` git ref를 플러그인의 현재 버전(`plugin.json`)에 맞추고, 사용자가 선택한 컨벤션 스택에 매칭되는 stack lint 패키지(예: `leaf-kit` 선택 시 `leaf_kit_lint`)도 동일 ref로 갱신·추가합니다.
+`.jkit/plugins/`에 vendoring된 `architecture_lint`와 선택한 스택의 lint 패키지(예: `leaf-kit` → `leaf_kit_lint`)를 현재 jkit 버전으로 다시 복사하고, `plugins:`를 상대 경로로 등록합니다. 예전 방식(절대 경로 / `git:`)으로 등록된 프로젝트도 이 스텝 한 번으로 vendoring으로 전환됩니다. 바뀐 `.jkit/plugins/`는 커밋하세요.
 
 ```bash
 cd "$PROJECT_ROOT"
@@ -144,7 +144,7 @@ fi
 
 사용자가 선택한 스택이 없으면 `--stacks` 인자를 생략합니다. base의 `architecture_lint`만 sync됩니다.
 
-> idempotent — 동일 git ref면 skip합니다. additive only — 이전에 설치된 stack 패키지는 자동 제거되지 않으므로, 스택을 빼고 싶으면 `pubspec.yaml`에서 수동 삭제하세요.
+> idempotent — 등록이 같으면 `plugins:`는 건드리지 않습니다. additive only — 빠진 스택의 플러그인은 자동 제거되지 않으므로, `plugins:` 항목과 `.jkit/plugins/<package>/`를 수동 삭제하세요.
 
 ref가 바뀌어 pubspec이 갱신된 경우, 엔트리 디렉토리에서 `dart pub get`을 실행합니다:
 
@@ -222,8 +222,9 @@ echo "[manifest] 작성: $MANIFEST_PATH"
 - `docs/STRUCTURE.md` — lint 룰이 가정하는 디렉토리 구조 참조 (덮어쓰기)
 - `docs/CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (덮어쓰기, 하단 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `docs/LINT.md` — Lint 규칙 참조 (덮어쓰기)
-- `pubspec.yaml` — `architecture_lint` (base) + 선택한 stack lint 패키지(예: `leaf_kit_lint`) git ref (변경/추가 시에만 갱신)
-- `.husky/pre-commit`, `.husky/commit-msg` — husky 훅 (덮어쓰기, 엔트리 디렉토리 인라인 치환)
+- `analysis_options.yaml` — `include: package:jkit_analysis/analysis_options.yaml` 템플릿 (덮어쓰기) + `plugins:`에 `architecture_lint`(base) + 선택한 stack lint 패키지(예: `leaf_kit_lint`) (변경/추가 시에만 갱신)
+- `pubspec.yaml` — `dev_dependencies.jkit_analysis` git ref(`v<plugin-version>`) 갱신
+- `.husky/pre-commit`, `.husky/commit-msg` — husky 훅 (덮어쓰기, 엔트리 디렉토리 인라인 치환). pre-commit은 `dart run jkit_analysis:verify` → dart format → `dart analyze --fatal-infos`(staged 파일) → 관련 테스트 순
 - `package.json` — `devDependencies`(`husky`, `@commitlint/cli`, `@commitlint/config-conventional`)와 `scripts.prepare` 패치 (그 외 필드는 보존)
 
 > 보존된 사용자 소유 파일: `AGENTS.md`, `AGENTS.PROJECT.md`, `CONVENTIONS.PROJECT.md`, `commitlint.config.mjs`, `jkit.project.json`.

@@ -1,0 +1,17 @@
+name: jkit_analysis
+version: 0.3.80
+description: >-
+  JKit Flutter analysis options (analyzer/linter policy) and a verify CLI that
+  rejects local overrides weakening the jkit rules.
+repository: https://github.com/JosephNK/jkit-code-plugin/tree/main/rules/flutter/base/analysis/jkit_analysis
+
+environment:
+  sdk: ">=3.10.0 <4.0.0"
+
+dependencies:
+  crypto: ^3.0.0
+  flutter_lints: ^6.0.0
+  yaml: ^3.1.0
+
+executables:
+  verify:

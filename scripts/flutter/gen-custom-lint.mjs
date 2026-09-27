@@ -4,8 +4,9 @@
 // plugins in analysis_options.yaml via the new top-level `plugins:` section
 // (analysis_server_plugin, Dart 3.10+).
 //
-// Each lint package is registered with a git dependency directly under
-// `plugins:` — no umbrella custom_lint package needed. Also strips legacy
+// Each lint package is vendored into `.jkit/plugins/<package>/` next to the
+// analysis_options.yaml that hosts `plugins:` and registered with a relative
+// `path:` — portable across machines/CI. No umbrella custom_lint package. Also strips legacy
 // custom_lint dev dependency and `analyzer.plugins:` registration if present.
 //
 // Delegates the YAML edits to `custom_lint/inject-custom-lint.mjs`, which uses
@@ -28,9 +29,8 @@ import YAML from "yaml";
 import { ensureFlutterRoot, normalizePath } from "../common.mjs";
 
 // `--ref` and the legacy git URL are accepted for CLI backward compatibility
-// but no longer used: plugins: now resolve via `path:` to the local plugin
-// checkout. Re-introduce git wiring once Dart 3.13+ is widespread and the
-// upstream `git:` plugin loader is reliable (dart-lang/sdk#61794).
+// but no longer used: `git:` in plugins: reports no diagnostics even on
+// Dart 3.13.4 (dart-lang/sdk#61794), so plugin sources are vendored instead.
 
 /**
  * Detect whether projectDir is a Dart pub workspace root that includes the
@@ -58,14 +58,12 @@ const HELP = `Usage: gen-custom-lint.mjs flutter -p <project-dir> [-entry <dir>]
 
 Registers architecture_lint (base) + optional stack lint packages (e.g.
 leaf_kit_lint when --stacks includes leaf-kit) as analyzer plugins in
-analysis_options.yaml via the top-level \`plugins:\` section, using \`path:\`
-deps that point to this plugin's own checkout (auto-detected from script
-location).
+analysis_options.yaml via the top-level \`plugins:\` section. Plugin sources
+are copied from this plugin's checkout into \`.jkit/plugins/<package>/\` (commit
+it) and registered with a relative \`path:\`, so they work on every machine/CI.
 
-The Dart analysis server loads the plugin sources from the path on every
-\`dart analyze\` / \`flutter analyze\` invocation. \`--ref\` is accepted for
-backward compatibility but ignored — git: deps in plugins: are not yet
-fetched on Dart 3.10–3.12 (dart-lang/sdk#61794).
+Use \`dart analyze\` (not \`flutter analyze\`, flutter/flutter#187999) to see
+plugin diagnostics. \`--ref\` is accepted for backward compatibility but ignored.
 
 Requires: Dart 3.10+ (Flutter 3.38+) and plugin's node_modules installed
 (\`npm install\` in plugin root).
@@ -207,10 +205,8 @@ function main() {
     );
   }
 
-  // Use `path:` deps pointing to the local plugin checkout. `git:` deps in
-  // analysis_options.yaml plugins: are parsed but not actually wired up for
-  // fetch until Dart 3.13 Beta 1+ (dart-lang/sdk#61794), causing silent
-  // plugin load failure on Dart 3.10–3.12.
+  // Vendor plugin sources into .jkit/plugins/ and register relative `path:`
+  // deps (see inject-custom-lint.mjs header for why not git/absolute path).
   const injectArgs = [
     injectScript,
     "--pubspec",

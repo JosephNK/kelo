@@ -32,11 +32,24 @@ origin: Kelo
 ## Common Rules
 
 1. If there are no changes, do not commit and notify the user
-2. Automatically stage all untracked files and unstaged changes without asking
+2. Automatically stage changes to **tracked** files (modified/deleted/renamed) without asking. **Untracked files follow the Untracked File Policy below — never sweep them in with `git add -A` / `git add .`**
 3. **Only ask the user for confirmation on commit message selection (and split confirmation in interactive mode)**
 4. **Never add auto-generated text like "Generated with Claude Code" or "Co-Authored-By" to commit messages**
 5. **Do not explain language choice reasoning or decision process. Present commit messages concisely**
 6. **When splitting commits, never use `git add -A` / `git add .` between groups — always `git reset` first, then `git add <specific files>` for that group only**
+
+---
+
+## Untracked File Policy
+
+Untracked files can hold secrets or local-only data (env files with tokens, keys, scratch notes). Decide per file (`git status --porcelain --untracked-files=all`):
+
+1. **Never stage** files that look sensitive, even in `--auto` mode: `.env*` (except `.env.example` / `.env.sample`), `*.pem`, `*.key`, `*.p12`, `*.keystore`, `id_rsa*`, and names containing `secret`, `token`, `credential`, or `password`. Also skip anything that would be ignored by `.gitignore` rules (`git check-ignore`).
+2. **Stage** untracked files that are clearly part of the current change: new source/test/doc files referenced by or belonging to the same feature as the tracked changes, or produced by the generators run for this change.
+3. **Otherwise do not stage** — untracked files that are unrelated to the diff (e.g. a directory that already existed untracked before this work) stay out.
+4. Always list every untracked file that was **not** staged, with the reason (sensitive / unrelated / ignored), in the report — without printing file contents.
+
+In interactive mode, show the untracked files you plan to stage, and ask before committing when it is unclear whether a file belongs to the change (rule 2 vs 3).
 
 ---
 
@@ -281,7 +294,7 @@ Commit automatically without user confirmation. Used by automation pipelines (e.
 
 #### Step 1: Stage & Analyze
 
-1. `git add -A` to stage all changes (initial sweep so the diff is complete).
+1. `git add -u` to stage tracked changes, then `git add <path>` for each untracked file allowed by the **Untracked File Policy** (never `git add -A` / `git add .`).
 2. Analyze the staged diff.
 3. **Apply Split Detection Criteria** (above) and decide: single commit, or N-way split?
 4. If split: construct ordered groups per Group Construction rules.
@@ -303,5 +316,6 @@ If split was decided, repeat the following for each group in order. If no split,
 #### Step 3: Report
 
 - Output the commit hash and subject for **every** commit produced (1 line per commit).
+- List untracked files that were left unstaged and why (Untracked File Policy rule 4).
 - If split: also print the split decision summary (group count + reason in one short sentence).
 - If no changes existed, report "no changes" and exit without committing.

@@ -64,18 +64,39 @@ export function ensureGitRepo(p = ".") {
   throw new Error(msg);
 }
 
+// "^1.2.3" / "~1.2" / ">=1.2.3" / "1.2.3" → [1, 2, 3]. URL·workspace:·복합 범위 등은 null.
+export function rangeFloor(range) {
+  const m = /^\s*(?:\^|~|>=)?\s*v?(\d+)(?:\.(\d+))?(?:\.(\d+))?\s*$/.exec(
+    String(range),
+  );
+  return m ? [m[1], m[2] ?? 0, m[3] ?? 0].map(Number) : null;
+}
+
+export function compareFloor(a, b) {
+  for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] - b[i];
+  return 0;
+}
+
 // Upsert `name` → `version` in a devDependencies-like object.
+// 기존 범위의 하한이 `version` 이상이면 내리지 않고 유지한다 (프로젝트가 먼저 올린 버전 보존).
+// 둘 중 하나라도 비교할 수 없는 값(Release URL 등)이면 `version`으로 교체한다.
 // Returns a one-line log string describing what changed:
 //   "  Added:     X -> 1.0.0"
 //   "  Updated:   X 1.0.0 -> 2.0.0"
+//   "  Kept:      X ^2.1.0 (>= 1.0.0)"
 //   "  Unchanged: X (1.0.0)"
 // The caller is responsible for sorting keys and writing the JSON back.
 export function setDep(dev, name, version) {
   const old = dev[name];
-  dev[name] = version;
   if (old === version) {
     return `  Unchanged: ${name} (${version})`;
   }
+  const oldFloor = old ? rangeFloor(old) : null;
+  const newFloor = rangeFloor(version);
+  if (oldFloor && newFloor && compareFloor(oldFloor, newFloor) >= 0) {
+    return `  Kept:      ${name} ${old} (>= ${version})`;
+  }
+  dev[name] = version;
   if (old) {
     return `  Updated:   ${name} ${old} -> ${version}`;
   }

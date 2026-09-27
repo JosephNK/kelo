@@ -323,6 +323,8 @@ case "$PM" in
   pnpm) pnpm install ;;
   bun)  bun install ;;
 esac
+# lockfile에 kelo Release tarball의 integrity가 빠졌으면 자산 sha512로 채우고, 있으면 자산과 대조 (pnpm·npm)
+$KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-dir .
 
 # framework별 peer 보강
 NEXTJS_PEERS="eslint-plugin-boundaries@^7 eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-sonarjs eslint-config-prettier eslint-config-next@^16"

@@ -311,6 +311,8 @@ case "$PM" in
   pnpm) pnpm install ;;
   bun)  bun install ;;
 esac
+# lockfile에 kelo Release tarball의 integrity가 빠졌으면 자산 sha512로 채우고, 있으면 자산과 대조 (pnpm·npm)
+$KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-dir .
 ```
 
 > 규칙 원본과 조립 로직은 `node_modules/eslint-config-kelo-nextjs/`에 있습니다. 규칙 변경은 kelo 저장소에서 수정·배포(GitHub Release)하고, 프로젝트는 `/kelo:update-plugin-ref code-plugin` 또는 sync로 URL 버전을 올려 반영합니다.

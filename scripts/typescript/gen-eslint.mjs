@@ -1,38 +1,30 @@
 #!/usr/bin/env node
 // =============================================================================
-// Generates <output-dir>/eslint.config.mjs from rules/<framework>/base/eslint.template.mjs
-// by replacing `// {{MARKER}}` placeholders with concatenated snippets from
-// each `--with` stack's eslint.manifest.
+// Wires a Next.js / NestJS project to the jkit ESLint shareable config package
+// (`@josephnk/eslint-config-<framework>`, source: rules/<framework>/).
 //
-// Also bootstraps <output-dir>/eslint.project.config.mjs — a user-owned ESLint
-// override file that the generated config imports and spreads after the base
-// rules. Created with a stub only when absent; preserved on re-run (sync), like
-// commitlint.config.mjs.
+// Writes into <output-dir>:
+//   - eslint.config.mjs          (jkit-managed, always overwritten) — a few lines
+//                                that call the package factory
+//   - jkit.lint.json             (jkit-managed) — `stacks` is rewritten from
+//                                --with; other keys (boundaryElements,
+//                                boundaryRules, boundaryIgnores, ignores) are
+//                                preserved
+//   - eslint.project.config.mjs  (user-owned) — stub created only when absent;
+//                                may ADD rules, may not change jkit rules (the
+//                                factory throws)
 //
 // Also patches the user's package.json:
-//   - devDependencies: pins `@jkit/code-plugin` to `v<plugin-version>`
-//     (read from .claude-plugin/plugin.json)
-//   - lint-staged: ensures `*.{ts,tsx,js,jsx,mjs}: eslint --fix` is wired
-//     so pre-commit hook actually runs ESLint on staged TS/JS files
-//
-// Manifest format (plaintext):
-//   --- <section> ---
-//   <content lines...>
-//   --- <next section> ---
-//   ...
-//
-// Section -> marker mapping:
-//   import     -> {{STACK_IMPORTS}}
-//   restricted -> {{RESTRICTED_PATTERNS}}
-//   domain     -> {{DOMAIN_BANNED}}
-//   syntax     -> {{RESTRICTED_SYNTAX}}
-//   elements   -> {{BOUNDARY_ELEMENTS}}
-//   rules      -> {{BOUNDARY_RULES}}
-//   patches    -> {{BOUNDARY_PATCHES}}
-//   ignores    -> {{BOUNDARY_IGNORES}}
-//   framework-banned -> {{FRAMEWORK_BANNED_PACKAGES}}
-//   infra-banned -> {{INFRA_BANNED_PACKAGES}}
-//   custom     -> {{CUSTOM_CONFIG}}
+//   - devDependencies: `@josephnk/eslint-config-<framework>` → GitHub Release
+//     tarball URL of v<version> (rules/<framework>/package.json); removes the legacy
+//     `@jkit/code-plugin` git dependency
+//   - lint-staged: `*.{ts,tsx,js,jsx,mjs}` runs `jkit-lint-<framework> --fix`
+//     (legacy `eslint --fix` entries are replaced)
+//   - scripts.lint: `jkit-lint-<framework>` — the single lint entry point
+//     (ignores eslint.config.mjs edits). Existing `eslint …` values of
+//     `lint` / `lint:ci` / `lint:fix` are replaced (`lint:fix` gets `--fix`);
+//     move path arguments such as `--ignore-pattern` to jkit.lint.json
+//     `ignores`. A legacy `lint:jkit` script is removed.
 //
 // Usage:
 //   gen-eslint.mjs <framework> -p <output-dir> [--with stack1,stack2,...]
@@ -43,12 +35,12 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { patchLintStaged } from "../common.mjs";
+import { jkitPackageSpec, patchLintStaged, pyReprStr } from "../common.mjs";
 
 const HELP = `Usage: gen-eslint.mjs <framework> -p <output-dir> [--with stack1,stack2,...]
 
 Arguments:
-  <framework>    Framework name (e.g. nextjs, nestjs)
+  <framework>    Framework name (nextjs, nestjs)
 
 Options:
   -p <dir>       Output directory (required)
@@ -57,34 +49,42 @@ Options:
 
 Examples:
   ./scripts/typescript/gen-eslint.mjs nextjs -p ./my-project --with design-system/mantine,nextauth,tanstack-query
-  ./scripts/typescript/gen-eslint.mjs nextjs -p ./my-project
+  ./scripts/typescript/gen-eslint.mjs nestjs -p ./my-project --with typeorm
 `;
+
+const LEGACY_PACKAGE = "@jkit/code-plugin";
+const LINT_CONFIG_FILE = "jkit.lint.json";
 
 function usage(code = 1) {
   (code === 0 ? process.stdout : process.stderr).write(HELP);
   process.exit(code);
 }
 
-// 사용자 소유 ESLint override 파일의 초기 스텁.
-// `eslint.config.mjs`(생성물)가 이 배열을 base 룰 뒤에 spread하므로,
-// 여기에 추가한 블록이 가장 마지막에 적용되어 base 룰을 override한다.
-// init이 없을 때만 생성하고, sync는 보존한다(덮어쓰지 않음) — commitlint.config.mjs와 동일.
-const PROJECT_CONFIG_STUB = `// =============================================================================
-// JKit — 프로젝트 개별 ESLint override (사용자 소유)
-// -----------------------------------------------------------------------------
-// 이 파일은 *-sync가 덮어쓰지 않습니다. 최초 1회만 생성됩니다.
-// \`eslint.config.mjs\`가 이 배열을 base 룰 뒤에 spread하므로, 여기 블록이
-// 가장 마지막에 적용되어 base 룰을 override합니다.
-//
-// 필요한 플러그인 import는 아래 상단에 추가하고, 이 프로젝트의
-// devDependencies에 직접 설치하세요. (예: npm i -D eslint-plugin-import)
-// =============================================================================
+// 생성물 — 매 init/sync마다 덮어쓴다. 규칙과 조립 로직은 패키지 안에 있다.
+function renderEslintConfig(pkgName, factory) {
+  return `// GENERATED FILE - DO NOT MODIFY BY HAND
+// Managed by jkit (overwritten by /jkit:${factory}-init and -sync).
+// Rules: ${pkgName} | Stacks: jkit.lint.json | Project rules: eslint.project.config.mjs
+
+import { ${factory} } from "${pkgName}";
+
+import projectConfig from "./eslint.project.config.mjs";
+
+export default ${factory}({ root: import.meta.dirname, project: projectConfig });
+`;
+}
+
+// 사용자 소유 파일의 초기 스텁. init에서 없을 때만 생성하고, sync는 보존한다.
+const PROJECT_CONFIG_STUB = `// Project-specific ESLint rules (user-owned — created once, never overwritten by sync).
+// Allowed: new rules/plugins. Redefining jkit rules/settings, linterOptions, or
+// global ignores fails at load time — use jkit.lint.json \`ignores\` for exclusions.
+// Install any plugin you import here as a devDependency of this project.
 
 // import groupDepPlugin from "eslint-plugin-import";
 
 /** @type {import('eslint').Linter.Config[]} */
 const projectConfig = [
-  // 예) 그룹(바운디드 컨텍스트) 간 의존 방향 차단 — 위 import 주석을 함께 해제
+  // Example: block dependencies between bounded contexts (uncomment the import above)
   // {
   //   files: ["src/**/*.ts"],
   //   ignores: ["**/*.spec.ts"],
@@ -95,7 +95,7 @@ const projectConfig = [
   //         {
   //           target: "./src/modules/forwarder",
   //           from: "./src/modules/consumer",
-  //           message: "forwarder 그룹은 consumer 그룹에 의존할 수 없습니다.",
+  //           message: "forwarder must not depend on consumer.",
   //         },
   //       ],
   //     }],
@@ -161,81 +161,70 @@ function splitStacks(raw) {
     .filter((s) => s.length > 0);
 }
 
-// Parse a manifest into a map of { section → content }.
-// Content is all lines between `--- <section> ---` headers.
-function parseManifest(manifestPath) {
-  const text = fs.readFileSync(manifestPath, "utf8");
-  const lines = text.split("\n");
-  const sections = {};
-  let current = null;
-  const headerRe = /^--- (.+) ---$/;
-
-  for (const line of lines) {
-    const m = line.match(headerRe);
-    if (m) {
-      current = m[1];
-      if (!(current in sections)) sections[current] = [];
-      continue;
-    }
-    if (current !== null) {
-      sections[current].push(line);
+// 스택은 rules/<framework>/<stack>/eslint.rules.mjs가 있어야 유효하다
+// (패키지 factory의 스택 등록표와 1:1). 없으면 경고 후 제외 — factory가
+// 알 수 없는 스택에 에러를 내므로 jkit.lint.json에 남기지 않는다.
+function validateStacks(rulesDir, stacks) {
+  const valid = [];
+  for (const stack of stacks) {
+    const rulesFile = path.join(rulesDir, stack, "eslint.rules.mjs");
+    if (fs.existsSync(rulesFile)) {
+      valid.push(stack);
+    } else {
+      process.stderr.write(
+        `Warning: Unknown stack '${stack}' (no ${rulesFile}) — skipped\n`,
+      );
     }
   }
-
-  return sections;
+  return [...new Set(valid)].sort();
 }
 
-// Marker order matches the bash script's replace_marker invocation order.
-const MARKERS = [
-  { section: "import", marker: "// {{STACK_IMPORTS}}" },
-  { section: "restricted", marker: "// {{RESTRICTED_PATTERNS}}" },
-  { section: "domain", marker: "// {{DOMAIN_BANNED}}" },
-  { section: "syntax", marker: "// {{RESTRICTED_SYNTAX}}" },
-  { section: "elements", marker: "// {{BOUNDARY_ELEMENTS}}" },
-  { section: "rules", marker: "// {{BOUNDARY_RULES}}" },
-  { section: "patches", marker: "// {{BOUNDARY_PATCHES}}" },
-  { section: "ignores", marker: "// {{BOUNDARY_IGNORES}}" },
-  { section: "framework-banned", marker: "// {{FRAMEWORK_BANNED_PACKAGES}}" },
-  { section: "infra-banned", marker: "// {{INFRA_BANNED_PACKAGES}}" },
-  { section: "custom", marker: "// {{CUSTOM_CONFIG}}" },
-];
-
-// Reproduce the bash-side behavior:
-// Each invocation reads a `value` (possibly multi-line), drops empty lines
-// via `sed '/^$/d'`, then for each line in the current template content:
-//   - if the line contains the marker, replace the entire line with the value
-//     (trailing newline appended by the loop)
-//   - else keep the line
-// If the value is empty, the marker line is removed entirely.
-//
-// The bash loop uses `while read` + `"${content%$'\n'}"`-style trimming and
-// appends `$'\n'` after every line, which effectively adds a trailing newline
-// to the final output (matched to `echo "$content"` in the writer).
-function replaceMarker(content, marker, rawValue) {
-  // sed '/^$/d' — strip empty lines from the value.
-  const cleaned = rawValue
-    .split("\n")
-    .filter((line) => line !== "")
-    .join("\n");
-
-  const lines = content.split("\n");
-  const out = [];
-
-  if (cleaned.length > 0) {
-    for (const line of lines) {
-      if (line.includes(marker)) {
-        out.push(cleaned);
-      } else {
-        out.push(line);
-      }
-    }
-  } else {
-    for (const line of lines) {
-      if (!line.includes(marker)) out.push(line);
+function writeLintConfig(outputDir, stacks) {
+  const file = path.join(outputDir, LINT_CONFIG_FILE);
+  const existed = fs.existsSync(file);
+  let current = {};
+  if (existed) {
+    try {
+      current = JSON.parse(fs.readFileSync(file, "utf8"));
+    } catch {
+      process.stderr.write(`Error: ${file} is not valid JSON — fix it first\n`);
+      process.exit(1);
     }
   }
+  const next = { ...current, stacks };
+  let verb = "Created:";
+  if (existed) {
+    verb =
+      JSON.stringify(current) === JSON.stringify(next)
+        ? "Unchanged:"
+        : "Updated:";
+  }
+  fs.writeFileSync(file, JSON.stringify(next, null, 2) + "\n");
+  process.stdout.write(
+    `  ${verb.padEnd(10)} ${file} (stacks: ${stacks.join(", ") || "none"})\n`,
+  );
+}
 
-  return out.join("\n");
+// lint-staged의 레거시 `eslint --fix`를 모든 glob에서 CLI로 교체하고,
+// 기본 TS/JS glob에 CLI가 없으면 추가한다. (프로젝트가 `*.ts`, `*.{ts,tsx}` 등
+// 다른 glob에 eslint를 걸어 둔 경우도 jkit 규칙으로 검사되게 한다.)
+function patchLintStagedCommand(lintStaged, glob, cmd) {
+  const legacy = "eslint --fix";
+  const notes = [];
+  for (const [key, value] of Object.entries(lintStaged)) {
+    if (value === legacy) {
+      lintStaged[key] = cmd;
+    } else if (Array.isArray(value) && value.includes(legacy)) {
+      lintStaged[key] = value.map((c) => (c === legacy ? cmd : c));
+    } else {
+      continue;
+    }
+    notes.push(
+      `  Replaced:  lint-staged[${pyReprStr(key)}] ${legacy} → ${cmd}`,
+    );
+  }
+  notes.push(patchLintStaged(lintStaged, glob, cmd, cmd.split(" ")[0]));
+  return notes.join("\n");
 }
 
 function main() {
@@ -244,65 +233,39 @@ function main() {
   const scriptDir = path.dirname(fileURLToPath(import.meta.url));
   const pluginRoot = path.resolve(scriptDir, "..", "..");
   const rulesDir = path.join(pluginRoot, "rules", args.framework);
-  const template = path.join(rulesDir, "base", "eslint.template.mjs");
+  const pkgJsonPath = path.join(rulesDir, "package.json");
 
-  if (!fs.existsSync(template)) {
-    process.stderr.write(`Error: Template not found: ${template}\n`);
+  if (!fs.existsSync(pkgJsonPath)) {
+    process.stderr.write(
+      `Error: No ESLint config package for '${args.framework}' (${pkgJsonPath} not found)\n`,
+    );
+    process.exit(1);
+  }
+  const configPkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
+  const factory = args.framework;
+  const cliName = `jkit-lint-${args.framework}`;
+
+  const userPkgPath = path.join(args.outputDir, "package.json");
+  if (!fs.existsSync(userPkgPath)) {
+    process.stderr.write(`Error: package.json not found at ${userPkgPath}\n`);
+    process.stderr.write(
+      "Hint: run 'npm init -y' in the project root first.\n",
+    );
     process.exit(1);
   }
 
-  // Collect snippets, sorted stack order (matches bash `sort`).
-  const stacks = splitStacks(args.stacks).sort();
-  const buckets = Object.fromEntries(MARKERS.map((m) => [m.section, ""]));
+  const stacks = validateStacks(rulesDir, splitStacks(args.stacks));
 
-  for (const stack of stacks) {
-    const manifest = path.join(rulesDir, stack, "eslint.manifest");
-    if (!fs.existsSync(manifest)) {
-      process.stderr.write(
-        `Warning: Manifest not found for stack '${stack}': ${manifest}\n`,
-      );
-      continue;
-    }
-    const sections = parseManifest(manifest);
-    for (const { section } of MARKERS) {
-      const raw = sections[section];
-      if (!raw) continue;
-      // Bash appended `$'\n'` only when the captured content was non-empty,
-      // where "content" is the result of awk across all lines after the header
-      // until the next one. Any non-empty line survives — match that.
-      const nonEmpty = raw.filter((line) => line !== "");
-      if (nonEmpty.length === 0) continue;
-      // bash path: `section_content=$(parse_section ...)` then
-      // `BUCKET="${BUCKET}${section_content}"$'\n'`.
-      // `$( ... )` strips trailing newlines; joining non-empty lines with \n
-      // reproduces that, then we append a single newline.
-      buckets[section] += nonEmpty.join("\n") + "\n";
-    }
-  }
-
-  // Render template.
-  let content = fs.readFileSync(template, "utf8");
-  for (const { section, marker } of MARKERS) {
-    content = replaceMarker(content, marker, buckets[section]);
-  }
-
-  // Bash script's trailing-blank-line trim + `echo` writer semantics:
-  //   while [[ "$content" == *$'\n'$'\n' ]]; do content="${content%$'\n'}"; done
-  //   echo "$content" > file      # echo appends exactly one extra \n
-  // After the trim, content ends with at most one \n; echo tacks on another.
-  while (content.endsWith("\n\n")) {
-    content = content.slice(0, -1);
-  }
-  content += "\n";
-
+  // ── eslint.config.mjs (jkit-managed) ──────────────────────────────────────
   fs.mkdirSync(args.outputDir, { recursive: true });
   const outputFile = path.join(args.outputDir, "eslint.config.mjs");
-  fs.writeFileSync(outputFile, content);
+  fs.writeFileSync(outputFile, renderEslintConfig(configPkg.name, factory));
   process.stdout.write(`Generated: ${outputFile}\n`);
 
-  // ── Bootstrap eslint.project.config.mjs (user-owned, preserved on sync) ──
-  // 생성물 eslint.config.mjs가 이 파일을 import하므로 반드시 존재해야 ESLint가
-  // 로드된다. 없을 때만 스텁을 생성하고, 있으면 사용자 수정분을 보존한다.
+  // ── jkit.lint.json (stacks rewritten, other keys preserved) ──────────────
+  writeLintConfig(args.outputDir, stacks);
+
+  // ── eslint.project.config.mjs (user-owned, preserved on sync) ────────────
   const projectConfigFile = path.join(
     args.outputDir,
     "eslint.project.config.mjs",
@@ -314,74 +277,102 @@ function main() {
     process.stdout.write(`  Created:   ${projectConfigFile} (user-owned)\n`);
   }
 
-  // ── Patch user's package.json with git dependency ───────────────────────
-  const pluginJson = path.join(pluginRoot, ".claude-plugin", "plugin.json");
-  if (!fs.existsSync(pluginJson)) {
-    process.stderr.write(`Error: plugin.json not found at ${pluginJson}\n`);
-    process.exit(1);
-  }
-  const pluginMeta = JSON.parse(fs.readFileSync(pluginJson, "utf8"));
-  if (!pluginMeta.version) {
-    process.stderr.write(`Error: version missing in ${pluginJson}\n`);
-    process.exit(1);
-  }
-  const gitDep = `github:JosephNK/jkit-code-plugin#v${pluginMeta.version}`;
-
-  const userPkgPath = path.join(args.outputDir, "package.json");
-  if (!fs.existsSync(userPkgPath)) {
-    process.stderr.write(`Error: package.json not found at ${userPkgPath}\n`);
-    process.stderr.write(
-      "Hint: run 'npm init -y' in the project root first.\n",
-    );
-    process.exit(1);
-  }
-
+  // ── package.json ─────────────────────────────────────────────────────────
   const pkg = JSON.parse(fs.readFileSync(userPkgPath, "utf8"));
   const dev = pkg.devDependencies || {};
-  const old = dev["@jkit/code-plugin"];
-  dev["@jkit/code-plugin"] = gitDep;
+  const notes = [];
 
-  // ── lint-staged: ESLint glob ────────────────────────────────────────────
-  // gen-stylelint이 CSS/SCSS glob을 주입하는 것과 동일한 패턴으로 TS/JS glob을 등록.
-  // husky의 pre-commit이 lint-staged를 호출하므로, 이 항목이 없으면 type 에러나
-  // 룰 위반이 ESLint를 거치지 않고 커밋에 통과한다. 등록 후 재실행해도 멱등.
-  const lintStaged = pkg["lint-staged"] || {};
-  const lintGlob = "*.{ts,tsx,js,jsx,mjs}";
-  const lintCmd = "eslint --fix";
-  const lsNote = patchLintStaged(lintStaged, lintGlob, lintCmd, "eslint");
-  pkg["lint-staged"] = lintStaged;
+  const depSpec = jkitPackageSpec(configPkg.name, configPkg.version);
+  const old = dev[configPkg.name];
+  dev[configPkg.name] = depSpec;
+  if (old === depSpec) {
+    notes.push(`  Unchanged: ${configPkg.name} (${depSpec})`);
+  } else if (old) {
+    notes.push(`  Updated:   ${configPkg.name} ${old} → ${depSpec}`);
+  } else {
+    notes.push(`  Added:     ${configPkg.name} → ${depSpec}`);
+  }
+
+  if (LEGACY_PACKAGE in dev) {
+    notes.push(
+      `  Removed:   ${LEGACY_PACKAGE} (${dev[LEGACY_PACKAGE]}) — replaced by ${configPkg.name}`,
+    );
+    delete dev[LEGACY_PACKAGE];
+  }
 
   // Next.js 16+ baseline: eslint-config-next가 typescript-eslint(unified meta)를
   // transitive로 가져오므로 top-level에 명시되어 있으면 @typescript-eslint 플러그인이
   // 두 인스턴스로 등록되어 flat config가 거부한다. 항목이 있으면 제거한다.
-  let tseslintNote = null;
   if (args.framework === "nextjs" && "typescript-eslint" in dev) {
-    const removed = dev["typescript-eslint"];
+    notes.push(
+      `  Removed:   typescript-eslint (${dev["typescript-eslint"]}) — pulled transitively via eslint-config-next; explicit top-level entry causes plugin duplicate registration`,
+    );
     delete dev["typescript-eslint"];
-    tseslintNote = `  Removed:   typescript-eslint (${removed}) — pulled transitively via eslint-config-next; explicit top-level entry causes plugin duplicate registration`;
   }
 
-  // Sort devDependencies alphabetically to keep diffs minimal.
   const sortedDev = {};
   for (const k of Object.keys(dev).sort()) sortedDev[k] = dev[k];
   pkg.devDependencies = sortedDev;
 
-  fs.writeFileSync(userPkgPath, JSON.stringify(pkg, null, 2) + "\n");
+  // lint-staged: 커밋 시 프로젝트 eslint.config.mjs가 아니라 jkit CLI로 검사
+  const lintStaged = pkg["lint-staged"] || {};
+  notes.push(
+    patchLintStagedCommand(
+      lintStaged,
+      "*.{ts,tsx,js,jsx,mjs}",
+      `${cliName} --fix`,
+    ),
+  );
+  pkg["lint-staged"] = lintStaged;
 
-  if (old === gitDep) {
-    process.stdout.write(`  Unchanged: @jkit/code-plugin (${gitDep})\n`);
-  } else if (old) {
-    process.stdout.write(`  Updated:   @jkit/code-plugin ${old} → ${gitDep}\n`);
-  } else {
-    process.stdout.write(`  Added:     @jkit/code-plugin → ${gitDep}\n`);
+  // scripts.lint — 단일 lint 진입점. 개발자·CI·nx가 모두 jkit CLI를 타도록
+  // eslint 기반 lint 스크립트를 교체한다 (에디터 실시간 표시는 eslint.config.mjs 담당).
+  const scripts = pkg.scripts || {};
+  const desired = {
+    lint: cliName,
+    "lint:ci": cliName,
+    "lint:fix": `${cliName} --fix`,
+  };
+  for (const [name, cmd] of Object.entries(desired)) {
+    const old = scripts[name];
+    if (old === cmd) continue;
+    if (typeof old === "string" && old.startsWith(cliName)) continue;
+    if (name === "lint" && old === undefined) {
+      scripts[name] = cmd;
+      notes.push(`  Set:       scripts.lint → ${cmd}`);
+    } else if (typeof old === "string" && /^eslint(\s|$)/.test(old)) {
+      // 기존 명령이 --fix였다면 자동 수정 동작을 유지한다 (nest new 기본 lint 등)
+      const next =
+        /(^|\s)--fix(\s|$)/.test(old) && !cmd.endsWith("--fix")
+          ? `${cmd} --fix`
+          : cmd;
+      if (old === next) continue;
+      scripts[name] = next;
+      notes.push(`  Replaced:  scripts.${name} "${old}" → ${next}`);
+      if (/--ignore-pattern|\s[^-\s][^\s]*\//.test(old)) {
+        notes.push(
+          `             ↳ 경로/ignore 인자는 jkit.lint.json "ignores"로 옮기세요 (이전: ${old})`,
+        );
+      }
+    } else if (name === "lint" && old !== undefined) {
+      notes.push(
+        `  Kept:      scripts.lint "${old}" (eslint 명령이 아님 — 확인 필요)`,
+      );
+    }
   }
-  if (tseslintNote) process.stdout.write(tseslintNote + "\n");
-  process.stdout.write(lsNote + "\n");
+  if ("lint:jkit" in scripts) {
+    delete scripts["lint:jkit"];
+    notes.push("  Removed:   scripts.lint:jkit (scripts.lint로 통일)");
+  }
+  pkg.scripts = scripts;
+
+  fs.writeFileSync(userPkgPath, JSON.stringify(pkg, null, 2) + "\n");
+  for (const n of notes) process.stdout.write(n + "\n");
 
   process.stdout.write("\n");
   process.stdout.write(`Next step: run 'npm install' in ${args.outputDir}\n`);
-  if (args.stacks) {
-    process.stdout.write(`Stacks: ${args.stacks}\n`);
+  if (stacks.length > 0) {
+    process.stdout.write(`Stacks: ${stacks.join(",")}\n`);
   }
 }
 

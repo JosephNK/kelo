@@ -1,0 +1,70 @@
+{
+  "name": "@josephnk/eslint-config-nextjs",
+  "version": "0.3.80",
+  "description": "JKit Next.js ESLint/Stylelint shareable config — architecture boundaries, domain purity, and quality rules",
+  "type": "module",
+  "license": "MIT",
+  "author": "JosephNK <nkw0608@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JosephNK/jkit-code-plugin.git",
+    "directory": "rules/nextjs"
+  },
+  "keywords": [
+    "eslint",
+    "eslintconfig",
+    "stylelint",
+    "nextjs",
+    "jkit"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "exports": {
+    ".": "./index.mjs",
+    "./formatter": "./base/eslint.formatter.mjs",
+    "./stylelint": "./base/stylelint.preset.mjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "jkit-lint-nextjs": "./bin/jkit-lint.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "lib/",
+    "bin/",
+    "base/eslint.rules.mjs",
+    "base/eslint.formatter.mjs",
+    "base/eslint-rules/",
+    "base/custom-rules/",
+    "base/stylelint.rules.mjs",
+    "base/stylelint.preset.mjs",
+    "*/eslint.rules.mjs",
+    "design-system/*/eslint.rules.mjs"
+  ],
+  "peerDependencies": {
+    "eslint": "^9.22.0",
+    "eslint-config-next": "^16.0.0",
+    "eslint-config-prettier": "^9.0.0 || ^10.0.0",
+    "eslint-import-resolver-typescript": "^3.6.3 || ^4.0.0",
+    "eslint-plugin-boundaries": "^7.0.0",
+    "eslint-plugin-simple-import-sort": "^12.0.0 || ^13.0.0 || ^14.0.0",
+    "eslint-plugin-sonarjs": "^3.0.0 || ^4.0.0",
+    "eslint-plugin-unused-imports": "^4.0.0",
+    "stylelint": "^16.0.0 || ^17.0.0",
+    "stylelint-config-standard": "^38.0.0 || ^39.0.0 || ^40.0.0",
+    "stylelint-declaration-strict-value": "^1.11.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "stylelint": {
+      "optional": true
+    },
+    "stylelint-config-standard": {
+      "optional": true
+    },
+    "stylelint-declaration-strict-value": {
+      "optional": true
+    }
+  }
+}

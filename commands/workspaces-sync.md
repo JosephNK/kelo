@@ -205,11 +205,11 @@ esac
 
 #### peer 누락 보강 (워크스페이스별)
 
-기존 워크스페이스가 구버전 `@jkit/code-plugin`로 설치되어 신규 peer가 누락된 경우 framework별로 보강합니다. 이미 있으면 매니저가 skip합니다.
+기존 워크스페이스가 레거시 `@jkit/code-plugin` 또는 구버전 `@josephnk/eslint-config-*`로 설치되어 신규 peer가 누락된 경우 framework별로 보강합니다. 이미 있으면 매니저가 skip합니다. `eslint-plugin-boundaries@^7`(규칙이 v7 `policies` 문법 사용)과 `eslint-config-next@^16`(`core-web-vitals` flat subpath — v16+)은 메이저를 명시해, 구버전이 설치된 기존 프로젝트도 함께 올립니다.
 
 ```bash
-NEXTJS_PEERS="eslint-plugin-boundaries eslint-plugin-import eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-sonarjs eslint-config-prettier eslint-config-next"
-NESTJS_PEERS="eslint-plugin-boundaries eslint-plugin-import eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-prettier typescript-eslint"
+NEXTJS_PEERS="eslint-plugin-boundaries@^7 eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-sonarjs eslint-config-prettier eslint-config-next@^16"
+NESTJS_PEERS="eslint-plugin-boundaries@^7 eslint-plugin-import eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-prettier eslint-config-prettier typescript-eslint"
 
 for i in $(seq 0 $((WS_COUNT - 1))); do
   WS_PATH=$(jq -r ".workspaces[$i].path" "$MANIFEST_PATH")

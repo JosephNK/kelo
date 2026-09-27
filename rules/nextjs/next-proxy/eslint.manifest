@@ -1,9 +1,0 @@
---- import ---
---- restricted ---
---- domain ---
---- syntax ---
---- elements ---
---- rules ---
---- patches ---
---- ignores ---
-      'src/proxy.ts',

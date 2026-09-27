@@ -155,7 +155,7 @@ else
   $JKIT_DIR/scripts/gen-lint.mjs nestjs -p docs
 fi
 
-# 6. ESLint config (package.json의 @jkit/code-plugin git ref + TS/JS lint-staged glob 갱신)
+# 6. ESLint config (eslint.config.mjs + jkit.lint.json(stacks) 재생성, package.json의 @josephnk/eslint-config-nestjs 버전 + lint-staged + scripts.lint(→ jkit-lint CLI 통일) 갱신 — 레거시 @jkit/code-plugin은 제거)
 if [ -n "$USER_ESLINT_STACKS" ]; then
   $JKIT_DIR/scripts/typescript/gen-eslint.mjs nestjs -p . --with "$USER_ESLINT_STACKS"
 else
@@ -179,7 +179,7 @@ $JKIT_DIR/scripts/gen-husky.mjs nestjs -p .
 
 ### 5. 의존성 재설치
 
-`@jkit/code-plugin` git ref가 새 버전으로 갱신되었으므로 install로 동기화합니다.
+`@josephnk/eslint-config-nestjs` 버전이 갱신되었으므로(레거시 `@jkit/code-plugin` git 의존성에서 전환된 경우 포함) install로 동기화합니다.
 
 ```bash
 cd "$PROJECT_ROOT"
@@ -193,11 +193,11 @@ esac
 
 #### peer 누락 보강
 
-기존 프로젝트가 구버전 `@jkit/code-plugin`로 설치되어 신규 peer가 누락된 경우 보강합니다. 이미 있으면 매니저가 skip합니다.
+기존 프로젝트가 레거시 `@jkit/code-plugin` 또는 구버전 `@josephnk/eslint-config-nestjs`로 설치되어 신규 peer가 누락된 경우 보강합니다. 이미 있으면 매니저가 skip합니다. `eslint-plugin-boundaries@^7`(규칙이 v7 `policies` 문법 사용)은 메이저를 명시해, 구버전이 설치된 기존 프로젝트도 함께 올립니다.
 
 ```bash
 cd "$PROJECT_ROOT"
-NESTJS_PEERS="eslint-plugin-boundaries eslint-plugin-import eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-prettier typescript-eslint"
+NESTJS_PEERS="eslint-plugin-boundaries@^7 eslint-plugin-import eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-prettier eslint-config-prettier typescript-eslint"
 case "$PM" in
   npm)  npm install -D $NESTJS_PEERS ;;
   yarn) yarn add -D $NESTJS_PEERS ;;
@@ -250,9 +250,10 @@ echo "[manifest] 작성: $MANIFEST_PATH"
 - `docs/STRUCTURE.md` — lint 룰이 가정하는 디렉토리 구조 참조 (덮어쓰기)
 - `docs/CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (덮어쓰기, 하단 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `docs/LINT.md` — Lint 규칙 참조 (덮어쓰기)
-- `eslint.config.mjs` — 선택한 스택이 반영된 ESLint 설정 (덮어쓰기)
-- `eslint.project.config.mjs` — 사용자 소유 프로젝트 개별 ESLint override (있으면 보존, 없을 때만 스텁 생성)
+- `eslint.config.mjs` — `@josephnk/eslint-config-nestjs` factory 호출 (덮어쓰기)
+- `jkit.lint.json` — `stacks` 갱신, 그 외 키(경계 확장·ignores)는 보존
+- `eslint.project.config.mjs` — 사용자 소유 프로젝트 전용 규칙 추가 파일 (있으면 보존, 없을 때만 스텁 생성)
 - `.husky/pre-commit`, `.husky/commit-msg` — husky 훅 (덮어쓰기)
-- `package.json` — `@jkit/code-plugin` git ref + `devDependencies`(`husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional`) + `scripts.prepare` 갱신 (그 외 필드는 보존)
+- `package.json` — `@josephnk/eslint-config-nestjs` 버전(레거시 `@jkit/code-plugin` 제거) + lint-staged(`jkit-lint-nestjs --fix`) + `scripts.lint`(→ `jkit-lint-nestjs`) + `devDependencies`(`husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional`) + `scripts.prepare` 갱신 (그 외 필드는 보존)
 
 > 보존된 사용자 소유 파일: `AGENTS.md`, `AGENTS.PROJECT.md`, `CONVENTIONS.PROJECT.md`, `eslint.project.config.mjs`, `tsconfig.json`, `commitlint.config.mjs`, `jkit.project.json`.

@@ -2,7 +2,7 @@
 // JKit NestJS ESLint Base Rules — Barrel
 // -----------------------------------------------------------------------------
 // 각 export는 ./eslint-rules/ 하위 관심사 폴더의 단일 파일로 분리되어 있다.
-// 이 파일은 외부 소비자(eslint.template.mjs, gen-eslint.mjs, stack rules)에
+// 이 파일은 외부 소비자(패키지 factory `../index.mjs`, reference generator)에
 // 단일 진입점을 제공하기 위한 re-export 전용 barrel이다.
 //
 // 폴더 구조:

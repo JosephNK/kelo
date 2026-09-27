@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // =============================================================================
-// Updates the git ref of @jkit/code-plugin across all package.json files in
-// the target project.
+// Updates the version of the jkit ESLint config packages
+// (@josephnk/eslint-config-nextjs, @josephnk/eslint-config-nestjs) across all
+// package.json files in the target project. Legacy `@jkit/code-plugin` git
+// dependencies are reported (not rewritten) — they need /jkit:<framework>-sync
+// because eslint.config.mjs must be regenerated too.
 //
 // Usage:
 //   update-code-plugin-ref.mjs [<ref>] --project-dir <dir> [--dry-run]
@@ -12,8 +15,13 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-const PACKAGE_NAME = "@jkit/code-plugin";
-const GIT_PREFIX = "github:JosephNK/jkit-code-plugin#";
+import { jkitPackageSpec } from "../../common.mjs";
+
+const PACKAGE_NAMES = [
+  "@josephnk/eslint-config-nextjs",
+  "@josephnk/eslint-config-nestjs",
+];
+const LEGACY_PACKAGE = "@jkit/code-plugin";
 const SKIP_DIR_NAMES = new Set([
   "node_modules",
   "build",
@@ -25,10 +33,11 @@ const SKIP_DIR_NAMES = new Set([
 
 const HELP = `Usage: update-code-plugin-ref.mjs [<ref>] --project-dir <dir> [--dry-run]
 
-Updates @jkit/code-plugin git ref across all package.json files.
+Updates @josephnk/eslint-config-{nextjs,nestjs} to the GitHub Release tarball
+URL of <version> across all package.json files. Legacy @jkit/code-plugin git deps are reported only.
 
 Arguments:
-  <ref>                  Optional new git ref (e.g. v0.1.55, 0.1.55, main).
+  <ref>                  Optional version (e.g. 0.3.80, v0.3.80).
                          If omitted, uses version from .claude-plugin/plugin.json.
 
 Options:
@@ -85,10 +94,14 @@ function parseArgs(argv) {
 }
 
 function normalizeRef(ref) {
-  if (ref.startsWith("v") || !/^\d/.test(ref[0])) {
-    return ref;
+  const version = ref.startsWith("v") ? ref.slice(1) : ref;
+  if (!/^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/.test(version)) {
+    process.stderr.write(
+      `Error: '${ref}'는 semver 버전이 아닙니다 (예: 0.3.80). git ref(main 등)는 더 이상 지원하지 않습니다.\n`,
+    );
+    process.exit(1);
   }
-  return `v${ref}`;
+  return version;
 }
 
 function resolvePluginVersion() {
@@ -143,16 +156,20 @@ function findPackageJsons(projectRoot) {
   }
 }
 
-function updateSection(section, newValue) {
-  if (!(PACKAGE_NAME in section)) {
-    return { changed: false, oldValue: null };
+function updateSection(section, version) {
+  const results = [];
+  for (const name of PACKAGE_NAMES) {
+    if (!(name in section)) continue;
+    const old = section[name];
+    const newValue = jkitPackageSpec(name, version);
+    if (old === newValue) {
+      results.push({ changed: false, oldValue: old, newValue });
+    } else {
+      section[name] = newValue;
+      results.push({ changed: true, oldValue: old, newValue });
+    }
   }
-  const old = section[PACKAGE_NAME];
-  if (old === newValue) {
-    return { changed: false, oldValue: old };
-  }
-  section[PACKAGE_NAME] = newValue;
-  return { changed: true, oldValue: old };
+  return results;
 }
 
 function detectIndent(raw) {
@@ -171,7 +188,7 @@ function updatePackageJson(pkgPath, newRef, dryRun) {
     return false;
   }
 
-  const newValue = `${GIT_PREFIX}${newRef}`;
+  let newValue = null;
   let changedAny = false;
   const oldValues = [];
 
@@ -180,22 +197,23 @@ function updatePackageJson(pkgPath, newRef, dryRun) {
     if (!section || typeof section !== "object" || Array.isArray(section)) {
       continue;
     }
-    const { changed, oldValue } = updateSection(section, newValue);
-    if (oldValue !== null && !changed) {
-      oldValues.push(oldValue);
+    if (LEGACY_PACKAGE in section) {
+      process.stdout.write(
+        `  ⚠️  ${pkgPath}: 레거시 ${LEGACY_PACKAGE} (${section[LEGACY_PACKAGE]}) — /jkit:<framework>-sync 로 패키지 방식 전환 필요\n`,
+      );
     }
-    if (changed) {
-      changedAny = true;
-      if (oldValue !== null) {
-        oldValues.push(oldValue);
-      }
+    for (const r of updateSection(section, newRef)) {
+      const { changed, oldValue } = r;
+      newValue = r.newValue;
+      oldValues.push(oldValue);
+      if (changed) changedAny = true;
     }
   }
 
   if (!changedAny) {
     if (oldValues.length > 0) {
       process.stdout.write(
-        `  ⏭️  ${pkgPath}: 이미 동일한 ref (${oldValues[0]})\n`,
+        `  ⏭️  ${pkgPath}: 이미 동일한 버전 (${oldValues[0]})\n`,
       );
     }
     return false;
@@ -235,7 +253,9 @@ function main() {
   const projectRoot = path.resolve(args.projectDir);
 
   process.stdout.write(`프로젝트 루트: ${projectRoot}\n`);
-  process.stdout.write(`새 ref: ${ref} (${refSource})\n`);
+  process.stdout.write(
+    `새 버전: v${ref} — GitHub Release tarball (${refSource})\n`,
+  );
   if (args.dryRun) {
     process.stdout.write("(dry-run 모드)\n");
   }

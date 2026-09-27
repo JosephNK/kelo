@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 // =============================================================================
-// Copies rules/<framework>/base/stylelint.template.mjs to
-// <output-dir>/stylelint.config.mjs and patches <output-dir>/package.json:
+// Writes <output-dir>/stylelint.config.mjs (jkit-managed, always overwritten)
+// that re-exports the preset from the framework config package
+// (`@josephnk/eslint-config-<framework>/stylelint`, source:
+// rules/<framework>/base/stylelint.preset.mjs) and patches
+// <output-dir>/package.json:
 //   - devDependencies: stylelint, stylelint-config-standard,
-//     stylelint-declaration-strict-value, @jkit/code-plugin
+//     stylelint-declaration-strict-value, @josephnk/eslint-config-<framework>
 //   - scripts.lint:css
 //   - lint-staged glob for CSS files
 //
@@ -16,13 +19,13 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { patchLintStaged, setDep } from "../common.mjs";
+import { jkitPackageSpec, patchLintStaged, setDep } from "../common.mjs";
 
 const HELP = `Usage: gen-stylelint.mjs <framework> -p <output-dir>
 
-Copies the framework's stylelint template to <output-dir>/stylelint.config.mjs
-and patches <output-dir>/package.json with:
-  - devDependencies: stylelint, stylelint-config-standard, @jkit/code-plugin
+Writes <output-dir>/stylelint.config.mjs (re-exports the jkit preset) and
+patches <output-dir>/package.json with:
+  - devDependencies: stylelint, stylelint-config-standard, @josephnk/eslint-config-<framework>
   - scripts.lint:css
   - lint-staged glob for CSS files
 
@@ -88,31 +91,30 @@ function main() {
   const scriptDir = path.dirname(fileURLToPath(import.meta.url));
   const pluginRoot = path.resolve(scriptDir, "..", "..");
   const rulesDir = path.join(pluginRoot, "rules", args.framework);
-  const template = path.join(rulesDir, "base", "stylelint.template.mjs");
+  const preset = path.join(rulesDir, "base", "stylelint.preset.mjs");
+  const pkgJsonPath = path.join(rulesDir, "package.json");
 
-  if (!fs.existsSync(template)) {
-    process.stderr.write(`Error: Stylelint template not found: ${template}\n`);
+  if (!fs.existsSync(preset) || !fs.existsSync(pkgJsonPath)) {
+    process.stderr.write(
+      `Error: Stylelint preset not found for '${args.framework}' (${preset})\n`,
+    );
     process.exit(1);
   }
+  const configPkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
 
-  // Copy template to stylelint.config.mjs.
+  // stylelint.config.mjs — jkit-managed, 매번 덮어쓴다.
   fs.mkdirSync(args.outputDir, { recursive: true });
   const outputFile = path.join(args.outputDir, "stylelint.config.mjs");
-  fs.copyFileSync(template, outputFile);
-  process.stdout.write(`Generated: ${outputFile}\n`);
+  fs.writeFileSync(
+    outputFile,
+    `// GENERATED FILE - DO NOT MODIFY BY HAND
+// Managed by jkit (overwritten by /jkit:${args.framework}-init and -sync).
+// Rules: ${configPkg.name}/stylelint
 
-  // Resolve plugin version.
-  const pluginJson = path.join(pluginRoot, ".claude-plugin", "plugin.json");
-  if (!fs.existsSync(pluginJson)) {
-    process.stderr.write(`Error: plugin.json not found at ${pluginJson}\n`);
-    process.exit(1);
-  }
-  const pluginMeta = JSON.parse(fs.readFileSync(pluginJson, "utf8"));
-  if (!pluginMeta.version) {
-    process.stderr.write(`Error: version missing in ${pluginJson}\n`);
-    process.exit(1);
-  }
-  const gitDep = `github:JosephNK/jkit-code-plugin#v${pluginMeta.version}`;
+export { default } from "${configPkg.name}/stylelint";
+`,
+  );
+  process.stdout.write(`Generated: ${outputFile}\n`);
 
   const userPkgPath = path.join(args.outputDir, "package.json");
   if (!fs.existsSync(userPkgPath)) {
@@ -134,8 +136,20 @@ function main() {
   // Enforces token usage (stylelint.rules.mjs uses scale-unlimited/declaration-strict-value).
   // v1.11+ requires `ignoreFunctions: boolean` and string `message` (see stylelint.rules.mjs).
   devChanges.push(setDep(dev, "stylelint-declaration-strict-value", "^1.11.1"));
-  // gen-eslint.mjs already pins @jkit/code-plugin; re-sync here for idempotency.
-  devChanges.push(setDep(dev, "@jkit/code-plugin", gitDep));
+  // gen-eslint.mjs already pins the config package; re-sync here for idempotency.
+  devChanges.push(
+    setDep(
+      dev,
+      configPkg.name,
+      jkitPackageSpec(configPkg.name, configPkg.version),
+    ),
+  );
+  if ("@jkit/code-plugin" in dev) {
+    devChanges.push(
+      `  Removed:   @jkit/code-plugin (${dev["@jkit/code-plugin"]}) — replaced by ${configPkg.name}`,
+    );
+    delete dev["@jkit/code-plugin"];
+  }
 
   const sortedDev = {};
   for (const k of Object.keys(dev).sort()) sortedDev[k] = dev[k];

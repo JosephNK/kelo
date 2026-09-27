@@ -257,8 +257,8 @@ else
 fi
 
 # 6. ESLint config (Step 7에서 package.json 존재를 보장한 뒤 실행)
-#    - eslint.config.mjs 생성
-#    - package.json: @jkit/code-plugin devDep 핀 + TS/JS 대상 lint-staged glob 자동 주입
+#    - eslint.config.mjs (패키지 factory 호출) + jkit.lint.json(stacks) 생성
+#    - package.json: @josephnk/eslint-config-nextjs devDep + lint-staged(jkit-lint-nextjs --fix) + scripts.lint(→ jkit-lint CLI 통일)
 if [ -n "$USER_ESLINT_STACKS" ]; then
   $JKIT_DIR/scripts/typescript/gen-eslint.mjs nextjs -p . --with "$USER_ESLINT_STACKS"
 else
@@ -266,7 +266,7 @@ else
 fi
 
 # 7. Stylelint config (항상 실행, 스택 선택 없음)
-#    - stylelint.config.mjs 생성
+#    - stylelint.config.mjs 생성 (@josephnk/eslint-config-nextjs/stylelint re-export)
 #    - package.json: devDeps + scripts.lint:css + lint-staged 자동 주입
 $JKIT_DIR/scripts/typescript/gen-stylelint.mjs nextjs -p .
 
@@ -290,11 +290,11 @@ $JKIT_DIR/scripts/gen-commitlint.mjs -p .
 
 ### 9. ESLint rules 의존성 설치
 
-`gen-eslint.mjs`는 생성된 `eslint.config.mjs`에서 `@jkit/code-plugin`를 import하도록 작성하고, 사용자 프로젝트의 `package.json` `devDependencies`에 git 의존성을 추가합니다:
+`gen-eslint.mjs`는 jkit ESLint 패키지를 쓰도록 프로젝트를 연결합니다:
 
-```json
-"@jkit/code-plugin": "github:JosephNK/jkit-code-plugin#v<current-version>"
-```
+- `eslint.config.mjs` — 패키지 factory 호출만 담은 짧은 생성물 (매 sync마다 덮어씀)
+- `jkit.lint.json` — 선택한 스택(`stacks`) + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
+- `package.json` — `devDependencies`에 `"@josephnk/eslint-config-nextjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v<current-version>/josephnk-eslint-config-nextjs-<current-version>.tgz"` 추가 (GitHub Release tarball — npm 레지스트리 미사용) (레거시 `@jkit/code-plugin` git 의존성은 제거), lint-staged TS/JS glob은 `jkit-lint-nextjs --fix`, `scripts.lint`를 `jkit-lint-nextjs`로 통일 (eslint 기반 `lint:ci`/`lint:fix`도 교체 — 경로/`--ignore-pattern` 인자는 `jkit.lint.json` `ignores`로 이전)
 
 의존성을 실제로 설치합니다. 명령은 Step 7에서 결정된 `PM` 변수에 따라 분기합니다.
 
@@ -308,17 +308,17 @@ case "$PM" in
 esac
 ```
 
-> 설치 후 `node_modules/@jkit/code-plugin/`에 `rules/nextjs/` 디렉토리가 배치됩니다 (플러그인 repo의 `files` 필드로 nextjs 규칙만 포함).
+> 규칙 원본과 조립 로직은 `node_modules/@josephnk/eslint-config-nextjs/`에 있습니다. 규칙 변경은 jkit-code-plugin에서 수정·배포(GitHub Release)하고, 프로젝트는 `/jkit:update-plugin-ref code-plugin` 또는 sync로 URL 버전을 올려 반영합니다.
 
-> **peerDependencies**: `@jkit/code-plugin`는 다음을 peer로 요구합니다 (rules가 직접 import):
-> - `eslint-plugin-boundaries` — 아키텍처 레이어 boundary 검사
-> - `eslint-plugin-import` — `import/*` 룰 (resolver 기반 동작)
-> - `eslint-import-resolver-typescript` — `@/*` path alias 및 NodeNext `.js` import 해석 (boundaries/no-unknown 오발화 방지)
+> **peerDependencies**: `@josephnk/eslint-config-nextjs`는 다음을 peer로 요구합니다 (rules가 직접 import):
+> - `eslint` (9.22+) — `eslint/config`의 `defineConfig`/`globalIgnores` 사용
+> - `eslint-config-next` (16+) — Next.js core-web-vitals / typescript 프리셋
+> - `eslint-plugin-boundaries` (7+) — 아키텍처 레이어 boundary 검사 (v7 `policies` 문법 사용)
+> - `eslint-import-resolver-typescript` — `@/*` path alias 해석 (boundaries/no-unknown-dependencies 오발화 방지)
 > - `eslint-plugin-simple-import-sort` — import 순서 자동 정렬
 > - `eslint-plugin-unused-imports` — 미사용 import 제거
-> - `eslint-plugin-sonarjs` — 코드 스멜 / 복잡도 검사 (optional peer; nextjs base에서 사용)
-> - `eslint-config-prettier` — prettier와 충돌하는 ESLint 룰 비활성화 (optional peer; nextjs base에서 사용)
-> - `eslint-config-next` — Next.js core-web-vitals / typescript 프리셋 (optional peer; Next.js 스캐폴드가 기본 포함)
+> - `eslint-plugin-sonarjs` — 코드 스멜 / 복잡도 검사
+> - `eslint-config-prettier` — prettier와 충돌하는 ESLint 룰 비활성화
 >
 > `typescript-eslint`는 `eslint-config-next@16+`가 transitive로 가져오므로 top-level에 명시하지 않는다. 명시 설치 시 `@typescript-eslint` 플러그인이 두 인스턴스로 등록되어 flat config가 거부한다. `gen-eslint.mjs`가 user `package.json`에 항목이 남아 있으면 자동으로 제거한다.
 >
@@ -327,7 +327,7 @@ esac
 > ```bash
 > cd "$PROJECT_ROOT"
 >
-> NEXTJS_PEERS="eslint-plugin-boundaries eslint-plugin-import eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-sonarjs eslint-config-prettier eslint-config-next"
+> NEXTJS_PEERS="eslint-plugin-boundaries@^7 eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-sonarjs eslint-config-prettier eslint-config-next@^16"
 >
 > case "$PM" in
 >   npm)  npm install -D $NEXTJS_PEERS ;;
@@ -369,11 +369,12 @@ fi
 - `STRUCTURE.md` — lint 룰이 가정하는 디렉토리 구조 참조
 - `CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (하단에 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `CONVENTIONS.PROJECT.md` — 사용자 소유 프로젝트 고유 컨벤션 (최초 1회만 생성, 이후 보존)
-- `eslint.config.mjs` — 선택한 스택이 반영된 ESLint 설정 (`@jkit/code-plugin/nextjs/*` import)
-- `eslint.project.config.mjs` — 사용자 소유 프로젝트 개별 ESLint override (최초 1회만 스텁 생성, 이후 보존). `eslint.config.mjs`가 base 룰 뒤에 spread함
-- `stylelint.config.mjs` — Stylelint 설정 (`stylelint-config-standard` extends + jkit baseline 규칙)
+- `eslint.config.mjs` — jkit 관리 생성물. `@josephnk/eslint-config-nextjs`의 `nextjs()` factory 호출 (직접 수정 금지 — hook이 차단)
+- `jkit.lint.json` — jkit 관리. 선택한 스택 + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
+- `eslint.project.config.mjs` — 사용자 소유 프로젝트 전용 규칙 추가 파일 (최초 1회만 스텁 생성, 이후 보존). jkit 규칙 재정의 시 ESLint 로드 에러
+- `stylelint.config.mjs` — jkit 관리 생성물. `@josephnk/eslint-config-nextjs/stylelint` preset re-export
 - `prettier.config.mjs` — Prettier 설정 (`prettier-plugin-tailwindcss` 포함)
-- `package.json` — `devDependencies`(`@jkit/code-plugin`, `stylelint`, `stylelint-config-standard`, `stylelint-declaration-strict-value`, `prettier`, `prettier-plugin-tailwindcss`, `husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional`) + `scripts.lint:css` + `scripts.format` + `scripts.prepare: "husky"` + `lint-staged` glob (TS/JS · CSS/SCSS · 데이터 파일)
+- `package.json` — `devDependencies`(`@josephnk/eslint-config-nextjs`, `stylelint`, `stylelint-config-standard`, `stylelint-declaration-strict-value`, `prettier`, `prettier-plugin-tailwindcss`, `husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional`) + `scripts.lint:css` + `scripts.lint`(→ `jkit-lint-nextjs`) + `scripts.format` + `scripts.prepare: "husky"` + `lint-staged` glob (TS/JS · CSS/SCSS · 데이터 파일)
 - `tsconfig.json` — 프레임워크별 설정으로 패치됨
 - `.husky/pre-commit` — `npx lint-staged`
 - `.husky/commit-msg` — `npx --no -- commitlint --edit $1`

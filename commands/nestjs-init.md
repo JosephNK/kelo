@@ -224,8 +224,8 @@ else
 fi
 
 # 6. ESLint config (Step 6에서 package.json 존재를 보장한 뒤 실행)
-#    - eslint.config.mjs 생성
-#    - package.json: @jkit/code-plugin devDep 핀 + TS/JS 대상 lint-staged glob 자동 주입
+#    - eslint.config.mjs (패키지 factory 호출) + jkit.lint.json(stacks) 생성
+#    - package.json: @josephnk/eslint-config-nestjs devDep + lint-staged(jkit-lint-nestjs --fix) + scripts.lint(→ jkit-lint CLI 통일)
 if [ -n "$USER_ESLINT_STACKS" ]; then
   $JKIT_DIR/scripts/typescript/gen-eslint.mjs nestjs -p . --with "$USER_ESLINT_STACKS"
 else
@@ -256,11 +256,11 @@ $JKIT_DIR/scripts/gen-commitlint.mjs -p .
 
 ### 8. ESLint rules 의존성 설치
 
-`gen-eslint.mjs`는 생성된 `eslint.config.mjs`에서 `@jkit/code-plugin`를 import하도록 작성하고, 사용자 프로젝트의 `package.json` `devDependencies`에 git 의존성을 추가합니다:
+`gen-eslint.mjs`는 jkit ESLint 패키지를 쓰도록 프로젝트를 연결합니다:
 
-```json
-"@jkit/code-plugin": "github:JosephNK/jkit-code-plugin#v<current-version>"
-```
+- `eslint.config.mjs` — 패키지 factory 호출만 담은 짧은 생성물 (매 sync마다 덮어씀)
+- `jkit.lint.json` — 선택한 스택(`stacks`) + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
+- `package.json` — `devDependencies`에 `"@josephnk/eslint-config-nestjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v<current-version>/josephnk-eslint-config-nestjs-<current-version>.tgz"` 추가 (GitHub Release tarball — npm 레지스트리 미사용) (레거시 `@jkit/code-plugin` git 의존성은 제거), lint-staged TS/JS glob은 `jkit-lint-nestjs --fix`, `scripts.lint`를 `jkit-lint-nestjs`로 통일 (eslint 기반 `lint:ci`/`lint:fix`도 교체 — 경로/`--ignore-pattern` 인자는 `jkit.lint.json` `ignores`로 이전)
 
 의존성을 실제로 설치합니다. 명령은 Step 6에서 결정된 `PM` 변수에 따라 분기합니다.
 
@@ -274,24 +274,24 @@ case "$PM" in
 esac
 ```
 
-> 설치 후 `node_modules/@jkit/code-plugin/`에 `rules/nestjs/` 디렉토리가 배치됩니다 (플러그인 repo의 `files` 필드로 nestjs 규칙만 포함).
+> 규칙 원본과 조립 로직은 `node_modules/@josephnk/eslint-config-nestjs/`에 있습니다. 규칙 변경은 jkit-code-plugin에서 수정·배포(GitHub Release)하고, 프로젝트는 `/jkit:update-plugin-ref code-plugin` 또는 sync로 URL 버전을 올려 반영합니다. `jkit-check-i18n` CLI도 이 패키지가 제공합니다.
 
-> **peerDependencies**: `@jkit/code-plugin`는 다음을 peer로 요구합니다 (rules가 직접 import):
-> - `eslint-plugin-boundaries` — 아키텍처 레이어 boundary 검사
+> **peerDependencies**: `@josephnk/eslint-config-nestjs`는 다음을 peer로 요구합니다 (rules가 직접 import):
+> - `eslint` (9.22+) — `eslint/config`의 `defineConfig`/`globalIgnores` 사용
+> - `eslint-plugin-boundaries` (7+) — 아키텍처 레이어 boundary 검사 (v7 `policies` 문법 사용)
 > - `eslint-plugin-import` — 순환 의존성 감지(`import/no-cycle`) + resolver 기반 동작
-> - `eslint-import-resolver-typescript` — `@/*` path alias 및 NodeNext `.js` import 해석 (boundaries/no-unknown 오발화 방지)
+> - `eslint-import-resolver-typescript` — `@/*` path alias 및 NodeNext `.js` import 해석 (boundaries/no-unknown-dependencies 오발화 방지)
 > - `eslint-plugin-simple-import-sort` — import 순서 자동 정렬
 > - `eslint-plugin-unused-imports` — 미사용 import 제거
-> - `eslint-plugin-prettier` — prettier 포맷 룰 통합 (optional peer; nestjs base에서 사용)
+> - `eslint-plugin-prettier` + `eslint-config-prettier` + `prettier` — prettier 포맷 룰 통합
 > - `typescript-eslint` — TypeScript 룰셋 (`tseslint.configs.*`)
+> - `@eslint/js`, `globals` — `nest new` 스캐폴드가 기본 포함
 >
 > 프로젝트에 없으면 Step 6에서 결정된 `PM`에 맞춰 추가 설치합니다. npm 7+ / pnpm / yarn berry는 `npm install` 단계에서 peer를 자동 설치하지만, yarn classic / bun 호환을 위해 명시 install을 권장합니다.
 >
-> 참고: nestjs base는 `globals`, `@eslint/js`도 직접 import하지만 `nest new` 스캐폴드가 기본 포함하므로 별도 보강하지 않습니다. 누락 시 동일 매니저로 추가 설치하세요.
->
 > ```bash
 > cd "$PROJECT_ROOT"
-> NESTJS_PEERS="eslint-plugin-boundaries eslint-plugin-import eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-prettier typescript-eslint"
+> NESTJS_PEERS="eslint-plugin-boundaries@^7 eslint-plugin-import eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-prettier eslint-config-prettier typescript-eslint"
 > case "$PM" in
 >   npm)  npm install -D $NESTJS_PEERS ;;
 >   yarn) yarn add -D $NESTJS_PEERS ;;
@@ -348,9 +348,10 @@ fi
 - `STRUCTURE.md` — lint 룰이 가정하는 디렉토리 구조 참조
 - `CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (하단에 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `CONVENTIONS.PROJECT.md` — 사용자 소유 프로젝트 고유 컨벤션 (최초 1회만 생성, 이후 보존)
-- `eslint.config.mjs` — 선택한 스택이 반영된 ESLint 설정 (`@jkit/code-plugin/nestjs/*` import)
-- `eslint.project.config.mjs` — 사용자 소유 프로젝트 개별 ESLint override (최초 1회만 스텁 생성, 이후 보존). `eslint.config.mjs`가 base 룰 뒤에 spread함
-- `package.json` — `devDependencies`에 `@jkit/code-plugin`, `husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional` 추가 + `scripts.prepare: "husky"`
+- `eslint.config.mjs` — jkit 관리 생성물. `@josephnk/eslint-config-nestjs`의 `nestjs()` factory 호출 (직접 수정 금지 — hook이 차단)
+- `jkit.lint.json` — jkit 관리. 선택한 스택 + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
+- `eslint.project.config.mjs` — 사용자 소유 프로젝트 전용 규칙 추가 파일 (최초 1회만 스텁 생성, 이후 보존). jkit 규칙 재정의 시 ESLint 로드 에러
+- `package.json` — `devDependencies`에 `@josephnk/eslint-config-nestjs`, `husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional` 추가 + `scripts.lint`(→ `jkit-lint-nestjs`) + `scripts.prepare: "husky"`
 - `tsconfig.json` — 프레임워크별 설정으로 패치됨
 - `.husky/pre-commit` — `npx lint-staged` + `npx jkit-check-i18n`
 - `.husky/commit-msg` — `npx --no -- commitlint --edit $1`

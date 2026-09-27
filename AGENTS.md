@@ -13,22 +13,30 @@
     - `settings/` : resolver/restricted-patterns/restricted-syntax/domain-banned-packages 등 raw 데이터
     - `boundaries/` : eslint-plugin-boundaries 데이터 (elements/rules/ignores)
     - `quality/` : base-config/server-component/custom-rules/ignores
-    - `builders/` : build-restricted-imports/build-domain-purity/build-architecture-boundaries
+    - `builders/` : build-restricted-imports/build-domain-purity/build-architecture-boundaries, to-boundaries-policies(boundary 데이터 v6 형태 → eslint-plugin-boundaries v7 설정 변환: `mode: "full"` element → 파일 카테고리, `rules` → `policies`, 내부 의존 처리. nestjs와 동일 내용 유지)
     - `docs/` : ESLint 미참조 — generator 전용 메타 (structure-annotations, layer-semantics)
   - `rules/nextjs/base/eslint.rules.mjs`는 re-export 전용 barrel이라 직접 편집 X.
   - 스택: `rules/nextjs/<stack>/eslint.rules.mjs`
-  - Stylelint: `rules/nextjs/base/stylelint.rules.mjs`
+  - Stylelint: `rules/nextjs/base/stylelint.rules.mjs` (규칙), `rules/nextjs/base/stylelint.preset.mjs` (Tailwind 호환 + ignore를 더한 최종 preset)
 - NestJS:
   - 베이스: `rules/nestjs/base/eslint-rules/{settings,boundaries,quality,builders,docs}/*.mjs` — 역할별 폴더로 분리된 관심사별 단일 파일.
     - `settings/` : path-alias/resolver/framework-packages 등 raw 설정
     - `boundaries/` : eslint-plugin-boundaries 데이터 (elements/rules/ignores)
     - `quality/` : base-config/immutability/file-size/cycle/custom-rules/ignores
-    - `builders/` : build-layer-restrictions/build-architecture-boundaries
+    - `builders/` : build-layer-restrictions/build-architecture-boundaries, to-boundaries-policies(v7 설정 변환, nextjs와 동일 내용 유지)
     - `docs/` : ESLint 미참조 — generator 전용 메타 (structure-annotations, layer-semantics)
   - `rules/nestjs/base/eslint.rules.mjs`는 re-export 전용 barrel이라 직접 편집 X.
   - 스택: `rules/nestjs/<stack>/eslint.rules.mjs`
+- npm 패키지 (`rules/nextjs/` → `@josephnk/eslint-config-nextjs`, `rules/nestjs/` → `@josephnk/eslint-config-nestjs`):
+  - `index.mjs` — factory(`nextjs()`/`nestjs()`)와 스택 등록표(`nextjsStacks`/`nestjsStacks`). 블록 조립 순서와 스택 → 데이터 매핑의 원본. 새 스택은 여기 등록해야 적용된다.
+  - `lib/factory-helpers.mjs`, `lib/run-lint-cli.mjs` — 두 패키지가 **동일 내용**을 유지 (분리 배포라 서로 import 불가). 한쪽을 고치면 다른 쪽에 복사.
+  - `bin/` — `jkit-lint-<framework>` CLI (+ nestjs `jkit-check-i18n`)
+  - `package.json` — `exports`/`files`/`peerDependencies`. 버전은 `deploy.mjs`가 플러그인 버전과 함께 올린다.
 - Flutter (`architecture_lint` Dart 패키지): `rules/flutter/base/custom-lint/architecture_lint/lib/src/`
   - `lints/*.dart` (11개 룰 클래스), `constants.dart` (패키지 화이트/블랙리스트·임계값), `classification.dart` (경로 → 레이어 매핑), `layer_semantics.dart` (Role/Contains/Example)
+- Flutter analyzer/linter 정책 (`jkit_analysis` Dart 패키지): `rules/flutter/base/analysis/jkit_analysis/`
+  - `lib/analysis_options.yaml` — 소비 프로젝트가 include하는 analyzer/linter 규칙 원본 (`rules/flutter/base/templates/*.yaml`은 include 한 줄짜리 진입점)
+  - `bin/verify.dart` — `dart run jkit_analysis:verify`. 소비 프로젝트의 규칙 약화(lint off, severity 하향, strict 해제, plugin diagnostics off, lib/ exclude, jkit 규칙 `// ignore:`)를 거부. 새 plugin 코드 접두어가 생기면 `_pluginCodePrefixes`에 추가
 
 생성물 (직접 수정 금지)
 
@@ -125,6 +133,12 @@ export const baseDomainBannedPackages = [...];
 
 ## 스크립트 역할 구분
 
+- `scripts/typescript/gen-eslint.mjs` — 입력: `rules/<framework>/package.json` + `--with` 스택 → 출력(소비 프로젝트): `eslint.config.mjs`(factory 호출, 매번 덮어씀), `jkit.lint.json`(`stacks`만 갱신, 나머지 키 보존), `eslint.project.config.mjs`(없을 때만 스텁), `package.json`(패키지 버전, lint-staged와 `scripts.lint`/eslint 기반 `lint:ci`·`lint:fix`를 `jkit-lint-<framework>`로 통일, 레거시 `@jkit/code-plugin`·`lint:jkit` 제거).
+- `scripts/typescript/gen-stylelint.mjs` — 출력(소비 프로젝트): `stylelint.config.mjs`(`@josephnk/eslint-config-nextjs/stylelint` re-export) + stylelint devDeps.
+- `scripts/flutter/gen-analysis-options.mjs` — 출력(소비 프로젝트): include 한 줄짜리 `analysis_options.yaml` + 엔트리 `pubspec.yaml`의 `jkit_analysis` git 의존성(`ref: v<plugin-version>`). 미배포 체크아웃 검증은 `-analysis-path <dir>`로 path 의존성 사용.
+- `scripts/flutter/custom_lint/inject-custom-lint.mjs` (gen-custom-lint가 호출) — Flutter lint 플러그인 소스를 소비 프로젝트의 `.jkit/plugins/<package>/`로 vendoring(+ `.jkit-vendor.json` sha256)하고 `plugins:`에 상대 `path:`로 등록. `git:`/절대 경로는 이식성·동작 문제로 쓰지 않는다.
+- `hooks/block-lint-config-edits.sh` — 소비 프로젝트의 `eslint.config.mjs`/`stylelint.config.mjs`/`jkit.lint.json`/`analysis_options.yaml`, `.jkit/plugins/**`를 에이전트가 수정하지 못하게 차단 (이 저장소 내부 경로와 `JKIT_ALLOW_LINT_CONFIG_EDIT=1`은 예외).
+
 - `scripts/gen-agents.mjs` — 입력: `rules/<framework>/base/agents.template.md` → 출력: `AGENTS.md`, `CLAUDE.md→AGENTS.md`. 템플릿을 렌더링해 프로젝트 루트의 에이전트 문서 생성.
 - `scripts/gen-architecture.mjs` — 입력: `rules/<framework>/base/architecture.md` → 출력: `ARCHITECTURE.md`. base 아키텍처 문서를 프로젝트 문서로 복사.
 - `scripts/gen-git.mjs` — 입력: `rules/common/git.md` → 출력: `GIT.md`. 공통 Git 가이드 복사.
@@ -143,6 +157,8 @@ export const baseDomainBannedPackages = [...];
 node scripts/typescript/gen-eslint-reference.mjs <path-to-eslint.rules.mjs>
 node scripts/typescript/gen-stylelint-reference.mjs <path-to-stylelint.rules.mjs>
 ```
+
+스택을 추가/변경했다면 `rules/<framework>/index.mjs` 스택 등록표도 함께 수정하고, `cd rules/<framework> && npm pack --dry-run`으로 새 파일이 패키지에 포함되는지 확인한다. 배포는 `./deploy.mjs`(버전 범프 + 태그 + `npm pack` tarball을 GitHub Release에 첨부 — npm 레지스트리 미사용).
 
 ### Flutter
 

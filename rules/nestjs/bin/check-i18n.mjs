@@ -7,8 +7,8 @@
 // 검증한다. conventions.md "Exception creation checklist" 강제 보조 스크립트.
 //
 // 사용법 (프로젝트 root에서):
-//   node <plugin-path>/scripts/typescript/check-i18n.mjs
-//   node <plugin-path>/scripts/typescript/check-i18n.mjs -p /path/to/project
+//   npx jkit-check-i18n   (@josephnk/eslint-config-nestjs bin)
+//   npx jkit-check-i18n -p /path/to/project
 //
 // 옵션:
 //   -p <dir>           프로젝트 루트 (기본: CWD)

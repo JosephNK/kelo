@@ -1,0 +1,56 @@
+{
+  "name": "@josephnk/eslint-config-nestjs",
+  "version": "0.3.80",
+  "description": "JKit NestJS ESLint shareable config — hexagonal architecture boundaries, layer import restrictions, and quality rules",
+  "type": "module",
+  "license": "MIT",
+  "author": "JosephNK <nkw0608@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JosephNK/jkit-code-plugin.git",
+    "directory": "rules/nestjs"
+  },
+  "keywords": [
+    "eslint",
+    "eslintconfig",
+    "nestjs",
+    "hexagonal-architecture",
+    "jkit"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "exports": {
+    ".": "./index.mjs",
+    "./formatter": "./base/eslint.formatter.mjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "jkit-lint-nestjs": "./bin/jkit-lint.mjs",
+    "jkit-check-i18n": "./bin/check-i18n.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "lib/",
+    "bin/",
+    "base/eslint.rules.mjs",
+    "base/eslint.formatter.mjs",
+    "base/eslint-rules/",
+    "base/custom-rules/",
+    "*/eslint.rules.mjs"
+  ],
+  "peerDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^9.0.0 || ^10.0.0",
+    "eslint-import-resolver-typescript": "^3.6.3 || ^4.0.0",
+    "eslint-plugin-boundaries": "^7.0.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-simple-import-sort": "^12.0.0 || ^13.0.0 || ^14.0.0",
+    "eslint-plugin-unused-imports": "^4.0.0",
+    "globals": "^15.0.0 || ^16.0.0 || ^17.0.0",
+    "prettier": "^3.0.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}

@@ -1,20 +1,9 @@
 {
-  "name": "@jkit/code-plugin",
+  "name": "jkit-code-plugin",
   "version": "0.3.80",
-  "description": "Shared ESLint/Stylelint rules, formatters, and CLI for jkit-code-plugin",
+  "private": true,
+  "description": "JKit Claude Code plugin — lint rule sources, generators, and skills. ESLint configs are published from rules/nextjs and rules/nestjs.",
   "type": "module",
-  "exports": {
-    "./nextjs/*": "./rules/nextjs/*",
-    "./nestjs/*": "./rules/nestjs/*"
-  },
-  "bin": {
-    "jkit-check-i18n": "./scripts/typescript/check-i18n.mjs"
-  },
-  "files": [
-    "rules/nextjs",
-    "rules/nestjs",
-    "scripts/typescript/check-i18n.mjs"
-  ],
   "license": "MIT",
   "author": "JosephNK <nkw0608@gmail.com>",
   "repository": {
@@ -34,31 +23,5 @@
   },
   "lint-staged": {
     "*.mjs": "prettier --write"
-  },
-  "peerDependencies": {
-    "eslint-config-next": "^14.0.0 || ^15.0.0 || ^16.0.0",
-    "eslint-config-prettier": "^9.0.0 || ^10.0.0",
-    "eslint-import-resolver-typescript": "^3.6.3 || ^4.0.0",
-    "eslint-plugin-boundaries": "^5.0.0 || ^6.0.0",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "eslint-plugin-simple-import-sort": "^12.0.0 || ^13.0.0",
-    "eslint-plugin-sonarjs": "^3.0.0 || ^4.0.0",
-    "eslint-plugin-unused-imports": "^4.0.0",
-    "typescript-eslint": "^8.0.0"
-  },
-  "peerDependenciesMeta": {
-    "eslint-config-next": {
-      "optional": true
-    },
-    "eslint-config-prettier": {
-      "optional": true
-    },
-    "eslint-plugin-prettier": {
-      "optional": true
-    },
-    "eslint-plugin-sonarjs": {
-      "optional": true
-    }
   }
 }

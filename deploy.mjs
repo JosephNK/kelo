@@ -3,19 +3,21 @@
 // Bumps the plugin version, commits, tags, and pushes in one shot.
 //
 // Usage:
-//   deploy.mjs [<version>|patch|minor|major] [--yes]
+//   deploy.mjs [<version>|patch|minor|major] [--yes] [--no-release]
 // =============================================================================
 
 import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import process from "node:process";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 
-const HELP = `Usage: ./deploy.mjs [<version>|patch|minor|major] [--yes]
+const HELP = `Usage: ./deploy.mjs [<version>|patch|minor|major] [--yes] [--no-release]
 
-Bumps the plugin version, commits, tags, and pushes in one shot.
+Bumps the plugin version, commits, tags, pushes, and attaches the ESLint
+config package tarballs to the GitHub Release in one shot.
 
 Updates:
   - .codex-plugin/plugin.json             (version)
@@ -23,14 +25,18 @@ Updates:
   - .claude-plugin/marketplace.json       (version)
   - .agents/plugins/marketplace.json      (version)
   - package.json                          (version)
+  - rules/nextjs/package.json             (version — @josephnk/eslint-config-nextjs)
+  - rules/nestjs/package.json             (version — @josephnk/eslint-config-nestjs)
   - rules/flutter/base/custom-lint/architecture_lint/pubspec.yaml      (version)
   - rules/flutter/leaf-kit/custom-lint/leaf_kit_lint/pubspec.yaml      (version)
   - rules/flutter/freezed/custom-lint/freezed_lint/pubspec.yaml        (version)
+  - rules/flutter/base/analysis/jkit_analysis/pubspec.yaml             (version)
 
 Then:
   - git add + commit "chore: 버전 <new> 범프"
   - git tag v<new>
   - git push origin <branch> --follow-tags
+  - npm pack ./rules/nextjs, ./rules/nestjs → GitHub Release v<new> assets (gh)
 
 Arguments:
   <version>  Explicit version (e.g. 0.1.28)
@@ -39,7 +45,8 @@ Arguments:
   major      Increment major (0.1.27 → 1.0.0)
 
 Options:
-  --yes, -y  Skip confirmation prompt
+  --yes, -y     Skip confirmation prompt
+  --no-release  Skip the GitHub Release (tag/push only)
   -h, --help Show this help
 
 Examples:
@@ -55,7 +62,12 @@ function usage(code = 1) {
 }
 
 function parseArgs(argv) {
-  const args = { bump: "patch", explicitVersion: "", yes: false };
+  const args = {
+    bump: "patch",
+    explicitVersion: "",
+    yes: false,
+    release: true,
+  };
   const rest = argv.slice(2);
 
   while (rest.length > 0) {
@@ -69,6 +81,9 @@ function parseArgs(argv) {
       case "--yes":
       case "-y":
         args.yes = true;
+        break;
+      case "--no-release":
+        args.release = false;
         break;
       case "-h":
       case "--help":
@@ -215,12 +230,16 @@ async function main() {
   const marketplaceJsonPath = ".claude-plugin/marketplace.json";
   const agentsMarketplaceJsonPath = ".agents/plugins/marketplace.json";
   const rootPackageJsonPath = "package.json";
+  const npmPackageDirs = ["rules/nextjs", "rules/nestjs"];
+  const npmPackageJsonPaths = npmPackageDirs.map((d) => `${d}/package.json`);
   const architectureLintPubspecPath =
     "rules/flutter/base/custom-lint/architecture_lint/pubspec.yaml";
   const leafKitLintPubspecPath =
     "rules/flutter/leaf-kit/custom-lint/leaf_kit_lint/pubspec.yaml";
   const freezedLintPubspecPath =
     "rules/flutter/freezed/custom-lint/freezed_lint/pubspec.yaml";
+  const jkitAnalysisPubspecPath =
+    "rules/flutter/base/analysis/jkit_analysis/pubspec.yaml";
 
   const current = JSON.parse(fs.readFileSync(pluginJsonPath, "utf-8")).version;
   process.stdout.write(`Current version: ${current}\n`);
@@ -239,6 +258,18 @@ async function main() {
   if (gitExists(["rev-parse", "--verify", "--quiet", tag])) {
     process.stderr.write(`Error: tag ${tag} already exists\n`);
     process.exit(1);
+  }
+
+  // GitHub Release는 태그 push 이후에 만들어지므로, 인증 문제로 중간에
+  // 실패하지 않도록 시작 전에 gh 로그인 상태를 확인한다.
+  if (args.release) {
+    const auth = spawnSync("gh", ["auth", "status"], { encoding: "utf-8" });
+    if (auth.status !== 0) {
+      process.stderr.write(
+        "Error: gh CLI 인증이 필요합니다. 'gh auth login' 후 다시 실행하거나 --no-release를 사용하세요.\n",
+      );
+      process.exit(1);
+    }
   }
 
   process.stdout.write(`New version:     ${newVersion}\n`);
@@ -299,9 +330,19 @@ async function main() {
   process.stdout.write(
     `  8. Update freezed_lint/pubspec.yaml               → version: ${newVersion}\n`,
   );
-  process.stdout.write(`  9. git commit -m "chore: 버전 ${newVersion} 범프"\n`);
-  process.stdout.write(`  10. git tag ${tag}\n`);
-  process.stdout.write(`  11. git push origin ${branch} --follow-tags\n\n`);
+  process.stdout.write(
+    `  9. Update rules/{nextjs,nestjs}/package.json + jkit_analysis/pubspec.yaml → ${newVersion}\n`,
+  );
+  process.stdout.write(
+    `  10. git commit -m "chore: 버전 ${newVersion} 범프"\n`,
+  );
+  process.stdout.write(`  11. git tag ${tag}\n`);
+  process.stdout.write(`  12. git push origin ${branch} --follow-tags\n`);
+  process.stdout.write(
+    args.release
+      ? `  13. GitHub Release ${tag} ← npm pack ${npmPackageDirs.map((d) => `./${d}`).join(", ")}\n\n`
+      : "  13. GitHub Release (skipped: --no-release)\n\n",
+  );
 
   if (!args.yes) {
     const ans = await prompt("Proceed with release? [y/N] ");
@@ -320,6 +361,8 @@ async function main() {
   updateYamlVersion(architectureLintPubspecPath, newVersion);
   updateYamlVersion(leafKitLintPubspecPath, newVersion);
   updateYamlVersion(freezedLintPubspecPath, newVersion);
+  updateYamlVersion(jkitAnalysisPubspecPath, newVersion);
+  for (const p of npmPackageJsonPaths) updateJsonVersion(p, newVersion);
 
   // Commit + tag + push
   const addFiles = [
@@ -330,6 +373,8 @@ async function main() {
     architectureLintPubspecPath,
     leafKitLintPubspecPath,
     freezedLintPubspecPath,
+    jkitAnalysisPubspecPath,
+    ...npmPackageJsonPaths,
   ];
   if (fs.existsSync(rootPackageJsonPath)) addFiles.push(rootPackageJsonPath);
   spawnSync("git", ["add", ...addFiles], { stdio: "inherit" });
@@ -349,6 +394,44 @@ async function main() {
     },
   );
   if (pushResult.status !== 0) process.exit(pushResult.status ?? 1);
+
+  if (args.release) {
+    // 소비 프로젝트는 이 Release 자산(tarball URL)을 의존성으로 쓴다
+    // (scripts/common.mjs jkitPackageSpec).
+    const packDir = fs.mkdtempSync(path.join(os.tmpdir(), "jkit-release-"));
+    const assets = [];
+    for (const dir of npmPackageDirs) {
+      const out = execFileSync(
+        "npm",
+        ["pack", `./${dir}`, "--pack-destination", packDir, "--json"],
+        { encoding: "utf-8" },
+      );
+      assets.push(path.join(packDir, JSON.parse(out)[0].filename));
+    }
+    process.stdout.write(
+      `\nCreating GitHub Release ${tag} with ${assets.length} asset(s)...\n`,
+    );
+    const r = spawnSync(
+      "gh",
+      [
+        "release",
+        "create",
+        tag,
+        ...assets,
+        "--title",
+        tag,
+        "--notes",
+        `Release ${tag}`,
+      ],
+      { stdio: "inherit" },
+    );
+    if (r.status !== 0) {
+      process.stderr.write(
+        `Error: GitHub Release 생성 실패. 태그 ${tag}는 이미 push되었으므로 원인 해결 후 'gh release create ${tag} ${assets.join(" ")}'만 다시 실행하세요.\n`,
+      );
+      process.exit(r.status ?? 1);
+    }
+  }
 
   process.stdout.write(`\n✓ Released ${tag}\n`);
 }

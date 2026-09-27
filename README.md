@@ -204,10 +204,39 @@ Init 커맨드 외에 개별 스크립트로도 실행 가능합니다.
 ```
 rules/<framework>/<stack-name>/
 ├── conventions.md          # 컨벤션 규칙
-├── eslint.manifest         # ESLint 코드 조각 (TypeScript만)
 ├── eslint.rules.mjs        # ESLint rule export (TypeScript만)
 └── tsconfig.patch.json     # TSConfig 패치 (필요 시)
 ```
+
+TypeScript 스택은 `rules/<framework>/index.mjs`의 스택 등록표(`nextjsStacks` / `nestjsStacks`)에
+`eslint.rules.mjs` export를 연결해야 factory가 적용합니다. 새 파일이 패키지에 포함되는지
+`rules/<framework>/package.json`의 `files`도 확인합니다.
+
+## ESLint 설정 패키지 (Next.js / NestJS)
+
+lint 규칙과 조립 로직은 npm 패키지로 배포되고, 소비 프로젝트는 설치 + 짧은 참조만 갖습니다.
+
+| 패키지 | 소스 | 제공 |
+|---|---|---|
+| `@josephnk/eslint-config-nextjs` | `rules/nextjs/` | `nextjs()` factory, `./formatter`, `./stylelint`, `jkit-lint-nextjs` CLI |
+| `@josephnk/eslint-config-nestjs` | `rules/nestjs/` | `nestjs()` factory, `./formatter`, `jkit-lint-nestjs` / `jkit-check-i18n` CLI |
+
+소비 프로젝트 구성 (`/jkit:*-init`, `/jkit:*-sync`가 생성):
+
+```js
+// eslint.config.mjs — jkit 관리 (매 sync 덮어씀, 직접 수정은 hook이 차단)
+import { nestjs } from "@josephnk/eslint-config-nestjs";
+import projectConfig from "./eslint.project.config.mjs";
+export default nestjs({ root: import.meta.dirname, project: projectConfig });
+```
+
+- `jkit.lint.json` — jkit 관리. `stacks`(sync가 갱신) + 프로젝트별 확장 `boundaryElements` / `boundaryRules` / `boundaryIgnores` / `ignores`(sync가 보존)
+- `eslint.project.config.mjs` — 사용자 소유. 새 규칙·플러그인 **추가만** 허용. jkit 규칙/settings 재정의, `linterOptions`, 전역 ignores는 로드 시 에러
+- inline `eslint-disable` 주석은 무시됩니다 (`noInlineConfig`)
+- `jkit-lint-<framework>` — 프로젝트 `eslint.config.mjs`를 무시하고 패키지 규칙으로 검사. `scripts.lint`(eslint 기반 `lint:ci`/`lint:fix` 포함)와 lint-staged가 모두 이 CLI로 통일됩니다. 경로/`--ignore-pattern` 인자는 `jkit.lint.json`의 `ignores`로 옮깁니다. 에디터 실시간 표시는 `eslint.config.mjs`가 담당합니다
+
+배포는 npm 레지스트리가 아니라 **GitHub Release**입니다: `./deploy.mjs`(버전 범프 + 태그 + `npm pack` tarball을 Release에 첨부) → 소비 프로젝트는 `package.json`에 Release tarball URL(`…/releases/download/v<ver>/josephnk-eslint-config-<fw>-<ver>.tgz`)을 쓰고, `/jkit:update-plugin-ref code-plugin` 또는 sync로 버전을 올립니다.
+레거시 `@jkit/code-plugin` git 의존성 프로젝트는 `/jkit:<framework>-sync` 한 번으로 전환됩니다.
 
 ## Project Preferences (NestJS)
 
@@ -229,7 +258,7 @@ NestJS 소비 프로젝트의 `package.json`에 `jkit-rules` 객체를 두면 �
 
 ## ESLint 메시지 포매터 (Next.js / NestJS)
 
-`boundaries/no-unknown-files`, `boundaries/no-unknown` 등 일부 룰의 기본 에러 메시지를
+`boundaries/no-unknown-files`, `boundaries/no-unknown-dependencies` 등 일부 룰의 기본 에러 메시지를
 프로젝트 컨텍스트에 맞는 가이드 문구(대응 순서, 참조 문서 링크)로 재작성한 뒤
 ESLint 기본 `stylish` formatter로 렌더링합니다. 그 외 룰 메시지는 원본 그대로 통과합니다.
 
@@ -239,7 +268,7 @@ ESLint 기본 `stylish` formatter로 렌더링합니다. 그 외 룰 메시지�
 ```json
 {
   "scripts": {
-    "lint": "eslint --format @jkit/code-plugin/nextjs/base/eslint.formatter.mjs ."
+    "lint": "eslint --format @josephnk/eslint-config-nextjs/formatter ."
   }
 }
 ```
@@ -248,7 +277,7 @@ ESLint 기본 `stylish` formatter로 렌더링합니다. 그 외 룰 메시지�
 ```json
 {
   "scripts": {
-    "lint": "eslint --format @jkit/code-plugin/nestjs/base/eslint.formatter.mjs ."
+    "lint": "eslint --format @josephnk/eslint-config-nestjs/formatter ."
   }
 }
 ```

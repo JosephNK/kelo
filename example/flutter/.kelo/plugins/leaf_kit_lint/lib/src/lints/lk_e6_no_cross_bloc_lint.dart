@@ -13,10 +13,7 @@ import '../helpers.dart';
 /// feature 단위를 깨뜨린다. cross-feature 통신은 entities/event-bus/DI로.
 class LkE6NoCrossBlocLint extends AnalysisRule {
   LkE6NoCrossBlocLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'lk_e6_no_cross_bloc',

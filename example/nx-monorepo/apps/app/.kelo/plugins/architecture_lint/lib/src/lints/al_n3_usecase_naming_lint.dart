@@ -12,10 +12,7 @@ import '../classification.dart';
 /// `*UseCase` = Command/Query 객체, `*Params` = 입력 캡슐 — 폴더에 헬퍼·유틸 혼입 방지.
 class AlN3UseCaseNamingLint extends AnalysisRule {
   AlN3UseCaseNamingLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'al_n3_usecase_naming',

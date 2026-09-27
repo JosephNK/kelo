@@ -16,10 +16,7 @@ import '../constants.dart';
 /// stack-specific 추가 차단(예: bloc)은 별도 패키지가 자체 룰로 강제.
 class AlE6CrossFeatureLint extends AnalysisRule {
   AlE6CrossFeatureLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'al_e6_cross_feature',

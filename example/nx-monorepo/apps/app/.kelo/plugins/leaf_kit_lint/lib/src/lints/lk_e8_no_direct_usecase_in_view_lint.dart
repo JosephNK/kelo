@@ -14,10 +14,7 @@ import '../helpers.dart';
 /// 데이터/상태 흐름: view → bloc(event) → usecase → repository.
 class LkE8NoDirectUsecaseInViewLint extends AnalysisRule {
   LkE8NoDirectUsecaseInViewLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'lk_e8_no_direct_usecase_in_view',

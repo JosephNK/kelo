@@ -14,10 +14,7 @@ import '../classification.dart';
 /// `State<T>` 동반 클래스는 자동 제외 (StatelessWidget/StatefulWidget 직접 상속이 아니므로).
 class AlE9NoPrivateWidgetInViewsLint extends AnalysisRule {
   AlE9NoPrivateWidgetInViewsLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   /// 검사 대상 supertype. 직접 상속만 검사하여 false positive 차단.
   /// 간접 상속(예: `LeafScreenStatefulWidget` → `StatefulWidget`)은 의도적으로 미검사.

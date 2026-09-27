@@ -14,10 +14,7 @@ import '../constants.dart';
 /// 금지 목록은 `frameworkPackages` (= `infraPackages` + flutter; BuildContext·dio Response 등 누출 방지).
 class AlE5PortsNoFrameworkLint extends AnalysisRule {
   AlE5PortsNoFrameworkLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'al_e5_ports_no_framework',

@@ -1,18 +1,18 @@
 {
   "$comment": "Vendored by kelo — do not edit. Regenerate with /kelo:flutter-sync.",
   "package": "leaf_kit_lint",
-  "source": "kelo@0.3.80/rules/flutter/leaf-kit/custom-lint/leaf_kit_lint",
+  "source": "kelo@0.4.2/rules/flutter/leaf-kit/custom-lint/leaf_kit_lint",
   "files": {
     "lib/leaf_kit_lint.dart": "da96423bbc651eb597579f1eeff43f44303a7748f187c19225186161e5f22543",
     "lib/main.dart": "c1fda28adf372a4abd81ccfefa2a92607daf0cb1476973dc01d893211d60985c",
     "lib/plugin.dart": "17959979605c9a1fbb1f5bd039a7eb3ca508133a4a802a712f4edb84f9c67e31",
     "lib/src/constants.dart": "5fecf99321f7037a88c7e354ba769c7c84d430cc1980ffd4872d666119050116",
     "lib/src/helpers.dart": "4e06bd55214e8874a68841bee0505ef4e99a2675a30fef9613511e683ea5bee4",
-    "lib/src/lints/lk_e2_no_bloc_in_usecases_lint.dart": "b22d4e5f8d514ff8511a39d0594e379ba60adc89f09f31567d3a8d1995e36c35",
-    "lib/src/lints/lk_e3_bloc_dependency_lint.dart": "440cd01f726d9d0343079623d3eb16858b4f3b233a86a8e607cfb555297a8cfa",
-    "lib/src/lints/lk_e6_no_cross_bloc_lint.dart": "fdbf58fedcc1516ffd1280e984dc46f0fd1de29236ac31bbdc06fcb5f9caac16",
-    "lib/src/lints/lk_e8_no_direct_usecase_in_view_lint.dart": "2df3480ff36323c645fc337194556359b114fcf07b0ffaa04cd3e4194a32a996",
+    "lib/src/lints/lk_e2_no_bloc_in_usecases_lint.dart": "06d8db8efa40809484afcac3a90718b1a02c1a8115457e6431e033efd3603203",
+    "lib/src/lints/lk_e3_bloc_dependency_lint.dart": "598d29f987eafc0b51ae10c5488cfd55ef8599fc50310fd4afffbf9ef4a2310f",
+    "lib/src/lints/lk_e6_no_cross_bloc_lint.dart": "7ed3b92c210a1f157072a9a320dd6281fa9a086685beea14cd22c4d1e1912872",
+    "lib/src/lints/lk_e8_no_direct_usecase_in_view_lint.dart": "f32181aafad5cde752f68736344d2ae50ecee9ae77291b332b0273e748b617fb",
     "lib/src/lints/lk_e9_preferred_widget_lint.dart": "9df6638d0b285b933c06e124c1ed271b5896cd9d091b2037775596b4e1764be9",
-    "pubspec.yaml": "8954fc4ee6c77e09cc3746f771ada00f11136fc95b884a1b98c010fa4357a24d"
+    "pubspec.yaml": "1e58bd8b1c2155df69efeba282e3982aa1ba454fab4e1d78403fbe64c9debf9e"
   }
 }

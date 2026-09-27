@@ -15,10 +15,7 @@ import '../constants.dart';
 /// stack-specific 추가 차단(예: bloc 경유 강제)은 별도 패키지가 자체 룰로 강제.
 class AlE8PresentationDependencyLint extends AnalysisRule {
   AlE8PresentationDependencyLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const _forbidden = <String>{'adapters', 'ports'};
 

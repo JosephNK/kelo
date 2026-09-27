@@ -13,10 +13,7 @@ import '../constants.dart';
 /// 외부 런타임 의존성 차단. 허용 목록은 `codegenPackages` (freezed_annotation·json_annotation·meta·collection).
 class AlE1EntitiesImportLint extends AnalysisRule {
   AlE1EntitiesImportLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'al_e1_entities_import',

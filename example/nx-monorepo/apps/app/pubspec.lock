@@ -89,7 +89,7 @@ packages:
       path: "/Users/josephnk/workspace/development/kelo/rules/flutter/base/analysis/kelo_analysis"
       relative: false
     source: path
-    version: "0.3.80"
+    version: "0.4.2"
   leak_tracker:
     dependency: transitive
     description:

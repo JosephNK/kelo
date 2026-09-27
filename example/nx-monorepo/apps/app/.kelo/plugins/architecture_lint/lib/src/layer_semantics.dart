@@ -29,7 +29,8 @@ class LayerSemantics {
 /// 레이어 키는 classification.dart의 `_layerMarkers` 값과 일치해야 한다.
 const layerSemantics = <String, LayerSemantics>{
   'entities': LayerSemantics(
-    role: '도메인 Entity · Value Object · 공용 타입. 프레임워크 비의존 순수 Dart로 '
+    role:
+        '도메인 Entity · Value Object · 공용 타입. 프레임워크 비의존 순수 Dart로 '
         '비즈니스 규칙의 단일 진실 공급원이자 가장 안정적인 레이어.',
     contains: [
       'Entity — `*.dart`',
@@ -52,11 +53,10 @@ class Order {
   ),
 
   'ports': LayerSemantics(
-    role: '도메인과 인프라 사이의 abstract interface. 도메인 타입만 시그니처에 노출하여 '
+    role:
+        '도메인과 인프라 사이의 abstract interface. 도메인 타입만 시그니처에 노출하여 '
         '구현 교체·테스트 용이성을 보장.',
-    contains: [
-      'Port — `*_port.dart` (`abstract class {Name}Port`)',
-    ],
+    contains: ['Port — `*_port.dart` (`abstract class {Name}Port`)'],
     example: '''
 // ports/product_port.dart
 abstract class ProductPort {
@@ -66,7 +66,8 @@ abstract class ProductPort {
   ),
 
   'usecases': LayerSemantics(
-    role: '비즈니스 로직 단위. Port를 주입받아 도메인 동작을 조합하며, '
+    role:
+        '비즈니스 로직 단위. Port를 주입받아 도메인 동작을 조합하며, '
         'UI/인프라 없이 단독 단위 테스트 가능.',
     contains: [
       'UseCase — `*_usecase.dart` (`class {Verb}{Noun}UseCase`)',
@@ -84,7 +85,8 @@ class GetProductsUseCase {
   ),
 
   'adapters': LayerSemantics(
-    role: 'Port 구현체. Remote API · Local DB · Platform SDK 등 외부 데이터 소스와 통신하고 '
+    role:
+        'Port 구현체. Remote API · Local DB · Platform SDK 등 외부 데이터 소스와 통신하고 '
         'raw 데이터 → Entity 변환을 책임진다.',
     contains: [
       'Adapter — `*_adapter.dart` (`class {Name}Adapter implements {Name}Port`)',
@@ -107,7 +109,8 @@ class ProductApiAdapter implements ProductPort {
   ),
 
   'bloc': LayerSemantics(
-    role: 'UI 상태 관리 (flutter_bloc). UseCase를 호출하여 데이터를 받고 '
+    role:
+        'UI 상태 관리 (flutter_bloc). UseCase를 호출하여 데이터를 받고 '
         'Event → State 전환만 담당하는 얇은 계층.',
     contains: [
       'Bloc/Cubit — `*_bloc.dart` / `*_cubit.dart`',
@@ -145,7 +148,8 @@ class ServerException implements Exception {
   ),
 
   'presentation': LayerSemantics(
-    role: 'UI 레이어. Screen(라우트 진입점) · View(논리적 섹션) · Widget(재사용 컴포넌트)으로 분할. '
+    role:
+        'UI 레이어. Screen(라우트 진입점) · View(논리적 섹션) · Widget(재사용 컴포넌트)으로 분할. '
         'Bloc을 통해 상태를 구독하고 사용자 입력을 이벤트로 전달.',
     contains: [
       'Screen (라우트 진입점) — `*_screen.dart` (`pages/`)',

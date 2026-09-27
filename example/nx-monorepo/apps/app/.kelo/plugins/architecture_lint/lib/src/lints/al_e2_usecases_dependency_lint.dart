@@ -14,10 +14,7 @@ import '../classification.dart';
 /// stack-specific 추가 차단(예: bloc)은 별도 패키지가 자체 룰로 강제.
 class AlE2UsecasesDependencyLint extends AnalysisRule {
   AlE2UsecasesDependencyLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   // common_services 레이어는 forbidden에서 제외 — value-object/config/state/exception
   // 등 공용 서비스의 보조 타입은 usecase에서 자유롭게 import 가능.

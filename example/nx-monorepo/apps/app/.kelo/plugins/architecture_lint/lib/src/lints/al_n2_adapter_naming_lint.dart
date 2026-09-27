@@ -12,10 +12,7 @@ import '../classification.dart';
 /// Port ↔ Adapter 역할을 이름에서 구분 (예: `AuthPort` ↔ `AuthAdapter`).
 class AlN2AdapterNamingLint extends AnalysisRule {
   AlN2AdapterNamingLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'al_n2_adapter_naming',

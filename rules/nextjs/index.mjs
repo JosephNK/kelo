@@ -36,6 +36,7 @@ import {
   mantineRestrictedPatterns,
 } from "./design-system/mantine/eslint.rules.mjs";
 import {
+  shadcnAllowSetStateInEffect,
   shadcnBoundaryAllowPatches,
   shadcnDisableSonarjsForUi,
   shadcnDomainBannedPackages,
@@ -76,7 +77,10 @@ export const nextjsStacks = {
     restrictedPatterns: shadcnRestrictedPatterns,
     domainBannedPackages: shadcnDomainBannedPackages,
     boundaryPatches: shadcnBoundaryAllowPatches,
-    customConfig: shadcnDisableSonarjsForUi,
+    customConfig: [
+      ...shadcnDisableSonarjsForUi,
+      ...shadcnAllowSetStateInEffect,
+    ],
   },
   "next-proxy": {
     boundaryIgnores: nextProxyBoundaryIgnores,

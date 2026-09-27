@@ -57,3 +57,15 @@ export const shadcnDisableSonarjsForUi = defineConfig({
     Object.keys(sonarjs.rules).map((name) => [`sonarjs/${name}`, "off"]),
   ),
 });
+
+/**
+ * shadcn CLI 생성 경로의 `react-hooks/set-state-in-effect` 비활성화 — carousel, sidebar의
+ * `use-mobile` 훅 등 shadcn이 생성·동기화하는 코드는 effect 안에서 setState를 호출한다.
+ * 사용자 코드가 아니므로 CLI 소유 경로(`src/components/ui/**`, `src/hooks/use-mobile.ts`)에서만 off.
+ */
+export const shadcnAllowSetStateInEffect = defineConfig({
+  files: ["src/components/ui/**/*.{ts,tsx}", "src/hooks/use-mobile.{ts,tsx}"],
+  rules: {
+    "react-hooks/set-state-in-effect": "off",
+  },
+});

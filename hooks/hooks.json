@@ -7,7 +7,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/cleanup-old-versions.sh\"",
-            "description": "Remove stale jkit cache versions, keep only the active one"
+            "description": "Remove stale kelo cache versions, keep only the active one"
           }
         ]
       }
@@ -19,7 +19,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/enforce-commit-skill.sh\"",
-            "description": "Detect commit intent and force jkit:commit skill invocation"
+            "description": "Detect commit intent and force kelo:commit skill invocation"
           }
         ]
       }
@@ -41,7 +41,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-lint-config-edits.sh\"",
-            "description": "Block shell writes to jkit-managed lint config files (eslint.config.mjs, stylelint.config.mjs, jkit.lint.json, analysis_options.yaml, .jkit/plugins/**)"
+            "description": "Block shell writes to kelo-managed lint config files (eslint.config.mjs, stylelint.config.mjs, kelo.lint.json, analysis_options.yaml, .kelo/plugins/**)"
           }
         ]
       },
@@ -51,7 +51,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-lint-config-edits.sh\"",
-            "description": "Block edits to jkit-managed lint config files (eslint.config.mjs, stylelint.config.mjs, jkit.lint.json, analysis_options.yaml, .jkit/plugins/**)"
+            "description": "Block edits to kelo-managed lint config files (eslint.config.mjs, stylelint.config.mjs, kelo.lint.json, analysis_options.yaml, .kelo/plugins/**)"
           }
         ]
       }

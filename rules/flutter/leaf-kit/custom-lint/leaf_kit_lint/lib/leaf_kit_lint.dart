@@ -1,4 +1,4 @@
-/// JKit Flutter — Leaf Kit Lint Package (bloc + leaf_kit specific)
+/// Kelo Flutter — Leaf Kit Lint Package (bloc + leaf_kit specific)
 ///
 /// `leaf-kit` 컨벤션 스택을 선택한 프로젝트의 추가 룰. `architecture_lint` (base)와
 /// 함께 동작 — 두 패키지 모두 `analysis_options.yaml`의 `plugins:` 섹션에 등록.

@@ -90,7 +90,7 @@ export const baseLayerSemantics = {
       "createApiClient 팩토리·getApi 싱글톤 export — `src/http/_generated/client.ts` (generator 산출물)",
     ],
     forbids: [
-      "수기 편집 (jkit:nextjs-openapi-gen으로만 갱신)",
+      "수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)",
       "이 파일에서 다른 레이어 import (순수 통신 경계; allow: [])",
     ],
   },
@@ -101,7 +101,7 @@ export const baseLayerSemantics = {
       "URL 헬퍼 export — `src/http/_generated/endpoints.ts` (generator 산출물)",
     ],
     forbids: [
-      "수기 편집 (jkit:nextjs-openapi-gen으로만 갱신)",
+      "수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)",
       "다른 레이어 import (allow: [])",
     ],
   },
@@ -112,7 +112,7 @@ export const baseLayerSemantics = {
       "DTO 타입 export — `src/http/_generated/types.ts` (generator 산출물)",
     ],
     forbids: [
-      "수기 편집 (jkit:nextjs-openapi-gen으로만 갱신)",
+      "수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)",
       "도메인 변환 로직 (→ http-mapper)",
       "다른 레이어 import (allow: [])",
     ],
@@ -125,7 +125,7 @@ export const baseLayerSemantics = {
       "query param 객체를 URLSearchParams로 정규화하는 private helper",
     ],
     forbids: [
-      "수기 편집 (jkit:nextjs-openapi-gen으로만 갱신)",
+      "수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)",
       "도메인 모델 import (DTO만 반환 — 변환은 repository 책임)",
       "다른 레이어 import (allow: http-endpoint, http-dto만)",
     ],

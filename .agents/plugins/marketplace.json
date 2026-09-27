@@ -1,11 +1,11 @@
 {
-  "name": "jkit",
+  "name": "kelo",
   "interface": {
-    "displayName": "jKit"
+    "displayName": "Kelo"
   },
   "plugins": [
     {
-      "name": "jkit",
+      "name": "kelo",
       "version": "0.3.80",
       "source": {
         "source": "local",

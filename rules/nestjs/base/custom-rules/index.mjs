@@ -1,5 +1,5 @@
 // =============================================================================
-// JKit NestJS — Custom ESLint Plugin
+// Kelo NestJS — Custom ESLint Plugin
 // -----------------------------------------------------------------------------
 
 import requireApiProperty from "./require-api-property.mjs";

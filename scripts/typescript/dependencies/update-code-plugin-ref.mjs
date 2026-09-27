@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // =============================================================================
-// Updates the version of the jkit ESLint config packages
-// (@josephnk/eslint-config-nextjs, @josephnk/eslint-config-nestjs) across all
+// Updates the version of the kelo ESLint config packages
+// (eslint-config-kelo-nextjs, eslint-config-kelo-nestjs) across all
 // package.json files in the target project. Legacy `@jkit/code-plugin` git
-// dependencies are reported (not rewritten) — they need /jkit:<framework>-sync
+// dependencies are reported (not rewritten) — they need /kelo:<framework>-sync
 // because eslint.config.mjs must be regenerated too.
 //
 // Usage:
@@ -15,11 +15,11 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { jkitPackageSpec } from "../../common.mjs";
+import { keloPackageSpec } from "../../common.mjs";
 
 const PACKAGE_NAMES = [
-  "@josephnk/eslint-config-nextjs",
-  "@josephnk/eslint-config-nestjs",
+  "eslint-config-kelo-nextjs",
+  "eslint-config-kelo-nestjs",
 ];
 const LEGACY_PACKAGE = "@jkit/code-plugin";
 const SKIP_DIR_NAMES = new Set([
@@ -33,7 +33,7 @@ const SKIP_DIR_NAMES = new Set([
 
 const HELP = `Usage: update-code-plugin-ref.mjs [<ref>] --project-dir <dir> [--dry-run]
 
-Updates @josephnk/eslint-config-{nextjs,nestjs} to the GitHub Release tarball
+Updates eslint-config-kelo-{nextjs,nestjs} to the GitHub Release tarball
 URL of <version> across all package.json files. Legacy @jkit/code-plugin git deps are reported only.
 
 Arguments:
@@ -161,7 +161,7 @@ function updateSection(section, version) {
   for (const name of PACKAGE_NAMES) {
     if (!(name in section)) continue;
     const old = section[name];
-    const newValue = jkitPackageSpec(name, version);
+    const newValue = keloPackageSpec(name, version);
     if (old === newValue) {
       results.push({ changed: false, oldValue: old, newValue });
     } else {
@@ -199,7 +199,7 @@ function updatePackageJson(pkgPath, newRef, dryRun) {
     }
     if (LEGACY_PACKAGE in section) {
       process.stdout.write(
-        `  ⚠️  ${pkgPath}: 레거시 ${LEGACY_PACKAGE} (${section[LEGACY_PACKAGE]}) — /jkit:<framework>-sync 로 패키지 방식 전환 필요\n`,
+        `  ⚠️  ${pkgPath}: 레거시 ${LEGACY_PACKAGE} (${section[LEGACY_PACKAGE]}) — /kelo:<framework>-sync 로 패키지 방식 전환 필요\n`,
       );
     }
     for (const r of updateSection(section, newRef)) {

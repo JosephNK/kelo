@@ -1,7 +1,7 @@
 {
-  "name": "jkit",
+  "name": "kelo",
   "version": "0.3.80",
-  "description": "Personal Codex toolkit for jkit workflows, project scaffolding, conventions, and commit support",
+  "description": "Personal Codex toolkit for kelo workflows, project scaffolding, conventions, and commit support",
   "author": {
     "name": "josephnk",
     "email": "nkw0608@gmail.com",
@@ -11,7 +11,7 @@
   "repository": "https://github.com/JosephNK/jkit-code-plugin",
   "license": "MIT",
   "keywords": [
-    "jkit",
+    "kelo",
     "codex",
     "skills",
     "commit",
@@ -21,9 +21,9 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "jKit",
-    "shortDescription": "jKit Codex skills",
-    "longDescription": "Codex skills for jKit workflows, including Korean commit message generation and project conventions.",
+    "displayName": "Kelo",
+    "shortDescription": "Kelo Codex skills",
+    "longDescription": "Codex skills for Kelo workflows, including Korean commit message generation and project conventions.",
     "developerName": "JosephNK",
     "category": "Productivity",
     "capabilities": [

@@ -1,5 +1,5 @@
 // =============================================================================
-// JKit Next.js — shadcn/ui 스택 규칙
+// Kelo Next.js — shadcn/ui 스택 규칙
 //
 // {{STACK_IMPORTS}} / {{RESTRICTED_PATTERNS}} / {{DOMAIN_BANNED}} /
 // {{BOUNDARY_PATCHES}} / {{CUSTOM_CONFIG}}에 주입.

@@ -12,10 +12,10 @@ argument-hint: '<대상 ID> [--once] [--confirm-commit] [--max-rounds N] [task-s
 
 ```
 TASKS.md ─────────────┐
-TASKS-QA-COMMON.md ───┤→ Generator(jkit:code-generator)
+TASKS-QA-COMMON.md ───┤→ Generator(kelo:code-generator)
 tasks-qa/Task-N.md ───┘   → Gate 1 코드 리뷰 (ecc:{stack}-reviewer → SKIP; `--codex` 시 codex 우선)
                           → Gate 2 린트·빌드
-                          → Gate 3 Evaluator(jkit:code-evaluator) ─ feedback ─┐
+                          → Gate 3 Evaluator(kelo:code-evaluator) ─ feedback ─┐
                           ▲──────────────────────────────────────────────────┘
 ```
 
@@ -105,30 +105,30 @@ code-harness/
 
 ### 범위 파싱
 
-`Task N~M` 형식에서 N과 M은 정수. `Task N`, `Task N+1`, ..., `Task M`으로 확장하여 taskQueue에 추가한다. 각 Task ID 존재 여부는 Bash로 `test -f "$task_slice_dir/Task-${n}.md"`로 확인한다 (**Read 도구 금지** — 슬라이스 파일 존재 여부만 검사). 하나라도 누락되면 `/jkit:code-tasks` 재실행을 안내하고 즉시 중단한다 (하네스는 슬라이스를 생성하지 않는다).
+`Task N~M` 형식에서 N과 M은 정수. `Task N`, `Task N+1`, ..., `Task M`으로 확장하여 taskQueue에 추가한다. 각 Task ID 존재 여부는 Bash로 `test -f "$task_slice_dir/Task-${n}.md"`로 확인한다 (**Read 도구 금지** — 슬라이스 파일 존재 여부만 검사). 하나라도 누락되면 `/kelo:code-tasks` 재실행을 안내하고 즉시 중단한다 (하네스는 슬라이스를 생성하지 않는다).
 
 ### 예시
 
 ```bash
 # 기본값 — 루프 + 자동 커밋 (완전 자율 실행)
-/jkit:code-harness "Task 1"
-/jkit:code-harness "Task 1~5"
+/kelo:code-harness "Task 1"
+/kelo:code-harness "Task 1~5"
 
 # 1라운드만 실행 (자동 커밋)
-/jkit:code-harness "Task 1" --once
+/kelo:code-harness "Task 1" --once
 
 # 커밋 전 확인 — 루프 중에도 매 커밋 승인 (자리 비움 시 멈출 수 있음)
-/jkit:code-harness "Task 1" --confirm-commit
+/kelo:code-harness "Task 1" --confirm-commit
 
 # Gate 1 코드 리뷰에 codex 우선 사용 (미설치/실패 시 ecc fallback)
-/jkit:code-harness "Task 1" --codex
+/kelo:code-harness "Task 1" --codex
 
 # 1라운드 수동 검수 (디버깅 시)
-/jkit:code-harness "Task 1" --once --confirm-commit
+/kelo:code-harness "Task 1" --once --confirm-commit
 
 # 명시적 — 파일 경로를 직접 지정
-/jkit:code-harness code-harness/TASKS.md code-harness/TASKS-QA-COMMON.md "Task 1"
-/jkit:code-harness code-harness/PHASES.md code-harness/PHASES-QA-COMMON.md "Phase 1"
+/kelo:code-harness code-harness/TASKS.md code-harness/TASKS-QA-COMMON.md "Task 1"
+/kelo:code-harness code-harness/PHASES.md code-harness/PHASES-QA-COMMON.md "Phase 1"
 ```
 
 ---
@@ -143,7 +143,7 @@ code-harness/
 
 **선행 조건 확인** — 아래 규칙에 따라 판정하고, 충족하지 못하면 실행을 **중단**하고 안내 메시지만 출력한다:
 
-- **$ARGUMENTS에 명시적 task-source/eval-source 경로가 포함된 경우** (예: `/jkit:code-harness code-harness/TASKS.md code-harness/TASKS-QA-COMMON.md "Task 1"`):
+- **$ARGUMENTS에 명시적 task-source/eval-source 경로가 포함된 경우** (예: `/kelo:code-harness code-harness/TASKS.md code-harness/TASKS-QA-COMMON.md "Task 1"`):
   - 지정된 두 파일이 **실제로 존재**하는지만 확인한다
   - 존재하지 않으면 중단하고 안내한다 (경로 오타/미생성)
   - 존재하면 `code-harness/` 기본 경로 탐색은 건너뛰되, **아래 "선행 조건 충족 이후" 흐름으로 이동**하여 대상 ID 선택 → state.json 생성 단계는 반드시 수행한다 (바로 Step 2로 건너뛰지 않는다)
@@ -153,9 +153,9 @@ code-harness/
   - `code-harness/` 디렉토리에 **QA/TEST/EVAL 키워드 포함 `.md` 파일이 1개 이상** 존재
   - 둘 중 하나라도 0개면 중단
 
-안내 메시지는 스펙 문서 작성 순서(`/jkit:code-plan` → `/jkit:code-tasks` → `/jkit:code-qa`) 또는 직접 경로 지정(`/jkit:code-harness <TASKS> <QA> "Task 1"`)을 제시한다. **state.json은 생성하지 않고 즉시 종료**(중간 상태 방지).
+안내 메시지는 스펙 문서 작성 순서(`/kelo:code-plan` → `/kelo:code-tasks` → `/kelo:code-qa`) 또는 직접 경로 지정(`/kelo:code-harness <TASKS> <QA> "Task 1"`)을 제시한다. **state.json은 생성하지 않고 즉시 종료**(중간 상태 방지).
 
-> **PLAN/TASKS 교체 시**: 새 PLAN으로 전환할 땐 `/jkit:code-harness` 실행 전 `code-harness/harness-state/`를 수동 삭제해야 이전 라운드 state와 충돌하지 않는다.
+> **PLAN/TASKS 교체 시**: 새 PLAN으로 전환할 땐 `/kelo:code-harness` 실행 전 `code-harness/harness-state/`를 수동 삭제해야 이전 라운드 state와 충돌하지 않는다.
 
 ---
 
@@ -181,7 +181,7 @@ code-harness/
 4. **대상 ID 결정** — task-source의 슬라이스 디렉토리(`$task_slice_dir`, 도출 규칙은 Step 2.5 참조)에서 단위 목록을 추출한다 (**Read 도구 금지** — 슬라이스 파일명만 사용). 슬라이스 파일명 패턴은 3단계에서 판정한 모드에 따른다:
    - tasks 모드: `Task-*.md`
    - phases 모드: `Phase-*.md` (소수 번호 `Phase-0.5.md` 등 포함)
-   - **선행 조건 검사**: `ls "$task_slice_dir"/<pattern> 2>/dev/null` 결과가 0건이면 슬라이스 미생성 상태로 판정. `/jkit:code-tasks "$task_source"` 또는 `/jkit:code-phases "$task_source"`를 먼저 실행하라는 안내 후 **즉시 중단**한다 (하네스는 슬라이스를 생성하지 않는다 — Rule 14)
+   - **선행 조건 검사**: `ls "$task_slice_dir"/<pattern> 2>/dev/null` 결과가 0건이면 슬라이스 미생성 상태로 판정. `/kelo:code-tasks "$task_source"` 또는 `/kelo:code-phases "$task_source"`를 먼저 실행하라는 안내 후 **즉시 중단**한다 (하네스는 슬라이스를 생성하지 않는다 — Rule 14)
    - 슬라이스가 존재하면 `ls "$task_slice_dir"/<pattern> | xargs -n1 basename | sed 's/\.md$//'`로 단위 ID 목록(`Task-1`/`Phase-0` 등)을 사용자에게 표시
    - 인자로 대상 ID가 주어졌으면 그대로 사용
 5. **옵션 파싱**:
@@ -272,7 +272,7 @@ slice_path = slice_dir / <currentTaskId 공백을 '-'로 치환>.md
 
 하네스는 슬라이스를 생성하거나 재생성하지 않는다. 각 source에 대해 다음을 순서대로 검증하고, 어느 하나라도 실패하면 사용자에게 안내 후 **즉시 중단**한다.
 
-1. **슬라이스 파일 존재 확인**: `slice_path`가 없으면 → 중단. task-source는 `/jkit:code-tasks "$task_source"`, eval-source는 `/jkit:code-qa "$eval_source"` 재실행을 안내
+1. **슬라이스 파일 존재 확인**: `slice_path`가 없으면 → 중단. task-source는 `/kelo:code-tasks "$task_source"`, eval-source는 `/kelo:code-qa "$eval_source"` 재실행을 안내
 2. **SHA 일치 확인** (source 타입별 분기):
    - **task-source**: 슬라이스 첫 줄 주석(`<!-- sliced from ... @ sha ... -->`)의 SHA와 source 현재 SHA 비교
      ```bash
@@ -280,7 +280,7 @@ slice_path = slice_dir / <currentTaskId 공백을 '-'로 치환>.md
      slice_sha=$(head -1 "$slice_path" | sed -nE 's/.*@ sha ([a-f0-9]+) .*/\1/p')
      [ "$current_sha" = "$slice_sha" ]
      ```
-     불일치 → source가 슬라이싱 이후 수정됨. 중단하고 `/jkit:code-tasks` 재실행을 안내한다
+     불일치 → source가 슬라이싱 이후 수정됨. 중단하고 `/kelo:code-tasks` 재실행을 안내한다
    - **eval-source (`-QA-COMMON.md` 패턴)**: SHA 검증을 **건너뛴다**. 단위 QA 파일은 `code-qa`가 직접 생성한 산출물(슬라이스가 아님)이므로 source 대비 SHA 체크가 성립하지 않는다. 대신 파일 존재 여부만 검증한다.
    - **eval-source (그 외 `-QA-COMMON.md`가 아닌 경우)**: 기존 task-source와 동일한 SHA 규칙 적용 (하위 호환)
 
@@ -305,7 +305,7 @@ slice_path = slice_dir / <currentTaskId 공백을 '-'로 치환>.md
 
 #### 3-1. Generator 단계
 
-**jkit:code-generator** 에이전트(Agent 도구의 `subagent_type: "jkit:code-generator"`)를 소환하여 Task를 구현한다.
+**kelo:code-generator** 에이전트(Agent 도구의 `subagent_type: "kelo:code-generator"`)를 소환하여 Task를 구현한다.
 
 - task-source, eval-source, Task ID를 전달 (슬라이스 경로 — Rule 14 참조)
 - Generator는 `code-harness/harness-state/feedback/` 에서 이전 피드백을 읽고, 구현 결과를 `code-harness/harness-state/generator-state.md`에 쓴다
@@ -379,7 +379,7 @@ Step 2에서 감지한 린트/빌드 명령을 실행한다.
 
 #### 3-4. Gate 3: Evaluator 검증
 
-**jkit:code-evaluator** 에이전트(Agent 도구의 `subagent_type: "jkit:code-evaluator"`)를 소환하여 구현을 검증한다.
+**kelo:code-evaluator** 에이전트(Agent 도구의 `subagent_type: "kelo:code-evaluator"`)를 소환하여 구현을 검증한다.
 
 - task-source, eval-source, Task ID를 전달 (슬라이스 경로 — Rule 14 참조)
 - Evaluator는 `code-harness/harness-state/generator-state.md`에서 Generator 결과를 읽고, 검증 결과를 `code-harness/harness-state/feedback/feedback-{round}.md`에 쓴다
@@ -480,7 +480,7 @@ Gate 1~3 중 하나가 FAIL이면:
 
 2. **변경사항은 롤백하지 않는다** — 코드가 남아있어야 다음 라운드 Generator가 피드백을 읽고 해당 에러만 수정할 수 있다
 3. state.json 업데이트: `round + 1`, `status: "fail"`, `lastFailedGate: "Gate N"`
-4. **라운드 종료** — loopMode면 ScheduleWakeup 예약 (prompt: `/jkit:code-harness`, delaySeconds: 60). `--once`면 즉시 종료. Rule 1 참조.
+4. **라운드 종료** — loopMode면 ScheduleWakeup 예약 (prompt: `/kelo:code-harness`, delaySeconds: 60). `--once`면 즉시 종료. Rule 1 참조.
 
 ### Step 5: Task 리포트 작성
 
@@ -722,5 +722,5 @@ PASS/FAIL/구조 불일치 등 Task 종료 지점에서 공통으로 수행:
 11. **범위 실행 시 FAIL Task 건너뜀** — maxRounds 초과 FAIL은 리포트 후 다음 Task로(전체 중단 X)
 12. **code-harness/ 보호** — `.gitignore` 단일 엔트리로 staging 제외, `git clean -e code-harness/`. 팀 공유 산출물은 `docs/LEARNED.md`·`docs/LEARNED-LINT.md` 둘
 13. **Task 전환 시 정리** — "Task 전환 정리 절차" 참조
-14. **Task 슬라이싱은 선행 조건** — 슬라이스 파일은 `/jkit:code-tasks` (TASKS) / `/jkit:code-qa` (QA)가 단독 생성한다. 하네스는 슬라이스를 생성·재생성·갱신하지 않으며, Step 1·2.5에서 존재·SHA 일치만 검증한다. 미생성·SHA 불일치 시 즉시 중단하고 사용자에게 해당 슬라이싱 커맨드 재실행을 안내한다 (fallback 없음). Generator/Evaluator에는 `state.currentSlices`의 슬라이스 경로를 전달한다
+14. **Task 슬라이싱은 선행 조건** — 슬라이스 파일은 `/kelo:code-tasks` (TASKS) / `/kelo:code-qa` (QA)가 단독 생성한다. 하네스는 슬라이스를 생성·재생성·갱신하지 않으며, Step 1·2.5에서 존재·SHA 일치만 검증한다. 미생성·SHA 불일치 시 즉시 중단하고 사용자에게 해당 슬라이싱 커맨드 재실행을 안내한다 (fallback 없음). Generator/Evaluator에는 `state.currentSlices`의 슬라이스 경로를 전달한다
 15. **task-source/eval-source 본문 Read 금지** — 하네스 메인은 어떤 단계에서도 TASKS.md/PHASES.md/`*-QA-COMMON.md` 본문을 Read 도구로 열지 않는다 (토큰 비용 회피). Task 목록 표시·존재 검증은 슬라이스 디렉토리(`$task_slice_dir`)의 `ls` / `test -f`로만 수행한다. 본문이 필요한 작업은 슬라이스/단위 QA 파일을 통해 Generator/Evaluator에 위임한다

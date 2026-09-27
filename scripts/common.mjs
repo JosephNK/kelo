@@ -1,5 +1,5 @@
 // =============================================================================
-// Shared helpers for jkit gen-*.mjs scripts.
+// Shared helpers for kelo gen-*.mjs scripts.
 //
 // Import from any gen-*.mjs:
 //
@@ -140,11 +140,11 @@ export function patchLintStaged(lintStaged, lintGlob, lintCmd, detectToken) {
   return `  Skipped:   lint-staged[${pyReprStr(lintGlob)}] (unexpected type: ${typeof existing})`;
 }
 
-// ─── jkit npm config packages (GitHub Release distribution) ─────────────────
-// @josephnk/eslint-config-{nextjs,nestjs} are not on the npm registry yet —
+// ─── kelo npm config packages (GitHub Release distribution) ─────────────────
+// eslint-config-kelo-{nextjs,nestjs} are not on the npm registry yet —
 // deploy.mjs attaches `npm pack` tarballs to the GitHub Release of each tag and
 // consumers depend on the tarball URL.
-export const JKIT_RELEASE_BASE =
+export const KELO_RELEASE_BASE =
   "https://github.com/JosephNK/jkit-code-plugin/releases/download";
 
 // `npm pack` file name for a (possibly scoped) package: @a/b → a-b-<ver>.tgz
@@ -152,6 +152,6 @@ export function packTarballName(name, version) {
   return `${name.replace(/^@/, "").replace("/", "-")}-${version}.tgz`;
 }
 
-export function jkitPackageSpec(name, version) {
-  return `${JKIT_RELEASE_BASE}/v${version}/${packTarballName(name, version)}`;
+export function keloPackageSpec(name, version) {
+  return `${KELO_RELEASE_BASE}/v${version}/${packTarballName(name, version)}`;
 }

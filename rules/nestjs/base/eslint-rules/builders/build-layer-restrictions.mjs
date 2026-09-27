@@ -12,7 +12,7 @@ export function buildLayerRestrictions(
   pathAliasPattern = basePathAliasPattern,
 ) {
   // null/false 주입 시 path alias 검사 비활성 — patterns 배열에서 제외
-  // (package.json.jkit.pathAliasCheck=false 시 gen-eslint가 null을 주입)
+  // (package.json.kelo-rules.pathAliasCheck=false 시 gen-eslint가 null을 주입)
   const aliasPart = pathAliasPattern ? [pathAliasPattern] : [];
 
   return defineConfig(

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // =============================================================================
-// JKit Flutter Architecture Lint Reference Generator
+// Kelo Flutter Architecture Lint Reference Generator
 // -----------------------------------------------------------------------------
 // architecture_lint Dart 패키지를 파싱하여 Lint 규칙 참조 문서를 자동 생성한다.
 // nestjs/nextjs의 gen-eslint-reference.mjs와 같은 컨셉이지만, source가 분산된

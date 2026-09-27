@@ -1,6 +1,6 @@
 ---
 name: dedupe-conventions
-description: jkit-code-plugin의 `rules/<framework>/<scope>/conventions.md`와 같은 디렉토리의 `lint-rules-reference.md`를 비교해 중복 영역을 식별하고, 사용자 합의 후 conventions.md에서 제거한다. AGENTS.md가 두 파일을 모두 mandatory docs로 링크하므로 같은 정보를 중복 기재하면 LLM 컨텍스트가 낭비된다. Use when 룰 추가/수정 후, 또는 conventions 정리 시.
+description: kelo의 `rules/<framework>/<scope>/conventions.md`와 같은 디렉토리의 `lint-rules-reference.md`를 비교해 중복 영역을 식별하고, 사용자 합의 후 conventions.md에서 제거한다. AGENTS.md가 두 파일을 모두 mandatory docs로 링크하므로 같은 정보를 중복 기재하면 LLM 컨텍스트가 낭비된다. Use when 룰 추가/수정 후, 또는 conventions 정리 시.
 argument-hint: "<framework | all>  (e.g. flutter, nestjs, nextjs, all — 생략 시 all)"
 ---
 

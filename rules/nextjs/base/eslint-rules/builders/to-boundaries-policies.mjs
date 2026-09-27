@@ -16,7 +16,7 @@
  *   (예: `src/app/**\/route.ts`는 `page` 폴더 안이지만 `route-handler`로만 취급).
  */
 
-const FOLDER_FILE_CATEGORY = "jkit:folder-file";
+const FOLDER_FILE_CATEGORY = "kelo:folder-file";
 
 export function splitBoundaryElements(elements) {
   const folderElements = [];

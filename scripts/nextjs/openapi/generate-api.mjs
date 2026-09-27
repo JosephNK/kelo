@@ -35,7 +35,7 @@
 // required per target so each goes to its own package. --config cannot be mixed
 // with <spec>/--out-dir.
 //
-// With no <spec> and no --config, ./jkit.openapi.json is auto-used if it exists.
+// With no <spec> and no --config, ./kelo.openapi.json is auto-used if it exists.
 // =============================================================================
 
 import fs from "node:fs";
@@ -44,7 +44,8 @@ import process from "node:process";
 import YAML from "yaml";
 
 // Default manifest auto-detected (relative to cwd) when no <spec>/--config given.
-const DEFAULT_CONFIG = "jkit.openapi.json";
+const DEFAULT_CONFIG = "kelo.openapi.json";
+const LEGACY_DEFAULT_CONFIG = "jkit.openapi.json";
 
 // ─── CLI ────────────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ Options:
                     (set outDir per target in the manifest).
   -h, --help        Show this help
 
-With no <spec> and no --config, ./jkit.openapi.json is auto-used if present.
+With no <spec> and no --config, ./kelo.openapi.json is auto-used if present.
 `);
 }
 
@@ -117,9 +118,13 @@ function parseArgs(argv) {
     if (args.outDir)
       fail(`cannot combine --out-dir with --config (set outDir per target)`);
   } else if (!args.spec) {
-    // No <spec> and no --config: auto-use ./jkit.openapi.json if present.
+    // No <spec> and no --config: auto-use ./kelo.openapi.json if present.
     if (fs.existsSync(path.resolve(process.cwd(), DEFAULT_CONFIG))) {
       args.config = DEFAULT_CONFIG;
+    } else if (
+      fs.existsSync(path.resolve(process.cwd(), LEGACY_DEFAULT_CONFIG))
+    ) {
+      args.config = LEGACY_DEFAULT_CONFIG;
     } else {
       printHelp();
       process.exit(1);
@@ -799,7 +804,7 @@ function renderServiceFile(tag, ops) {
 // ─── File renderers ─────────────────────────────────────────────────────────
 
 const GEN_HEADER =
-  "// GENERATED CODE - DO NOT MODIFY BY HAND\n// Source: jkit nextjs-openapi-gen";
+  "// GENERATED CODE - DO NOT MODIFY BY HAND\n// Source: kelo nextjs-openapi-gen";
 
 function renderTypesFile(schemas) {
   const entries = Object.entries(schemas);

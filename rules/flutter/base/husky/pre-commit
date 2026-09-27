@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
-# jkit 분석 규칙 약화 검사 (analysis_options.yaml 오버라이드, // ignore: 주석 등).
+# kelo 분석 규칙 약화 검사 (analysis_options.yaml 오버라이드, // ignore: 주석 등).
 # .dart 또는 analysis_options.yaml / pubspec.yaml 변경이 staged일 때 실행.
 staged_lint_inputs=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '(\.dart|analysis_options\.yaml|pubspec\.yaml)$' || true)
 if [ -n "$staged_lint_inputs" ]; then
-  (cd {{ENTRY}} && dart run jkit_analysis:verify -p "$(git rev-parse --show-toplevel)")
+  (cd {{ENTRY}} && dart run kelo_analysis:verify -p "$(git rev-parse --show-toplevel)")
 fi
 
 # Only run when .dart files are staged.

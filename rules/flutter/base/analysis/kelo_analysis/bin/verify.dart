@@ -1,20 +1,20 @@
 // =============================================================================
-// jkit_analysis:verify — 소비 프로젝트가 jkit 분석 규칙을 약화하지 않았는지 검사.
+// kelo_analysis:verify — 소비 프로젝트가 kelo 분석 규칙을 약화하지 않았는지 검사.
 //
-//   dart run jkit_analysis:verify [-p <project-dir>]
+//   dart run kelo_analysis:verify [-p <project-dir>]
 //
 // 검사 항목 (위반 시 exit 1):
-//   - jkit_analysis에 의존하는 패키지(같은 폴더 pubspec.yaml 기준)의
-//     analysis_options.yaml이 package:jkit_analysis를 include하는지
-//   - jkit이 켠 linter 규칙을 `false`로 끄는지
-//   - jkit이 지정한 analyzer.errors severity를 낮추는지
-//   - jkit이 켠 analyzer.language 옵션(strict-casts 등)을 끄는지
-//   - jkit plugin(architecture_lint 등)의 diagnostics를 `false`로 끄는지
+//   - kelo_analysis에 의존하는 패키지(같은 폴더 pubspec.yaml 기준)의
+//     analysis_options.yaml이 package:kelo_analysis를 include하는지
+//   - kelo가 켠 linter 규칙을 `false`로 끄는지
+//   - kelo가 지정한 analyzer.errors severity를 낮추는지
+//   - kelo가 켠 analyzer.language 옵션(strict-casts 등)을 끄는지
+//   - kelo plugin(architecture_lint 등)의 diagnostics를 `false`로 끄는지
 //   - 추가한 analyzer.exclude가 lib/ 소스 파일을 분석에서 빼는지
-//   - jkit plugin이 절대 경로/git 으로 등록됐는지, vendoring된 복사본
-//     (.jkit/plugins/<pkg>)이 .jkit-vendor.json 해시와 다른지
-//   - 소스의 `// ignore:` / `// ignore_for_file:` 주석이 jkit 규칙을 끄는지
-//     (생성 파일 *.g.dart, *.freezed.dart 등 jkit exclude 대상은 제외)
+//   - kelo plugin이 절대 경로/git 으로 등록됐는지, vendoring된 복사본
+//     (.kelo/plugins/<pkg>)이 .kelo-vendor.json 해시와 다른지
+//   - 소스의 `// ignore:` / `// ignore_for_file:` 주석이 kelo 규칙을 끄는지
+//     (생성 파일 *.g.dart, *.freezed.dart 등 kelo exclude 대상은 제외)
 // =============================================================================
 
 import 'dart:io';
@@ -24,10 +24,10 @@ import 'package:crypto/crypto.dart';
 import 'package:yaml/yaml.dart';
 
 const _optionsFile = 'analysis_options.yaml';
-const _jkitInclude = 'package:jkit_analysis/';
+const _keloInclude = 'package:kelo_analysis/';
 const _pluginCodePrefixes = ['al_', 'lk_', 'fz_'];
-const _jkitPlugins = {'architecture_lint', 'leaf_kit_lint', 'freezed_lint'};
-const _vendorManifest = '.jkit-vendor.json';
+const _keloPlugins = {'architecture_lint', 'leaf_kit_lint', 'freezed_lint'};
+const _vendorManifest = '.kelo-vendor.json';
 const _skipDirs = {
   '.dart_tool',
   '.git',
@@ -49,7 +49,7 @@ Future<void> main(List<String> args) async {
     if (args[i] == '-p' && i + 1 < args.length) {
       projectDir = args[++i];
     } else if (args[i] == '-h' || args[i] == '--help') {
-      stdout.writeln('Usage: dart run jkit_analysis:verify [-p <project-dir>]');
+      stdout.writeln('Usage: dart run kelo_analysis:verify [-p <project-dir>]');
       return;
     }
   }
@@ -76,16 +76,16 @@ Future<void> main(List<String> args) async {
 
   if (violations.isEmpty) {
     stdout.writeln(
-      'jkit_analysis:verify — OK (${optionFiles.length} options file(s), '
+      'kelo_analysis:verify — OK (${optionFiles.length} options file(s), '
       '${sources.length} source file(s))',
     );
     return;
   }
-  stderr.writeln('jkit_analysis:verify — jkit 규칙을 약화하는 설정이 있습니다:');
+  stderr.writeln('kelo_analysis:verify — kelo 규칙을 약화하는 설정이 있습니다:');
   for (final v in violations) {
     stderr.writeln('  - $v');
   }
-  stderr.writeln('jkit 규칙 변경은 jkit-code-plugin에서 하세요. 프로젝트에서는 규칙 추가만 허용됩니다.');
+  stderr.writeln('kelo 규칙 변경은 kelo 저장소에서 하세요. 프로젝트에서는 규칙 추가만 허용됩니다.');
   exitCode = 1;
 }
 
@@ -97,7 +97,7 @@ class _Policy {
   final Map<String, bool> language;
   final List<RegExp> excludes;
 
-  bool isJkitRule(String code) =>
+  bool isKeloRule(String code) =>
       enabledRules.contains(code) ||
       errors.containsKey(code) ||
       _pluginCodePrefixes.any(code.startsWith);
@@ -107,10 +107,10 @@ class _Policy {
 
 Future<_Policy> _loadPolicy() async {
   final uri = await Isolate.resolvePackageUri(
-    Uri.parse('${_jkitInclude}analysis_options.yaml'),
+    Uri.parse('${_keloInclude}analysis_options.yaml'),
   );
   if (uri == null) {
-    stderr.writeln('jkit_analysis 패키지를 찾을 수 없습니다 (pub get 필요).');
+    stderr.writeln('kelo_analysis 패키지를 찾을 수 없습니다 (pub get 필요).');
     exit(2);
   }
   final doc = loadYaml(File.fromUri(uri).readAsStringSync()) as YamlMap;
@@ -157,13 +157,13 @@ void _checkOptionsFile(
     return;
   }
   if (doc is! YamlMap) {
-    violations.add('$where: jkit_analysis include가 없습니다.');
+    violations.add('$where: kelo_analysis include가 없습니다.');
     return;
   }
 
-  if (_dependsOnJkit(file.parent) && !_reachesJkit(file, <String>{})) {
+  if (_dependsOnKelo(file.parent) && !_reachesKelo(file, <String>{})) {
     violations.add(
-      '$where: include가 package:jkit_analysis/analysis_options.yaml에 연결되지 않습니다.',
+      '$where: include가 package:kelo_analysis/analysis_options.yaml에 연결되지 않습니다.',
     );
   }
 
@@ -179,11 +179,11 @@ void _checkOptionsFile(
   final analyzer = doc['analyzer'] as YamlMap?;
   (analyzer?['errors'] as YamlMap?)?.forEach((k, v) {
     final code = '$k';
-    final jkitLevel =
+    final keloLevel =
         policy.errors[code] ??
         (policy.enabledRules.contains(code) ? 'info' : null);
-    if (jkitLevel == null && !_pluginCodePrefixes.any(code.startsWith)) return;
-    final minRank = _severityRank[jkitLevel ?? 'info'] ?? 0;
+    if (keloLevel == null && !_pluginCodePrefixes.any(code.startsWith)) return;
+    final minRank = _severityRank[keloLevel ?? 'info'] ?? 0;
     final rank = _severityRank['$v'];
     if (rank != null && rank < minRank) {
       violations.add('$where: analyzer.errors.$code: $v');
@@ -195,7 +195,7 @@ void _checkOptionsFile(
     }
   });
 
-  // analyzer.exclude — jkit이 이미 제외하는 생성 파일 외에 lib/ 소스를 가리면 위반
+  // analyzer.exclude — kelo가 이미 제외하는 생성 파일 외에 lib/ 소스를 가리면 위반
   final excludes = (analyzer?['exclude'] as YamlList?) ?? const [];
   for (final glob in excludes.map((e) => '$e')) {
     final re = _globToRegExp(glob);
@@ -216,7 +216,7 @@ void _checkOptionsFile(
   final plugins = doc['plugins'];
   if (plugins is YamlMap) {
     plugins.forEach((name, entry) {
-      if (_jkitPlugins.contains('$name') && entry is YamlMap) {
+      if (_keloPlugins.contains('$name') && entry is YamlMap) {
         _checkVendoredPlugin(file, where, '$name', entry, violations);
       }
       final diagnostics = entry is YamlMap ? entry['diagnostics'] : null;
@@ -230,7 +230,7 @@ void _checkOptionsFile(
   }
 }
 
-// jkit plugin 등록 방식과 vendoring 복사본 무결성을 검사한다.
+// kelo plugin 등록 방식과 vendoring 복사본 무결성을 검사한다.
 void _checkVendoredPlugin(
   File optionsFile,
   String where,
@@ -240,7 +240,7 @@ void _checkVendoredPlugin(
 ) {
   if (entry['git'] != null) {
     violations.add(
-      '$where: plugins.$name이 git 으로 등록됨 (진단이 동작하지 않음) — /jkit:flutter-sync로 재생성하세요.',
+      '$where: plugins.$name이 git 으로 등록됨 (진단이 동작하지 않음) — /kelo:flutter-sync로 재생성하세요.',
     );
     return;
   }
@@ -248,7 +248,7 @@ void _checkVendoredPlugin(
   if (rel is! String) return;
   if (rel.startsWith('/') || RegExp(r'^[A-Za-z]:[\\/]').hasMatch(rel)) {
     violations.add(
-      '$where: plugins.$name.path가 절대 경로($rel) — 다른 PC/CI에서 동작하지 않음. /jkit:flutter-sync로 재생성하세요.',
+      '$where: plugins.$name.path가 절대 경로($rel) — 다른 PC/CI에서 동작하지 않음. /kelo:flutter-sync로 재생성하세요.',
     );
     return;
   }
@@ -281,14 +281,14 @@ void _checkVendoredPlugin(
   if (changed.isNotEmpty) {
     violations.add(
       '$where: vendoring된 $name 복사본이 변경됨 (${changed.take(3).join(', ')}'
-      '${changed.length > 3 ? ' 외 ${changed.length - 3}개' : ''}) — 직접 수정 금지, /jkit:flutter-sync로 재생성하세요.',
+      '${changed.length > 3 ? ' 외 ${changed.length - 3}개' : ''}) — 직접 수정 금지, /kelo:flutter-sync로 재생성하세요.',
     );
   }
 }
 
-// 같은 폴더의 pubspec.yaml이 jkit_analysis에 의존하는지 (workspace 루트처럼
-// jkit 규칙을 적용하지 않는 패키지의 options 파일은 include 검사 대상이 아니다).
-bool _dependsOnJkit(Directory dir) {
+// 같은 폴더의 pubspec.yaml이 kelo_analysis에 의존하는지 (workspace 루트처럼
+// kelo 규칙을 적용하지 않는 패키지의 options 파일은 include 검사 대상이 아니다).
+bool _dependsOnKelo(Directory dir) {
   final pubspec = File('${dir.path}/pubspec.yaml');
   if (!pubspec.existsSync()) return false;
   final Object? doc;
@@ -300,13 +300,13 @@ bool _dependsOnJkit(Directory dir) {
   if (doc is! YamlMap) return false;
   for (final key in ['dependencies', 'dev_dependencies']) {
     final deps = doc[key];
-    if (deps is YamlMap && deps.containsKey('jkit_analysis')) return true;
+    if (deps is YamlMap && deps.containsKey('kelo_analysis')) return true;
   }
   return false;
 }
 
-// include 체인을 따라가 package:jkit_analysis에 도달하는지 확인한다.
-bool _reachesJkit(File file, Set<String> seen) {
+// include 체인을 따라가 package:kelo_analysis에 도달하는지 확인한다.
+bool _reachesKelo(File file, Set<String> seen) {
   if (!seen.add(file.absolute.path) || !file.existsSync()) return false;
   final Object? doc;
   try {
@@ -320,10 +320,10 @@ bool _reachesJkit(File file, Set<String> seen) {
       ? include.map((e) => '$e').toList()
       : [if (include != null) '$include'];
   for (final t in targets) {
-    if (t.startsWith(_jkitInclude)) return true;
+    if (t.startsWith(_keloInclude)) return true;
     if (!t.startsWith('package:')) {
       final next = File.fromUri(file.absolute.uri.resolve(t));
-      if (_reachesJkit(next, seen)) return true;
+      if (_reachesKelo(next, seen)) return true;
     }
   }
   return false;
@@ -346,7 +346,7 @@ void _checkIgnoreComments(
         .split(',')
         .map((c) => c.trim().split(RegExp(r'\s')).first)
         .map((c) => c.contains('|') ? c.split('|').last : c)
-        .where((c) => c.isNotEmpty && policy.isJkitRule(c));
+        .where((c) => c.isNotEmpty && policy.isKeloRule(c));
     for (final code in codes) {
       final rel = file.path.substring(root.length + 1);
       violations.add('$rel:${i + 1}: // ignore: $code');

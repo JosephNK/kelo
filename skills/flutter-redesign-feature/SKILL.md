@@ -241,7 +241,7 @@ dart analyze: 0 errors, 0 warnings
 ### Stitch 디자인
 
 ```
-/jkit:flutter-redesign-feature
+/kelo:flutter-redesign-feature
 
 ## Stitch Instructions
 Get the images and code for the following Stitch project's screens:
@@ -262,7 +262,7 @@ Use a utility like `curl -L` to download the hosted URLs. <feature 키워드> UI
 ### Figma URL
 
 ```
-/jkit:flutter-redesign-feature <figma URL> <feature 키워드> UI 새 디자인 적용해줘
+/kelo:flutter-redesign-feature <figma URL> <feature 키워드> UI 새 디자인 적용해줘
 ```
 
 → source: Figma URL → WebFetch로 fetch.
@@ -270,7 +270,7 @@ Use a utility like `curl -L` to download the hosted URLs. <feature 키워드> UI
 ### 로컬 이미지 파일
 
 ```
-/jkit:flutter-redesign-feature <이미지 경로> <feature 키워드> 화면 이렇게 바꿔줘
+/kelo:flutter-redesign-feature <이미지 경로> <feature 키워드> 화면 이렇게 바꿔줘
 ```
 
 → source: 로컬 이미지 → Read로 시각 인식.
@@ -278,7 +278,7 @@ Use a utility like `curl -L` to download the hosted URLs. <feature 키워드> UI
 ### 자유 텍스트 명세
 
 ```
-/jkit:flutter-redesign-feature <feature 키워드> 화면을 <스타일 설명>으로 바꿔줘.
+/kelo:flutter-redesign-feature <feature 키워드> 화면을 <스타일 설명>으로 바꿔줘.
 ```
 
 → source: 텍스트 설명 그대로 디자인 명세로 사용.

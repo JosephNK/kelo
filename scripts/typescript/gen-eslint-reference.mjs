@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // =============================================================================
-// JKit Lint Rules Reference Generator
+// Kelo Lint Rules Reference Generator
 // -----------------------------------------------------------------------------
 // 지정된 ESLint/Stylelint 설정 파일(.mjs)을 파싱하여 Lint 규칙 참조 문서를
 // 자동 생성한다.
@@ -918,7 +918,7 @@ function categorizeIgnorePattern(p) {
   // - `eslint.config.mjs`는 `.config.`지만 ESLint 자체 설정 → build
   if (p === "next-env.d.ts" || p === "eslint.config.mjs") return "build";
   if (
-    /^(?:dist|build|coverage|\.next|out|\.jkit|scripts|e2e|node_modules|eslint-rules|migrations)(?:\/|$)/.test(
+    /^(?:dist|build|coverage|\.next|out|\.kelo|scripts|e2e|node_modules|eslint-rules|migrations)(?:\/|$)/.test(
       p,
     )
   )

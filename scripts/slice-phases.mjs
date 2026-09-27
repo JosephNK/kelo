@@ -2,7 +2,7 @@
 // =============================================================================
 // Slice a Markdown document with `#### Phase N` headers into per-phase files.
 //
-// Assumes a PHASES.md produced by /jkit:code-phases with structure:
+// Assumes a PHASES.md produced by /kelo:code-phases with structure:
 //   ## 1. 개요
 //   ## 2. 기술 스택
 //   ## 3. 아키텍처 요약

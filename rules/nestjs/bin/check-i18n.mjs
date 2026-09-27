@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 // =============================================================================
-// JKit i18n Error Code Checker
+// Kelo i18n Error Code Checker
 // -----------------------------------------------------------------------------
 // exception/ 폴더의 *.error.ts 파일에서 사용된 에러 코드가
 // src/infrastructure/i18n/locales/<lang>/error.json 모든 로케일에 등록되었는지
 // 검증한다. conventions.md "Exception creation checklist" 강제 보조 스크립트.
 //
 // 사용법 (프로젝트 root에서):
-//   npx jkit-check-i18n   (@josephnk/eslint-config-nestjs bin)
-//   npx jkit-check-i18n -p /path/to/project
+//   npx kelo-check-i18n   (eslint-config-kelo-nestjs bin)
+//   npx kelo-check-i18n -p /path/to/project
 //
 // 옵션:
 //   -p <dir>           프로젝트 루트 (기본: CWD)

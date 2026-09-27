@@ -366,4 +366,4 @@ workspace로 resolve된 import.
 - **NestJS DI 조립**: `**/*.module.ts`
 - **앱 부트스트랩**: `src/main.ts`, `src/app.*.ts`
 - **특수 경로**: `src/modules/health/**`, `src/modules/**/common/**`, `**/packages/**`
-- **빌드/툴 산출물 (코드 작성 무관)**: `scripts/**`, `.jkit/**`, `eslint.config.mjs`, `eslint-rules/**`, `dist/**`, `coverage/**`, `migrations/**`
+- **빌드/툴 산출물 (코드 작성 무관)**: `scripts/**`, `.kelo/**`, `eslint.config.mjs`, `eslint-rules/**`, `dist/**`, `coverage/**`, `migrations/**`

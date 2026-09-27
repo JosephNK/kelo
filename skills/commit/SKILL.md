@@ -2,7 +2,7 @@
 name: commit
 description: Git 커밋 메시지 자동 생성. 변경 사항을 분석하고 한국어 커밋 메시지 3개를 제안한다. MUST be invoked whenever the user expresses intent to commit in Korean or English — including but not limited to "커밋", "커밋 하자", "커밋해", "커밋해줘", "커밋 부탁", "지금 커밋", "이거 커밋", "commit", "commit this", "let's commit", "make a commit", "please commit". Trigger on any user message whose primary intent is to create a git commit, even without the slash command. Do NOT fall back to running raw git commands directly when this skill is available — always invoke this skill first.
 allowed-tools: Bash(git add:*), Bash(git status:*), Bash(git commit:*), Bash(git diff:*), Bash(git log:*), Bash(git reset:*)
-origin: jKit
+origin: Kelo
 ---
 
 ## Current State
@@ -24,7 +24,7 @@ origin: jKit
 | text     | Use the provided text as subject, generate body from changes                                        |
 | `--auto` | Auto mode: split into multiple commits if needed, generate best messages, commit without confirmation |
 
-> `--auto` can be combined with other arguments: `/jkit:commit --auto Add login form validation`
+> `--auto` can be combined with other arguments: `/kelo:commit --auto Add login form validation`
 > When text argument is combined with `--auto` and split is needed, the text is used as the **first commit's subject**; remaining commits get auto-generated subjects.
 
 ---
@@ -133,7 +133,7 @@ Types:
 - `test`: 테스트 추가/수정
 - `chore`: 빌드, 설정, 의존성 등
 
-**예시: `/jkit:commit 커밋 커맨드 업데이트` 실행 시**
+**예시: `/kelo:commit 커밋 커맨드 업데이트` 실행 시**
 
 ```
 1. chore: 커밋 커맨드 업데이트

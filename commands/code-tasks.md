@@ -5,9 +5,9 @@
 ## 사용법
 
 ```
-/jkit:code-tasks <plan-file-path>
-/jkit:code-tasks code-harness/PLAN.md
-/jkit:code-tasks code-harness/PLAN.md -o code-harness/TASKS.md
+/kelo:code-tasks <plan-file-path>
+/kelo:code-tasks code-harness/PLAN.md
+/kelo:code-tasks code-harness/PLAN.md -o code-harness/TASKS.md
 ```
 
 ## 인자
@@ -411,7 +411,7 @@ Step 8 검증을 모두 통과한 Task 문서를 출력 경로에 저장합니�
 #### 9-2. Task 단위 슬라이스 생성
 
 저장 직후 Task 문서를 Task 단위로 분할하여 슬라이스 파일을 생성합니다.
-이 슬라이스는 `/jkit:code-harness` 실행 시 Generator/Evaluator에 전달되어
+이 슬라이스는 `/kelo:code-harness` 실행 시 Generator/Evaluator에 전달되어
 **TASKS.md 전체를 매 라운드 읽지 않도록** 토큰 사용량을 줄입니다.
 
 **슬라이스 출력 디렉토리** (입력 파일 경로 기반 규칙):
@@ -429,8 +429,8 @@ slice_dir = <dirname of OUTPUT> / <basename(OUTPUT) lowercase, .md 제거> /
 실행 전에 `slice-tasks.mjs`의 존재 여부와 실행 권한을 확인합니다. 스크립트가 없거나 실행할 수 없으면 경고를 출력하고 Task 문서 저장은 유지합니다.
 
 ```bash
-JKIT_DIR=$(jq -r '.plugins["jkit@jkit"][0].installPath' ~/.claude/plugins/installed_plugins.json)
-$JKIT_DIR/scripts/slice-tasks.mjs --mode compact <OUTPUT> <slice_dir>
+KELO_DIR=$(jq -r '.plugins["kelo@kelo"][0].installPath' ~/.claude/plugins/installed_plugins.json)
+$KELO_DIR/scripts/slice-tasks.mjs --mode compact <OUTPUT> <slice_dir>
 ```
 
 스크립트가 자동으로 수행하는 작업:
@@ -461,7 +461,7 @@ code-harness/tasks/Task-2.md
 - Task 총 개수, Phase별 분포, 복잡도 분포 요약 출력
 - Step 8 검증 결과 요약 (전체 통과 / 수정된 항목)
 - 커밋은 하지 않음 — 사용자가 직접 커밋
-- **다음 단계 안내**: `/jkit:code-qa {OUTPUT}` 실행으로 QA 체크리스트 문서 생성 가능
+- **다음 단계 안내**: `/kelo:code-qa {OUTPUT}` 실행으로 QA 체크리스트 문서 생성 가능
 
 ## 분해 규칙 상세
 

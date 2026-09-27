@@ -1,11 +1,11 @@
 ---
-description: Initialize JKit across monorepo workspaces using jkit.workspaces.json
+description: Initialize Kelo across monorepo workspaces using kelo.workspaces.json
 argument-hint: '[manifest-path]'
 ---
 
-# JKit Workspaces Init
+# Kelo Workspaces Init
 
-모노레포의 여러 워크스페이스에 JKit을 일괄 초기화합니다.
+모노레포의 여러 워크스페이스에 Kelo을 일괄 초기화합니다.
 
 - **매니페스트가 이미 있으면**: 각 entry에 대해 init을 실행합니다 (프롬프트 없이 매니페스트 값 사용).
 - **매니페스트가 없으면**: 워크스페이스를 자동 탐색하고 entry별 스택을 받아 매니페스트를 생성한 뒤 init을 실행합니다.
@@ -14,11 +14,11 @@ argument-hint: '[manifest-path]'
 
 **$ARGUMENTS**
 
-- `[manifest-path]` (선택): 매니페스트 파일 경로. 생략 시 `./jkit.workspaces.json` 사용.
+- `[manifest-path]` (선택): 매니페스트 파일 경로. 생략 시 `./kelo.workspaces.json` 사용.
 
 ## 매니페스트 스펙
 
-`/jkit:workspaces-sync` 와 동일한 스펙입니다. 요약:
+`/kelo:workspaces-sync` 와 동일한 스펙입니다. 요약:
 
 ```json
 {
@@ -36,12 +36,12 @@ argument-hint: '[manifest-path]'
 }
 ```
 
-자세한 필드 설명은 `/jkit:workspaces-sync` 문서 참조.
+자세한 필드 설명은 `/kelo:workspaces-sync` 문서 참조.
 
 ## 플러그인 경로 확인
 
 ```bash
-JKIT_DIR=$(jq -r '.plugins["jkit@jkit"][0].installPath' ~/.claude/plugins/installed_plugins.json)
+KELO_DIR=$(jq -r '.plugins["kelo@kelo"][0].installPath' ~/.claude/plugins/installed_plugins.json)
 ```
 
 ## 모노레포 루트 고정
@@ -56,7 +56,12 @@ if [ -n "$MANIFEST_ARG" ]; then
     *)  MANIFEST_PATH="$MONOREPO_ROOT/$MANIFEST_ARG" ;;
   esac
 else
-  MANIFEST_PATH="$MONOREPO_ROOT/jkit.workspaces.json"
+  MANIFEST_PATH="$MONOREPO_ROOT/kelo.workspaces.json"
+  # 레거시 이름(jkit.workspaces.json)은 kelo 이름으로 옮긴다
+  if [ ! -f "$MANIFEST_PATH" ] && [ -f "$MONOREPO_ROOT/jkit.workspaces.json" ]; then
+    mv "$MONOREPO_ROOT/jkit.workspaces.json" "$MANIFEST_PATH"
+    echo "[manifest] jkit.workspaces.json → kelo.workspaces.json 이름 변경"
+  fi
 fi
 ```
 
@@ -243,51 +248,51 @@ for i in $(seq 0 $((WS_COUNT - 1))); do
       fi
 
       # AGENTS.md (선택)
-      [ "$WS_GEN_AGENTS" = "true" ] && $JKIT_DIR/scripts/gen-agents.mjs nextjs -p . -n "$WS_NAME" --docs-dir docs
+      [ "$WS_GEN_AGENTS" = "true" ] && $KELO_DIR/scripts/gen-agents.mjs nextjs -p . -n "$WS_NAME" --docs-dir docs
 
-      $JKIT_DIR/scripts/gen-git.mjs -p docs                                                                   && \
-      $JKIT_DIR/scripts/gen-architecture.mjs nextjs -p docs                                                   && \
-      $JKIT_DIR/scripts/gen-structure.mjs nextjs -p docs                                                      && \
+      $KELO_DIR/scripts/gen-git.mjs -p docs                                                                   && \
+      $KELO_DIR/scripts/gen-architecture.mjs nextjs -p docs                                                   && \
+      $KELO_DIR/scripts/gen-structure.mjs nextjs -p docs                                                      && \
       if [ -n "$WS_CONV_STACKS" ]; then
-        $JKIT_DIR/scripts/gen-conventions.mjs nextjs -p docs --with "$WS_CONV_STACKS"
+        $KELO_DIR/scripts/gen-conventions.mjs nextjs -p docs --with "$WS_CONV_STACKS"
       else
-        $JKIT_DIR/scripts/gen-conventions.mjs nextjs -p docs
+        $KELO_DIR/scripts/gen-conventions.mjs nextjs -p docs
       fi                                                                                                      && \
       if [ -n "$WS_ESLINT_STACKS" ]; then
-        $JKIT_DIR/scripts/gen-lint.mjs nextjs -p docs --with "$WS_ESLINT_STACKS"                              && \
-        $JKIT_DIR/scripts/typescript/gen-eslint.mjs nextjs -p . --with "$WS_ESLINT_STACKS"
+        $KELO_DIR/scripts/gen-lint.mjs nextjs -p docs --with "$WS_ESLINT_STACKS"                              && \
+        $KELO_DIR/scripts/typescript/gen-eslint.mjs nextjs -p . --with "$WS_ESLINT_STACKS"
       else
-        $JKIT_DIR/scripts/gen-lint.mjs nextjs -p docs                                                         && \
-        $JKIT_DIR/scripts/typescript/gen-eslint.mjs nextjs -p .
+        $KELO_DIR/scripts/gen-lint.mjs nextjs -p docs                                                         && \
+        $KELO_DIR/scripts/typescript/gen-eslint.mjs nextjs -p .
       fi                                                                                                      && \
-      $JKIT_DIR/scripts/typescript/gen-stylelint.mjs nextjs -p .                                               && \
-      $JKIT_DIR/scripts/typescript/gen-prettier.mjs nextjs -p .                                                && \
-      $JKIT_DIR/scripts/typescript/gen-tsconfig.mjs nextjs -p .
+      $KELO_DIR/scripts/typescript/gen-stylelint.mjs nextjs -p .                                               && \
+      $KELO_DIR/scripts/typescript/gen-prettier.mjs nextjs -p .                                                && \
+      $KELO_DIR/scripts/typescript/gen-tsconfig.mjs nextjs -p .
       # gen-husky, gen-commitlint는 monorepo 루트에서만 관리 (워크스페이스 호출 X)
       ;;
     nestjs)
-      [ "$WS_GEN_AGENTS" = "true" ] && $JKIT_DIR/scripts/gen-agents.mjs nestjs -p . -n "$WS_NAME" --docs-dir docs
+      [ "$WS_GEN_AGENTS" = "true" ] && $KELO_DIR/scripts/gen-agents.mjs nestjs -p . -n "$WS_NAME" --docs-dir docs
 
-      $JKIT_DIR/scripts/gen-git.mjs -p docs                                                                   && \
-      $JKIT_DIR/scripts/gen-architecture.mjs nestjs -p docs                                                   && \
-      $JKIT_DIR/scripts/gen-structure.mjs nestjs -p docs                                                      && \
+      $KELO_DIR/scripts/gen-git.mjs -p docs                                                                   && \
+      $KELO_DIR/scripts/gen-architecture.mjs nestjs -p docs                                                   && \
+      $KELO_DIR/scripts/gen-structure.mjs nestjs -p docs                                                      && \
       if [ -n "$WS_CONV_STACKS" ]; then
-        $JKIT_DIR/scripts/gen-conventions.mjs nestjs -p docs --with "$WS_CONV_STACKS"
+        $KELO_DIR/scripts/gen-conventions.mjs nestjs -p docs --with "$WS_CONV_STACKS"
       else
-        $JKIT_DIR/scripts/gen-conventions.mjs nestjs -p docs
+        $KELO_DIR/scripts/gen-conventions.mjs nestjs -p docs
       fi                                                                                                      && \
       if [ -n "$WS_ESLINT_STACKS" ]; then
-        $JKIT_DIR/scripts/gen-lint.mjs nestjs -p docs --with "$WS_ESLINT_STACKS"                              && \
-        $JKIT_DIR/scripts/typescript/gen-eslint.mjs nestjs -p . --with "$WS_ESLINT_STACKS"
+        $KELO_DIR/scripts/gen-lint.mjs nestjs -p docs --with "$WS_ESLINT_STACKS"                              && \
+        $KELO_DIR/scripts/typescript/gen-eslint.mjs nestjs -p . --with "$WS_ESLINT_STACKS"
       else
-        $JKIT_DIR/scripts/gen-lint.mjs nestjs -p docs                                                         && \
-        $JKIT_DIR/scripts/typescript/gen-eslint.mjs nestjs -p .
+        $KELO_DIR/scripts/gen-lint.mjs nestjs -p docs                                                         && \
+        $KELO_DIR/scripts/typescript/gen-eslint.mjs nestjs -p .
       fi                                                                                                      && \
-      $JKIT_DIR/scripts/typescript/gen-prettier.mjs nestjs -p .                                                && \
+      $KELO_DIR/scripts/typescript/gen-prettier.mjs nestjs -p .                                                && \
       if [ -n "$WS_TSCONFIG_STACKS" ]; then
-        $JKIT_DIR/scripts/typescript/gen-tsconfig.mjs nestjs -p . --with "$WS_TSCONFIG_STACKS"
+        $KELO_DIR/scripts/typescript/gen-tsconfig.mjs nestjs -p . --with "$WS_TSCONFIG_STACKS"
       else
-        $JKIT_DIR/scripts/typescript/gen-tsconfig.mjs nestjs -p .
+        $KELO_DIR/scripts/typescript/gen-tsconfig.mjs nestjs -p .
       fi
       # gen-husky, gen-commitlint는 monorepo 루트에서만 관리 (워크스페이스 호출 X)
       ;;
@@ -360,14 +365,14 @@ ROOT_FRAMEWORK=$(jq -r ".workspaces[0].framework" "$MANIFEST_PATH")
 if [ ! -d .husky ]; then
   echo ""
   echo "[setup] monorepo 루트에 .husky가 없어 자동 setup합니다 ($ROOT_FRAMEWORK 템플릿)..."
-  $JKIT_DIR/scripts/gen-husky.mjs "$ROOT_FRAMEWORK" -p .
+  $KELO_DIR/scripts/gen-husky.mjs "$ROOT_FRAMEWORK" -p .
 else
   echo "[skip] monorepo 루트에 이미 .husky가 있어 setup을 건너뜁니다 (기존 설정 보존)."
 fi
 
 if [ ! -f commitlint.config.mjs ]; then
   echo "[setup] monorepo 루트에 commitlint.config.mjs가 없어 자동 setup합니다..."
-  $JKIT_DIR/scripts/gen-commitlint.mjs -p .
+  $KELO_DIR/scripts/gen-commitlint.mjs -p .
 else
   echo "[skip] monorepo 루트에 이미 commitlint.config.mjs가 있어 setup을 건너뜁니다."
 fi
@@ -375,7 +380,7 @@ fi
 
 > setup 시 루트 `package.json`의 `devDependencies`에 `husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional` 4개가 추가되고 `scripts.prepare = "husky"`가 설정됩니다 (`scripts.prepare`에 이미 다른 값이 있으면 보존). `.husky/pre-commit`, `.husky/commit-msg`도 생성됩니다.
 
-> `/jkit:workspaces-sync`는 루트 husky/commitlint를 절대 손대지 않습니다. 갱신이 필요하면 monorepo 루트에서 `node $JKIT_DIR/scripts/gen-husky.mjs <framework> -p .`을 명시적으로 실행하세요.
+> `/kelo:workspaces-sync`는 루트 husky/commitlint를 절대 손대지 않습니다. 갱신이 필요하면 monorepo 루트에서 `node $KELO_DIR/scripts/gen-husky.mjs <framework> -p .`을 명시적으로 실행하세요.
 
 ### 10. 보고
 

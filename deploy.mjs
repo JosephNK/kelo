@@ -25,12 +25,12 @@ Updates:
   - .claude-plugin/marketplace.json       (version)
   - .agents/plugins/marketplace.json      (version)
   - package.json                          (version)
-  - rules/nextjs/package.json             (version — @josephnk/eslint-config-nextjs)
-  - rules/nestjs/package.json             (version — @josephnk/eslint-config-nestjs)
+  - rules/nextjs/package.json             (version — eslint-config-kelo-nextjs)
+  - rules/nestjs/package.json             (version — eslint-config-kelo-nestjs)
   - rules/flutter/base/custom-lint/architecture_lint/pubspec.yaml      (version)
   - rules/flutter/leaf-kit/custom-lint/leaf_kit_lint/pubspec.yaml      (version)
   - rules/flutter/freezed/custom-lint/freezed_lint/pubspec.yaml        (version)
-  - rules/flutter/base/analysis/jkit_analysis/pubspec.yaml             (version)
+  - rules/flutter/base/analysis/kelo_analysis/pubspec.yaml             (version)
 
 Then:
   - git add + commit "chore: 버전 <new> 범프"
@@ -173,7 +173,7 @@ function updateJsonVersion(filePath, newVersion) {
   }
   if (Array.isArray(data.plugins)) {
     for (const plugin of data.plugins) {
-      if (plugin && plugin.name === "jkit") {
+      if (plugin && plugin.name === "kelo") {
         plugin.version = newVersion;
       }
     }
@@ -238,8 +238,8 @@ async function main() {
     "rules/flutter/leaf-kit/custom-lint/leaf_kit_lint/pubspec.yaml";
   const freezedLintPubspecPath =
     "rules/flutter/freezed/custom-lint/freezed_lint/pubspec.yaml";
-  const jkitAnalysisPubspecPath =
-    "rules/flutter/base/analysis/jkit_analysis/pubspec.yaml";
+  const keloAnalysisPubspecPath =
+    "rules/flutter/base/analysis/kelo_analysis/pubspec.yaml";
 
   const current = JSON.parse(fs.readFileSync(pluginJsonPath, "utf-8")).version;
   process.stdout.write(`Current version: ${current}\n`);
@@ -331,7 +331,7 @@ async function main() {
     `  8. Update freezed_lint/pubspec.yaml               → version: ${newVersion}\n`,
   );
   process.stdout.write(
-    `  9. Update rules/{nextjs,nestjs}/package.json + jkit_analysis/pubspec.yaml → ${newVersion}\n`,
+    `  9. Update rules/{nextjs,nestjs}/package.json + kelo_analysis/pubspec.yaml → ${newVersion}\n`,
   );
   process.stdout.write(
     `  10. git commit -m "chore: 버전 ${newVersion} 범프"\n`,
@@ -361,7 +361,7 @@ async function main() {
   updateYamlVersion(architectureLintPubspecPath, newVersion);
   updateYamlVersion(leafKitLintPubspecPath, newVersion);
   updateYamlVersion(freezedLintPubspecPath, newVersion);
-  updateYamlVersion(jkitAnalysisPubspecPath, newVersion);
+  updateYamlVersion(keloAnalysisPubspecPath, newVersion);
   for (const p of npmPackageJsonPaths) updateJsonVersion(p, newVersion);
 
   // Commit + tag + push
@@ -373,7 +373,7 @@ async function main() {
     architectureLintPubspecPath,
     leafKitLintPubspecPath,
     freezedLintPubspecPath,
-    jkitAnalysisPubspecPath,
+    keloAnalysisPubspecPath,
     ...npmPackageJsonPaths,
   ];
   if (fs.existsSync(rootPackageJsonPath)) addFiles.push(rootPackageJsonPath);
@@ -397,8 +397,8 @@ async function main() {
 
   if (args.release) {
     // 소비 프로젝트는 이 Release 자산(tarball URL)을 의존성으로 쓴다
-    // (scripts/common.mjs jkitPackageSpec).
-    const packDir = fs.mkdtempSync(path.join(os.tmpdir(), "jkit-release-"));
+    // (scripts/common.mjs keloPackageSpec).
+    const packDir = fs.mkdtempSync(path.join(os.tmpdir(), "kelo-release-"));
     const assets = [];
     for (const dir of npmPackageDirs) {
       const out = execFileSync(

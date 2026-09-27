@@ -1,7 +1,7 @@
 {
-  "name": "@josephnk/eslint-config-nestjs",
+  "name": "eslint-config-kelo-nestjs",
   "version": "0.3.80",
-  "description": "JKit NestJS ESLint shareable config — hexagonal architecture boundaries, layer import restrictions, and quality rules",
+  "description": "Kelo NestJS ESLint shareable config — hexagonal architecture boundaries, layer import restrictions, and quality rules",
   "type": "module",
   "license": "MIT",
   "author": "JosephNK <nkw0608@gmail.com>",
@@ -15,7 +15,7 @@
     "eslintconfig",
     "nestjs",
     "hexagonal-architecture",
-    "jkit"
+    "kelo"
   ],
   "engines": {
     "node": ">=20.11"
@@ -26,8 +26,8 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "jkit-lint-nestjs": "./bin/jkit-lint.mjs",
-    "jkit-check-i18n": "./bin/check-i18n.mjs"
+    "kelo-lint-nestjs": "./bin/kelo-lint.mjs",
+    "kelo-check-i18n": "./bin/check-i18n.mjs"
   },
   "files": [
     "index.mjs",

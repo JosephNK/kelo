@@ -8,8 +8,8 @@
       "WebFetch(domain:*)",
       "Skill(commit)",
       "Skill(commit:*)",
-      "Skill(jkit:commit)",
-      "Skill(jkit:commit:*)"
+      "Skill(kelo:commit)",
+      "Skill(kelo:commit:*)"
     ]
   }
 }

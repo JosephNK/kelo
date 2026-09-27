@@ -1,11 +1,11 @@
 ---
-description: Initialize JKit in NestJS project
+description: Initialize Kelo in NestJS project
 argument-hint: '[project-path]'
 ---
 
-# JKit NestJS Init
+# Kelo NestJS Init
 
-NestJS 프로젝트에 JKit 설정을 초기화합니다. 생성 스크립트로 동작합니다.
+NestJS 프로젝트에 Kelo 설정을 초기화합니다. 생성 스크립트로 동작합니다.
 
 ## Arguments
 
@@ -15,13 +15,13 @@ NestJS 프로젝트에 JKit 설정을 초기화합니다. 생성 스크립트로
 
 ## 플러그인 경로 확인
 
-스크립트를 실행하기 전에 jkit 플러그인 설치 경로를 확인합니다:
+스크립트를 실행하기 전에 kelo 플러그인 설치 경로를 확인합니다:
 
 ```bash
-JKIT_DIR=$(jq -r '.plugins["jkit@jkit"][0].installPath' ~/.claude/plugins/installed_plugins.json)
+KELO_DIR=$(jq -r '.plugins["kelo@kelo"][0].installPath' ~/.claude/plugins/installed_plugins.json)
 ```
 
-이후 모든 스크립트 경로는 `$JKIT_DIR`를 기준 디렉토리로 사용합니다.
+이후 모든 스크립트 경로는 `$KELO_DIR`를 기준 디렉토리로 사용합니다.
 
 ## 프로젝트 루트 고정
 
@@ -47,9 +47,9 @@ fi
 
 아래 모든 shell 블록은 `cd "$PROJECT_ROOT"`가 해당 스텝에서 이미 실행된 상태를 전제로 합니다.
 
-## 매니페스트 (`jkit.project.json`)
+## 매니페스트 (`kelo.project.json`)
 
-프로젝트 루트의 `jkit.project.json`은 init/sync가 쓰는 셋업 source-of-truth입니다. **있으면** 아래 프롬프트 스텝(이름·스택 선택·AGENTS 생성 여부)을 건너뛰고 매니페스트 값으로 무인 재현합니다. **없으면** 지금처럼 대화형으로 진행하고, 마지막에 수집한 값으로 매니페스트를 작성합니다.
+프로젝트 루트의 `kelo.project.json`은 init/sync가 쓰는 셋업 source-of-truth입니다. **있으면** 아래 프롬프트 스텝(이름·스택 선택·AGENTS 생성 여부)을 건너뛰고 매니페스트 값으로 무인 재현합니다. **없으면** 지금처럼 대화형으로 진행하고, 마지막에 수집한 값으로 매니페스트를 작성합니다.
 
 스펙 (NestJS):
 
@@ -68,12 +68,17 @@ fi
 
 ```bash
 cd "$PROJECT_ROOT"
-MANIFEST_PATH="$PROJECT_ROOT/jkit.project.json"
+MANIFEST_PATH="$PROJECT_ROOT/kelo.project.json"
+# 레거시 이름(jkit.project.json)은 kelo 이름으로 옮긴다
+if [ ! -f "$MANIFEST_PATH" ] && [ -f "$PROJECT_ROOT/jkit.project.json" ]; then
+  mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"
+  echo "[manifest] jkit.project.json → kelo.project.json 이름 변경"
+fi
 
 if [ -f "$MANIFEST_PATH" ]; then
   MF_FRAMEWORK=$(jq -r '.framework // ""' "$MANIFEST_PATH")
   if [ "$MF_FRAMEWORK" != "nestjs" ]; then
-    echo "Error: jkit.project.json framework='$MF_FRAMEWORK' (expected 'nestjs')" >&2
+    echo "Error: kelo.project.json framework='$MF_FRAMEWORK' (expected 'nestjs')" >&2
     exit 1
   fi
   PROJECT_NAME=$(jq -r '.projectName // ""' "$MANIFEST_PATH")
@@ -82,11 +87,11 @@ if [ -f "$MANIFEST_PATH" ]; then
   USER_TSCONFIG_STACKS=$(jq -r '(.tsconfigStacks // []) | join(",")' "$MANIFEST_PATH")
   GEN_AGENTS=$(jq -r '.generateAgents // true' "$MANIFEST_PATH")
   MANIFEST_MODE="apply"
-  echo "[manifest] apply mode — jkit.project.json 로드:"
+  echo "[manifest] apply mode — kelo.project.json 로드:"
   echo "  projectName=$PROJECT_NAME conv=[$USER_CONV_STACKS] eslint=[$USER_ESLINT_STACKS] tsconfig=[$USER_TSCONFIG_STACKS] agents=$GEN_AGENTS"
 else
   MANIFEST_MODE="prompt"
-  echo "[manifest] prompt mode — jkit.project.json 없음. 대화형 진행 후 작성합니다."
+  echo "[manifest] prompt mode — kelo.project.json 없음. 대화형 진행 후 작성합니다."
 fi
 ```
 
@@ -132,7 +137,7 @@ fi
 `GEN_AGENTS=true`이면:
 ```bash
 cd "$PROJECT_ROOT"
-$JKIT_DIR/scripts/gen-agents.mjs nestjs -p . -n "$PROJECT_NAME" --docs-dir docs
+$KELO_DIR/scripts/gen-agents.mjs nestjs -p . -n "$PROJECT_NAME" --docs-dir docs
 ```
 
 ### 6. 패키지 매니저 감지 및 package.json 보장
@@ -196,13 +201,13 @@ fi
 cd "$PROJECT_ROOT"
 
 # 1. GIT.md
-$JKIT_DIR/scripts/gen-git.mjs -p docs
+$KELO_DIR/scripts/gen-git.mjs -p docs
 
 # 2. ARCHITECTURE.md
-$JKIT_DIR/scripts/gen-architecture.mjs nestjs -p docs
+$KELO_DIR/scripts/gen-architecture.mjs nestjs -p docs
 
 # 3. STRUCTURE.md (lint-rules-structure-reference 복사)
-$JKIT_DIR/scripts/gen-structure.mjs nestjs -p docs
+$KELO_DIR/scripts/gen-structure.mjs nestjs -p docs
 
 # prompt 모드: Step 2~4 선택값을 변수에 대입. apply 모드: 매니페스트 분기에서 이미 설정됨.
 [ "$MANIFEST_MODE" = "prompt" ] && USER_CONV_STACKS="<conventions-stacks>"
@@ -211,56 +216,56 @@ $JKIT_DIR/scripts/gen-structure.mjs nestjs -p docs
 
 # 4. CONVENTIONS.md
 if [ -n "$USER_CONV_STACKS" ]; then
-  $JKIT_DIR/scripts/gen-conventions.mjs nestjs -p docs --with "$USER_CONV_STACKS"
+  $KELO_DIR/scripts/gen-conventions.mjs nestjs -p docs --with "$USER_CONV_STACKS"
 else
-  $JKIT_DIR/scripts/gen-conventions.mjs nestjs -p docs
+  $KELO_DIR/scripts/gen-conventions.mjs nestjs -p docs
 fi
 
 # 5. LINT.md (base + 선택 stack lint-rules)
 if [ -n "$USER_ESLINT_STACKS" ]; then
-  $JKIT_DIR/scripts/gen-lint.mjs nestjs -p docs --with "$USER_ESLINT_STACKS"
+  $KELO_DIR/scripts/gen-lint.mjs nestjs -p docs --with "$USER_ESLINT_STACKS"
 else
-  $JKIT_DIR/scripts/gen-lint.mjs nestjs -p docs
+  $KELO_DIR/scripts/gen-lint.mjs nestjs -p docs
 fi
 
 # 6. ESLint config (Step 6에서 package.json 존재를 보장한 뒤 실행)
-#    - eslint.config.mjs (패키지 factory 호출) + jkit.lint.json(stacks) 생성
-#    - package.json: @josephnk/eslint-config-nestjs devDep + lint-staged(jkit-lint-nestjs --fix) + scripts.lint(→ jkit-lint CLI 통일)
+#    - eslint.config.mjs (패키지 factory 호출) + kelo.lint.json(stacks) 생성
+#    - package.json: eslint-config-kelo-nestjs devDep + lint-staged(kelo-lint-nestjs --fix) + scripts.lint(→ kelo-lint CLI 통일)
 if [ -n "$USER_ESLINT_STACKS" ]; then
-  $JKIT_DIR/scripts/typescript/gen-eslint.mjs nestjs -p . --with "$USER_ESLINT_STACKS"
+  $KELO_DIR/scripts/typescript/gen-eslint.mjs nestjs -p . --with "$USER_ESLINT_STACKS"
 else
-  $JKIT_DIR/scripts/typescript/gen-eslint.mjs nestjs -p .
+  $KELO_DIR/scripts/typescript/gen-eslint.mjs nestjs -p .
 fi
 
 # 7. Prettier config (항상 실행, 스택 선택 없음)
 #    - prettier.config.mjs 생성
 #    - package.json: prettier devDep + scripts.format + lint-staged TS/JS·데이터 글로브 자동 주입
-$JKIT_DIR/scripts/typescript/gen-prettier.mjs nestjs -p .
+$KELO_DIR/scripts/typescript/gen-prettier.mjs nestjs -p .
 
 # 8. tsconfig.json patch
 if [ -n "$USER_TSCONFIG_STACKS" ]; then
-  $JKIT_DIR/scripts/typescript/gen-tsconfig.mjs nestjs -p . --with "$USER_TSCONFIG_STACKS"
+  $KELO_DIR/scripts/typescript/gen-tsconfig.mjs nestjs -p . --with "$USER_TSCONFIG_STACKS"
 else
-  $JKIT_DIR/scripts/typescript/gen-tsconfig.mjs nestjs -p .
+  $KELO_DIR/scripts/typescript/gen-tsconfig.mjs nestjs -p .
 fi
 
 # 9. Husky hooks
 #    + package.json에 husky/lint-staged/@commitlint devDeps와 scripts.prepare 주입
-$JKIT_DIR/scripts/gen-husky.mjs nestjs -p .
+$KELO_DIR/scripts/gen-husky.mjs nestjs -p .
 
 # 10. commitlint.config.mjs (Conventional Commits + 프로젝트 허용 타입 강제)
-$JKIT_DIR/scripts/gen-commitlint.mjs -p .
+$KELO_DIR/scripts/gen-commitlint.mjs -p .
 ```
 
 해당 생성기에 사용자가 선택한 스택이 없으면 `--with` 인자를 생략합니다.
 
 ### 8. ESLint rules 의존성 설치
 
-`gen-eslint.mjs`는 jkit ESLint 패키지를 쓰도록 프로젝트를 연결합니다:
+`gen-eslint.mjs`는 kelo ESLint 패키지를 쓰도록 프로젝트를 연결합니다:
 
 - `eslint.config.mjs` — 패키지 factory 호출만 담은 짧은 생성물 (매 sync마다 덮어씀)
-- `jkit.lint.json` — 선택한 스택(`stacks`) + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
-- `package.json` — `devDependencies`에 `"@josephnk/eslint-config-nestjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v<current-version>/josephnk-eslint-config-nestjs-<current-version>.tgz"` 추가 (GitHub Release tarball — npm 레지스트리 미사용) (레거시 `@jkit/code-plugin` git 의존성은 제거), lint-staged TS/JS glob은 `jkit-lint-nestjs --fix`, `scripts.lint`를 `jkit-lint-nestjs`로 통일 (eslint 기반 `lint:ci`/`lint:fix`도 교체 — 경로/`--ignore-pattern` 인자는 `jkit.lint.json` `ignores`로 이전)
+- `kelo.lint.json` — 선택한 스택(`stacks`) + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
+- `package.json` — `devDependencies`에 `"eslint-config-kelo-nestjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v<current-version>/eslint-config-kelo-nestjs-<current-version>.tgz"` 추가 (GitHub Release tarball — npm 레지스트리 미사용) (레거시 `@jkit/code-plugin` git 의존성은 제거), lint-staged TS/JS glob은 `kelo-lint-nestjs --fix`, `scripts.lint`를 `kelo-lint-nestjs`로 통일 (eslint 기반 `lint:ci`/`lint:fix`도 교체 — 경로/`--ignore-pattern` 인자는 `kelo.lint.json` `ignores`로 이전)
 
 의존성을 실제로 설치합니다. 명령은 Step 6에서 결정된 `PM` 변수에 따라 분기합니다.
 
@@ -274,9 +279,9 @@ case "$PM" in
 esac
 ```
 
-> 규칙 원본과 조립 로직은 `node_modules/@josephnk/eslint-config-nestjs/`에 있습니다. 규칙 변경은 jkit-code-plugin에서 수정·배포(GitHub Release)하고, 프로젝트는 `/jkit:update-plugin-ref code-plugin` 또는 sync로 URL 버전을 올려 반영합니다. `jkit-check-i18n` CLI도 이 패키지가 제공합니다.
+> 규칙 원본과 조립 로직은 `node_modules/eslint-config-kelo-nestjs/`에 있습니다. 규칙 변경은 kelo 저장소에서 수정·배포(GitHub Release)하고, 프로젝트는 `/kelo:update-plugin-ref code-plugin` 또는 sync로 URL 버전을 올려 반영합니다. `kelo-check-i18n` CLI도 이 패키지가 제공합니다.
 
-> **peerDependencies**: `@josephnk/eslint-config-nestjs`는 다음을 peer로 요구합니다 (rules가 직접 import):
+> **peerDependencies**: `eslint-config-kelo-nestjs`는 다음을 peer로 요구합니다 (rules가 직접 import):
 > - `eslint` (9.22+) — `eslint/config`의 `defineConfig`/`globalIgnores` 사용
 > - `eslint-plugin-boundaries` (7+) — 아키텍처 레이어 boundary 검사 (v7 `policies` 문법 사용)
 > - `eslint-plugin-import` — 순환 의존성 감지(`import/no-cycle`) + resolver 기반 동작
@@ -304,11 +309,11 @@ esac
 
 사용자에게 다음 옵션을 안내합니다 (선택 — 필요할 때만 추가):
 
-> NestJS 프로젝트의 `package.json`에 `jkit-rules` 객체를 추가하면 lint 동작 일부를 토글할 수 있습니다. ESLint config 로드 시점에 평가되므로 `package.json` 수정 후 sync 재실행 없이 다음 ESLint 실행부터 반영됩니다.
+> NestJS 프로젝트의 `package.json`에 `kelo-rules` 객체를 추가하면 lint 동작 일부를 토글할 수 있습니다. ESLint config 로드 시점에 평가되므로 `package.json` 수정 후 sync 재실행 없이 다음 ESLint 실행부터 반영됩니다.
 >
 > ```json
 > {
->   "jkit-rules": {
+>   "kelo-rules": {
 >     "pathAliasCheck": false
 >   }
 > }
@@ -318,7 +323,7 @@ esac
 
 ### 10. 매니페스트 작성 (`MANIFEST_MODE=prompt`인 경우만)
 
-prompt 모드로 진행했다면 수집한 값으로 `jkit.project.json`을 작성합니다. 작성 직전 사용자에게 내용을 보여주고 확인을 받습니다. 다음 init/sync는 이 파일로 무인 재현됩니다. (apply 모드면 이미 매니페스트가 있으므로 건너뜁니다.)
+prompt 모드로 진행했다면 수집한 값으로 `kelo.project.json`을 작성합니다. 작성 직전 사용자에게 내용을 보여주고 확인을 받습니다. 다음 init/sync는 이 파일로 무인 재현됩니다. (apply 모드면 이미 매니페스트가 있으므로 건너뜁니다.)
 
 ```bash
 cd "$PROJECT_ROOT"
@@ -339,7 +344,7 @@ fi
 ### 11. 보고
 
 사용자에게 생성된 항목을 보고합니다:
-- `jkit.project.json` — JKit 셋업 매니페스트 (prompt 모드에서 신규 작성; 다음 init/sync 무인 재현용)
+- `kelo.project.json` — Kelo 셋업 매니페스트 (prompt 모드에서 신규 작성; 다음 init/sync 무인 재현용)
 - `AGENTS.md` — AI 에이전트 엔트리 포인트
 - `CLAUDE.md` → `AGENTS.md` 심볼릭 링크
 - `AGENTS.PROJECT.md` — 사용자 소유 프로젝트 고유 가이드 (최초 1회만 생성, 이후 보존)
@@ -348,11 +353,11 @@ fi
 - `STRUCTURE.md` — lint 룰이 가정하는 디렉토리 구조 참조
 - `CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (하단에 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `CONVENTIONS.PROJECT.md` — 사용자 소유 프로젝트 고유 컨벤션 (최초 1회만 생성, 이후 보존)
-- `eslint.config.mjs` — jkit 관리 생성물. `@josephnk/eslint-config-nestjs`의 `nestjs()` factory 호출 (직접 수정 금지 — hook이 차단)
-- `jkit.lint.json` — jkit 관리. 선택한 스택 + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
-- `eslint.project.config.mjs` — 사용자 소유 프로젝트 전용 규칙 추가 파일 (최초 1회만 스텁 생성, 이후 보존). jkit 규칙 재정의 시 ESLint 로드 에러
-- `package.json` — `devDependencies`에 `@josephnk/eslint-config-nestjs`, `husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional` 추가 + `scripts.lint`(→ `jkit-lint-nestjs`) + `scripts.prepare: "husky"`
+- `eslint.config.mjs` — kelo 관리 생성물. `eslint-config-kelo-nestjs`의 `nestjs()` factory 호출 (직접 수정 금지 — hook이 차단)
+- `kelo.lint.json` — kelo 관리. 선택한 스택 + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
+- `eslint.project.config.mjs` — 사용자 소유 프로젝트 전용 규칙 추가 파일 (최초 1회만 스텁 생성, 이후 보존). kelo 규칙 재정의 시 ESLint 로드 에러
+- `package.json` — `devDependencies`에 `eslint-config-kelo-nestjs`, `husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional` 추가 + `scripts.lint`(→ `kelo-lint-nestjs`) + `scripts.prepare: "husky"`
 - `tsconfig.json` — 프레임워크별 설정으로 패치됨
-- `.husky/pre-commit` — `npx lint-staged` + `npx jkit-check-i18n`
+- `.husky/pre-commit` — `npx lint-staged` + `npx kelo-check-i18n`
 - `.husky/commit-msg` — `npx --no -- commitlint --edit $1`
 - `commitlint.config.mjs` — Conventional Commits 설정 (허용 타입: feat, fix, refactor, docs, test, chore, perf, ci)

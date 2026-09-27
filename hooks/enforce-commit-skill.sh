@@ -1,12 +1,12 @@
 #!/bin/bash
-# 커밋 의도 감지 → jkit:commit 스킬 강제 안내 훅
+# 커밋 의도 감지 → kelo:commit 스킬 강제 안내 훅
 # UserPromptSubmit 이벤트에서 실행됨
 
 INPUT=$(cat)
 PROMPT=$(echo "$INPUT" | jq -r '.prompt // empty')
 
 # 이미 명시적으로 스킬을 호출 중이면 스킵
-if echo "$PROMPT" | grep -qE '/jkit:commit\b'; then
+if echo "$PROMPT" | grep -qE '/kelo:commit\b'; then
   exit 0
 fi
 
@@ -29,7 +29,7 @@ fi
 
 if [ "$HIT" = "1" ]; then
   cat <<'EOF'
-[jkit hook] User intent detected: 커밋(commit). MUST invoke the `jkit:commit` skill via the Skill tool BEFORE running any raw git commands. Do NOT execute `git commit` directly through Bash unless the user explicitly opts out of the skill.
+[kelo hook] User intent detected: 커밋(commit). MUST invoke the `kelo:commit` skill via the Skill tool BEFORE running any raw git commands. Do NOT execute `git commit` directly through Bash unless the user explicitly opts out of the skill.
 EOF
 fi
 

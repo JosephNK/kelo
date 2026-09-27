@@ -6,15 +6,15 @@
 //
 // Dependency form: vendored copy + RELATIVE `path:`.
 // Each plugin's sources (pubspec.yaml + lib/) are copied into
-// `<dir of analysis_options.yaml>/.jkit/plugins/<package>/` and registered as
-// `path: .jkit/plugins/<package>`. The copy is committed with the project, so
+// `<dir of analysis_options.yaml>/.kelo/plugins/<package>/` and registered as
+// `path: .kelo/plugins/<package>`. The copy is committed with the project, so
 // the rules run the same on every machine and in CI.
 //   - `git:` in plugins: resolves but reports no diagnostics (verified on
 //     Dart 3.13.4; dart-lang/sdk#61794) — not usable yet.
-//   - An absolute `path:` to the jkit plugin cache only works on one machine.
-// A `.jkit-vendor.json` manifest (sha256 per file) is written next to each
-// copy; `dart run jkit_analysis:verify` rejects modified copies.
-// Every run replaces the copy (rules update via /jkit:flutter-sync).
+//   - An absolute `path:` to the kelo plugin cache only works on one machine.
+// A `.kelo-vendor.json` manifest (sha256 per file) is written next to each
+// copy; `dart run kelo_analysis:verify` rejects modified copies.
+// Every run replaces the copy (rules update via /kelo:flutter-sync).
 //
 // Each plugin entry is written with both `path:` and a `diagnostics:` enable
 // list (every rule code mapped to `true`). The codes are auto-extracted from
@@ -43,7 +43,7 @@
 //   inject-custom-lint.mjs \
 //     --pubspec app/pubspec.yaml \
 //     --analysis-options analysis_options.yaml \
-//     --plugin-root /abs/path/to/jkit-code-plugin \
+//     --plugin-root /abs/path/to/kelo \
 //     [--stacks leaf-kit,freezed] \
 //     [--strip-stale-from app/analysis_options.yaml]
 // =============================================================================
@@ -59,7 +59,7 @@ import YAML from "yaml";
 const LEGACY_CUSTOM_LINT = "custom_lint";
 
 // Base package — always injected. `subPath` is relative to --plugin-root
-// (the local jkit-code-plugin checkout).
+// (the local kelo checkout).
 const BASE_PACKAGE = {
   name: "architecture_lint",
   subPath: "rules/flutter/base/custom-lint/architecture_lint",
@@ -97,7 +97,7 @@ auto-extracted from each plugin's lib/src/lints/*.dart).
 Options:
   --pubspec <path>           Path to pubspec.yaml (used to strip legacy custom_lint dev dep)
   --analysis-options <path>  Path to analysis_options.yaml (required)
-  --plugin-root <abs-dir>    Absolute path to the local jkit-code-plugin checkout (required)
+  --plugin-root <abs-dir>    Absolute path to the local kelo checkout (required)
   --stacks <stacks>          Comma-separated convention stacks (optional)
                              Known stacks with lint packages: ${Object.keys(STACK_PACKAGES).join(", ")}
   --strip-stale-from <path>  In workspace mode: normalize a member's analysis_options.yaml —
@@ -213,8 +213,8 @@ function extractDiagnosticsFor(pluginAbsPath) {
   return [...codes].sort();
 }
 
-const VENDOR_DIR = path.join(".jkit", "plugins");
-const VENDOR_MANIFEST = ".jkit-vendor.json";
+const VENDOR_DIR = path.join(".kelo", "plugins");
+const VENDOR_MANIFEST = ".kelo-vendor.json";
 
 function listVendorFiles(dir, base = dir) {
   const out = [];
@@ -227,7 +227,7 @@ function listVendorFiles(dir, base = dir) {
   return out.sort();
 }
 
-// Replace <hostDir>/.jkit/plugins/<name> with a fresh copy of the plugin's
+// Replace <hostDir>/.kelo/plugins/<name> with a fresh copy of the plugin's
 // pubspec.yaml + lib/ and write a sha256 manifest. Returns the relative path
 // (posix) to register in plugins:.
 function vendorPlugin(srcAbsPath, hostDir, pkg, pluginVersion) {
@@ -252,9 +252,9 @@ function vendorPlugin(srcAbsPath, hostDir, pkg, pluginVersion) {
   }
   const manifest = {
     $comment:
-      "Vendored by jkit — do not edit. Regenerate with /jkit:flutter-sync.",
+      "Vendored by kelo — do not edit. Regenerate with /kelo:flutter-sync.",
     package: pkg.name,
-    source: `jkit-code-plugin@${pluginVersion}/${pkg.subPath}`,
+    source: `kelo@${pluginVersion}/${pkg.subPath}`,
     files,
   };
   fs.writeFileSync(
@@ -558,7 +558,7 @@ function normalizeWorkspaceMember(memberPath, rootPath) {
       );
     }
   } else if (YAML.isSeq(currentInclude)) {
-    // 목록 형태 include (예: [<root>, package:jkit_analysis/...]) — root가
+    // 목록 형태 include (예: [<root>, package:kelo_analysis/...]) — root가
     // 없으면 맨 앞에 추가한다.
     const targets = currentInclude.toJSON().map(String);
     if (targets.includes(includeRel)) {

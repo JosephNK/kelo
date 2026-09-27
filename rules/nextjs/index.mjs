@@ -1,14 +1,14 @@
 // =============================================================================
-// JKit Next.js ESLint shareable config — factory
+// Kelo Next.js ESLint shareable config — factory
 // -----------------------------------------------------------------------------
 // 소비 프로젝트의 eslint.config.mjs:
 //
-//   import { nextjs } from "@josephnk/eslint-config-nextjs";
+//   import { nextjs } from "eslint-config-kelo-nextjs";
 //   import projectConfig from "./eslint.project.config.mjs";
 //   export default nextjs({ root: import.meta.dirname, project: projectConfig });
 //
 // 스택과 프로젝트별 확장(boundary element/rule/ignore, 전역 ignore)은
-// `<root>/jkit.lint.json`에서 읽는다. 블록 순서는 뒤가 앞을 override하므로
+// `<root>/kelo.lint.json`에서 읽는다. 블록 순서는 뒤가 앞을 override하므로
 // 아래 조립 순서를 바꾸지 않는다.
 // =============================================================================
 
@@ -59,7 +59,7 @@ import {
 import { tanstackQueryDomainBannedPackages } from "./tanstack-query/eslint.rules.mjs";
 
 /**
- * 스택 등록표 — `jkit.lint.json`의 `stacks` 이름 → 스택이 기여하는 데이터.
+ * 스택 등록표 — `kelo.lint.json`의 `stacks` 이름 → 스택이 기여하는 데이터.
  * 키: restrictedPatterns, domainBannedPackages, restrictedSyntax,
  *     boundaryElements, boundaryRules, boundaryPatches, boundaryIgnores, customConfig
  */
@@ -108,10 +108,10 @@ function patchBoundaryRules(rules, patches) {
 }
 
 /**
- * jkit 관리 블록만 조립한다 (project override/ignore 제외).
- * `nextjs()`와 CLI(`jkit-lint-nextjs`)가 공유한다.
+ * kelo 관리 블록만 조립한다 (project override/ignore 제외).
+ * `nextjs()`와 CLI(`kelo-lint-nextjs`)가 공유한다.
  */
-function buildJkitBlocks(root, lintConfig) {
+function buildKeloBlocks(root, lintConfig) {
   const stacks = resolveStacks(nextjsStacks, lintConfig.stacks ?? [], "nextjs");
   const pick = (key) => pickFromStacks(stacks, key);
 
@@ -158,7 +158,7 @@ function buildJkitBlocks(root, lintConfig) {
     // [6] Server Component 전용 — src/app/** 에서 Hook 호출 금지 (error)
     ...baseServerComponentRules,
 
-    // [7] 아키텍처 경계 — base + 스택 + jkit.lint.json 확장
+    // [7] 아키텍처 경계 — base + 스택 + kelo.lint.json 확장
     ...buildArchitectureBoundaries(
       [
         ...baseBoundaryElements,
@@ -194,20 +194,20 @@ function buildJkitBlocks(root, lintConfig) {
  * @param {object} options
  * @param {string} options.root 소비 프로젝트 루트 (`import.meta.dirname`)
  * @param {import("eslint").Linter.Config[]} [options.project]
- *   `eslint.project.config.mjs` — 새 규칙 추가만 허용, jkit 규칙 변경 시 에러
+ *   `eslint.project.config.mjs` — 새 규칙 추가만 허용, kelo 규칙 변경 시 에러
  */
 export function nextjs({ root, project = [] } = {}) {
   if (!root) {
     throw new Error(
-      "[jkit] nextjs({ root })가 필요합니다 — eslint.config.mjs에서 `root: import.meta.dirname`을 전달하세요.",
+      "[kelo] nextjs({ root })가 필요합니다 — eslint.config.mjs에서 `root: import.meta.dirname`을 전달하세요.",
     );
   }
   const lintConfig = loadLintConfig(root);
-  const jkitBlocks = buildJkitBlocks(root, lintConfig);
-  assertProjectConfig(project, jkitBlocks);
+  const keloBlocks = buildKeloBlocks(root, lintConfig);
+  assertProjectConfig(project, keloBlocks);
 
   return [
-    ...jkitBlocks,
+    ...keloBlocks,
 
     // 프로젝트 전용 추가 규칙 (eslint.project.config.mjs)
     ...project,
@@ -215,7 +215,7 @@ export function nextjs({ root, project = [] } = {}) {
     // inline disable 주석 무시
     lockInlineConfigBlock,
 
-    // [9] 전역 ignore (빌드 산출물 등) + jkit.lint.json `ignores`
+    // [9] 전역 ignore (빌드 산출물 등) + kelo.lint.json `ignores`
     baseIgnores,
     ...projectIgnoresBlock(lintConfig.ignores),
   ];

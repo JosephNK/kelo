@@ -112,7 +112,7 @@ export class OrderService {
 
 **Forbids**
 
-- 수기 편집 (jkit:nextjs-openapi-gen으로만 갱신)
+- 수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)
 - 이 파일에서 다른 레이어 import (순수 통신 경계; allow: [])
 
 ### `http-endpoint`
@@ -125,7 +125,7 @@ export class OrderService {
 
 **Forbids**
 
-- 수기 편집 (jkit:nextjs-openapi-gen으로만 갱신)
+- 수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)
 - 다른 레이어 import (allow: [])
 
 ### `http-dto`
@@ -138,7 +138,7 @@ export class OrderService {
 
 **Forbids**
 
-- 수기 편집 (jkit:nextjs-openapi-gen으로만 갱신)
+- 수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)
 - 도메인 변환 로직 (→ http-mapper)
 - 다른 레이어 import (allow: [])
 
@@ -153,7 +153,7 @@ export class OrderService {
 
 **Forbids**
 
-- 수기 편집 (jkit:nextjs-openapi-gen으로만 갱신)
+- 수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)
 - 도메인 모델 import (DTO만 반환 — 변환은 repository 책임)
 - 다른 레이어 import (allow: http-endpoint, http-dto만)
 
@@ -639,4 +639,4 @@ Boundary 검사 제외 (boundaries/no-unknown-files 오탐 방지).
 - **테스트/설정 파일**: `**/*.test.ts`, `**/*.test.tsx`, `**/*.spec.ts`, `**/*.spec.tsx`, `*.config.*`, `eslint.project.config.mjs`, `prettier.config.mjs`, `commitlint.config.mjs`
 - **타입/메타 파일**: `*.ts`, `*.d.ts`, `types/**`, `src/lib/types/**`
 - **특수 경로**: `specs/**`, `**/packages/**`, `src/http/_generated/**`, `src/theme.generated.ts`
-- **빌드/툴 산출물 (코드 작성 무관)**: `.jkit/**`, `scripts/**`, `e2e/**`, `eslint.config.mjs`, `.next/**`, `out/**`, `build/**`, `coverage/**`, `next-env.d.ts`
+- **빌드/툴 산출물 (코드 작성 무관)**: `.kelo/**`, `scripts/**`, `e2e/**`, `eslint.config.mjs`, `.next/**`, `out/**`, `build/**`, `coverage/**`, `next-env.d.ts`

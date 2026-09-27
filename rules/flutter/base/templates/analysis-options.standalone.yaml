@@ -1,5 +1,5 @@
 # GENERATED FILE - DO NOT MODIFY BY HAND
-# Managed by jkit (overwritten by /jkit:flutter-init and -sync).
-# Rules: package:jkit_analysis | plugins: managed by gen-custom-lint.mjs
+# Managed by kelo (overwritten by /kelo:flutter-init and -sync).
+# Rules: package:kelo_analysis | plugins: managed by gen-custom-lint.mjs
 
-include: package:jkit_analysis/analysis_options.yaml
+include: package:kelo_analysis/analysis_options.yaml

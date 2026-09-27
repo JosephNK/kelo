@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // =============================================================================
-// JKit Stylelint Rules Reference Generator
+// Kelo Stylelint Rules Reference Generator
 // -----------------------------------------------------------------------------
 // stylelint.rules.mjs 파일을 파싱하여 LLM이 소비하기 좋은 컨벤션 스타일 규약 MD를
 // 자동 생성한다. 소스 JSDoc이 `Purpose / Why / Bad / Good` 구조를 따를 때 최적.

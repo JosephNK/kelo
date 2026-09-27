@@ -1,5 +1,5 @@
 // =============================================================================
-// JKit Next.js — Stylelint Baseline Rules
+// Kelo Next.js — Stylelint Baseline Rules
 // -----------------------------------------------------------------------------
 // 모든 Next.js 프로젝트가 공통 적용하는 stylelint 규칙 묶음.
 // 사용자 프로젝트의 `stylelint.config.mjs`는 `stylelintBaseConfig`를 spread로 흡수한다.

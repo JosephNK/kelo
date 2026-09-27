@@ -214,7 +214,7 @@ final _freezedAnnotationDepRe = RegExp(
 
 /// 프로젝트 pubspec.yaml에 `freezed_annotation` 의존성이 등록되어 있는지.
 ///
-/// freezed 스택(=`/jkit:flutter-init`에서 freezed 컨벤션 선택) 활성 신호로
+/// freezed 스택(=`/kelo:flutter-init`에서 freezed 컨벤션 선택) 활성 신호로
 /// 사용. LK_E3가 bloc/에서 `freezed_annotation` import를 조건부 허용할 때
 /// 호출. 결과는 프로젝트 루트 단위로 캐시(같은 isolate 내 1회 read).
 bool projectHasFreezedStack(String filePath) {

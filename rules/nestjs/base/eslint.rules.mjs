@@ -1,5 +1,5 @@
 // =============================================================================
-// JKit NestJS ESLint Base Rules — Barrel
+// Kelo NestJS ESLint Base Rules — Barrel
 // -----------------------------------------------------------------------------
 // 각 export는 ./eslint-rules/ 하위 관심사 폴더의 단일 파일로 분리되어 있다.
 // 이 파일은 외부 소비자(패키지 factory `../index.mjs`, reference generator)에

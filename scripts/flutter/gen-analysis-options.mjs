@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // =============================================================================
-// Scaffold/regenerate `analysis_options.yaml` from jkit templates.
+// Scaffold/regenerate `analysis_options.yaml` from kelo templates.
 //
 // Templates (in this plugin's checkout):
 //   rules/flutter/base/templates/analysis-options.workspace-root.yaml
@@ -18,16 +18,16 @@
 //
 // Behavior: ALWAYS overwrite. Each scaffolded file starts with the banner
 //   `# GENERATED FILE - DO NOT MODIFY BY HAND`
-// for visual signaling only — there is no banner-based skip. /jkit:flutter-init
-// and /jkit:flutter-sync both regenerate these files unconditionally so that
-// template updates (e.g. new lint rules added in a jkit release) propagate.
+// for visual signaling only — there is no banner-based skip. /kelo:flutter-init
+// and /kelo:flutter-sync both regenerate these files unconditionally so that
+// template updates (e.g. new lint rules added in a kelo release) propagate.
 // If a file did not previously contain the banner (e.g. created by
 // `flutter create` or hand-edited), the script logs an INFO line noting the
 // content was replaced.
 //
-// The analyzer/linter policy itself lives in the `jkit_analysis` Dart package
-// (rules/flutter/base/analysis/jkit_analysis/). Templates only `include:` it,
-// and this script adds `jkit_analysis` to the entry's pubspec.yaml
+// The analyzer/linter policy itself lives in the `kelo_analysis` Dart package
+// (rules/flutter/base/analysis/kelo_analysis/). Templates only `include:` it,
+// and this script adds `kelo_analysis` to the entry's pubspec.yaml
 // dev_dependencies as a git dependency pinned to the plugin version tag
 // (`-analysis-path <dir>` writes a path dependency instead, for local testing).
 //
@@ -63,12 +63,12 @@ const TEMPLATE_REL = {
 
 const HELP = `Usage: gen-analysis-options.mjs flutter -p <project-dir> [-entry <dir>] [-analysis-path <dir>]
 
-Scaffold or regenerate analysis_options.yaml from jkit templates. In a Dart
+Scaffold or regenerate analysis_options.yaml from kelo templates. In a Dart
 pub workspace, scaffolds both the workspace root and the entry member. In a
 standalone (non-workspace) project, scaffolds only the entry's options.
 
 Existing files are ALWAYS overwritten (the banner is for visual signaling,
-not opt-out). The script logs whether the previous content was a jkit-managed
+not opt-out). The script logs whether the previous content was a kelo-managed
 file (banner present) or a user-edited / flutter-create file (banner absent).
 
 The plugins: section is added separately by gen-custom-lint.mjs after this
@@ -81,8 +81,8 @@ Options:
   -p <dir>        Project root directory (required)
   -entry <dir>    Flutter entry directory (default: app)
   -analysis-path <dir>
-                  Use a local path dependency for jkit_analysis instead of the
-                  git tag (local testing of an unreleased jkit checkout)
+                  Use a local path dependency for kelo_analysis instead of the
+                  git tag (local testing of an unreleased kelo checkout)
   -h, --help      Show this help
 
 Examples:
@@ -222,10 +222,10 @@ function scaffoldFile(targetAbsPath, templateContent, label) {
   return true;
 }
 
-const JKIT_ANALYSIS_PACKAGE = "jkit_analysis";
-const JKIT_ANALYSIS_GIT_URL =
+const KELO_ANALYSIS_PACKAGE = "kelo_analysis";
+const KELO_ANALYSIS_GIT_URL =
   "https://github.com/JosephNK/jkit-code-plugin.git";
-const JKIT_ANALYSIS_GIT_PATH = "rules/flutter/base/analysis/jkit_analysis";
+const KELO_ANALYSIS_GIT_PATH = "rules/flutter/base/analysis/kelo_analysis";
 
 function readPluginVersion(pluginRoot) {
   const pluginJson = path.join(pluginRoot, ".claude-plugin", "plugin.json");
@@ -236,29 +236,29 @@ function readPluginVersion(pluginRoot) {
   return version;
 }
 
-// entry pubspec.yaml의 dev_dependencies에 jkit_analysis를 등록한다 (YAML
+// entry pubspec.yaml의 dev_dependencies에 kelo_analysis를 등록한다 (YAML
 // round-trip으로 나머지 내용 보존). 이미 같은 값이면 건드리지 않는다.
-function ensureJkitAnalysisDep(pubspecPath, spec) {
+function ensureKeloAnalysisDep(pubspecPath, spec) {
   const raw = fs.readFileSync(pubspecPath, "utf-8");
   const doc = YAML.parseDocument(raw);
-  const current = doc.getIn(["dev_dependencies", JKIT_ANALYSIS_PACKAGE]);
+  const current = doc.getIn(["dev_dependencies", KELO_ANALYSIS_PACKAGE]);
   const currentJs =
     current && typeof current.toJSON === "function"
       ? current.toJSON()
       : current;
   if (JSON.stringify(currentJs) === JSON.stringify(spec)) {
     process.stdout.write(
-      `  ${JKIT_ANALYSIS_PACKAGE} already up-to-date in ${pubspecPath}\n`,
+      `  ${KELO_ANALYSIS_PACKAGE} already up-to-date in ${pubspecPath}\n`,
     );
     return;
   }
   if (!YAML.isMap(doc.get("dev_dependencies"))) {
     doc.set("dev_dependencies", doc.createNode({}));
   }
-  doc.setIn(["dev_dependencies", JKIT_ANALYSIS_PACKAGE], doc.createNode(spec));
+  doc.setIn(["dev_dependencies", KELO_ANALYSIS_PACKAGE], doc.createNode(spec));
   fs.writeFileSync(pubspecPath, doc.toString());
   process.stdout.write(
-    `  ${currentJs ? "Updated" : "Added"} ${JKIT_ANALYSIS_PACKAGE} in ${pubspecPath}\n`,
+    `  ${currentJs ? "Updated" : "Added"} ${KELO_ANALYSIS_PACKAGE} in ${pubspecPath}\n`,
   );
 }
 
@@ -285,7 +285,7 @@ function main() {
 
   const inWorkspace = isWorkspaceMember(projectDir, args.entry);
   process.stdout.write(
-    `Scaffolding analysis_options.yaml from jkit templates ` +
+    `Scaffolding analysis_options.yaml from kelo templates ` +
       `(${inWorkspace ? "workspace" : "standalone"} mode)...\n`,
   );
 
@@ -332,19 +332,19 @@ function main() {
       ) && ok;
   }
 
-  // jkit_analysis dev dependency — entry 패키지가 jkit 규칙을 include하므로
+  // kelo_analysis dev dependency — entry 패키지가 kelo 규칙을 include하므로
   // entry pubspec에 둔다 (workspace에서도 해석은 공유된다).
   try {
     const spec = args.analysisPath
       ? { path: normalizePath(args.analysisPath) }
       : {
           git: {
-            url: JKIT_ANALYSIS_GIT_URL,
-            path: JKIT_ANALYSIS_GIT_PATH,
+            url: KELO_ANALYSIS_GIT_URL,
+            path: KELO_ANALYSIS_GIT_PATH,
             ref: `v${readPluginVersion(pluginRoot)}`,
           },
         };
-    ensureJkitAnalysisDep(
+    ensureKeloAnalysisDep(
       path.join(projectDir, args.entry, "pubspec.yaml"),
       spec,
     );

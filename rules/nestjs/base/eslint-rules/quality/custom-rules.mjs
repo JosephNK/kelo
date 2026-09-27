@@ -1,6 +1,6 @@
 import { defineConfig } from "eslint/config";
 
-import jkitLocalPlugin from "../../custom-rules/index.mjs";
+import keloLocalPlugin from "../../custom-rules/index.mjs";
 
 /**
  * 표준 ESLint 룰로 표현 불가능한 프로젝트 고유 규칙 (`local/*` plugin).
@@ -8,7 +8,7 @@ import jkitLocalPlugin from "../../custom-rules/index.mjs";
  */
 export const baseCustomRules = defineConfig(
   {
-    plugins: { local: jkitLocalPlugin },
+    plugins: { local: keloLocalPlugin },
   },
 
   // DTO: @ApiProperty required + union type restriction + oneOf 금지

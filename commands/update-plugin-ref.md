@@ -1,23 +1,23 @@
 ---
-description: Update JKit dependency version/ref (code-plugin / architecture-lint / leaf-kit)
+description: Update Kelo dependency version/ref (code-plugin / architecture-lint / leaf-kit)
 ---
 
 # Update Plugin Ref
 
-JKit이 관리하는 의존성의 버전(npm 패키지) 또는 git ref(Dart 패키지)를 프로젝트 내 모든 manifest 파일에서 업데이트합니다.
+Kelo이 관리하는 의존성의 버전(npm 패키지) 또는 git ref(Dart 패키지)를 프로젝트 내 모든 manifest 파일에서 업데이트합니다.
 
 ## 지원 타겟
 
 | Target | 매니페스트 | 의존성 | Auto 지원 |
 |--------|-----------|--------|----------|
-| `code-plugin` | `package.json` | `@josephnk/eslint-config-nextjs`, `@josephnk/eslint-config-nestjs` (GitHub Release tarball URL `v<version>`) | ✓ plugin.json version |
+| `code-plugin` | `package.json` | `eslint-config-kelo-nextjs`, `eslint-config-kelo-nestjs` (GitHub Release tarball URL `v<version>`) | ✓ plugin.json version |
 | `architecture-lint` | `pubspec.yaml` | `architecture_lint` | ✓ plugin.json version (동일 repo) |
 | `leaf-kit` | `pubspec.yaml` | `flutter_leaf_kit` | ✗ 외부 repo — 명시적 ref 필수 |
 
 ## 호출 형식
 
 ```
-/jkit:update-plugin-ref <target> [ref] [--dry-run]
+/kelo:update-plugin-ref <target> [ref] [--dry-run]
 ```
 
 - `<target>`: 필수. `code-plugin`, `architecture-lint`, `leaf-kit` 중 하나
@@ -26,12 +26,12 @@ JKit이 관리하는 의존성의 버전(npm 패키지) 또는 git ref(Dart 패�
 
 예시:
 ```
-/jkit:update-plugin-ref code-plugin
-/jkit:update-plugin-ref code-plugin 0.3.80
-/jkit:update-plugin-ref architecture-lint
-/jkit:update-plugin-ref architecture-lint v0.1.32
-/jkit:update-plugin-ref leaf-kit v3.0.0
-/jkit:update-plugin-ref leaf-kit main --dry-run
+/kelo:update-plugin-ref code-plugin
+/kelo:update-plugin-ref code-plugin 0.3.80
+/kelo:update-plugin-ref architecture-lint
+/kelo:update-plugin-ref architecture-lint v0.1.32
+/kelo:update-plugin-ref leaf-kit v3.0.0
+/kelo:update-plugin-ref leaf-kit main --dry-run
 ```
 
 ## Steps
@@ -51,29 +51,29 @@ JKit이 관리하는 의존성의 버전(npm 패키지) 또는 git ref(Dart 패�
 
 ### 3. Dispatch to backend
 
-jkit 플러그인 설치 경로 해석:
+kelo 플러그인 설치 경로 해석:
 
 ```bash
-JKIT_DIR=$(jq -r '.plugins["jkit@jkit"][0].installPath' ~/.claude/plugins/installed_plugins.json)
+KELO_DIR=$(jq -r '.plugins["kelo@kelo"][0].installPath' ~/.claude/plugins/installed_plugins.json)
 ```
 
 target에 따라 해당 백엔드 스크립트를 실행합니다.
 
-**code-plugin** (`package.json` / `@josephnk/eslint-config-{nextjs,nestjs}`):
+**code-plugin** (`package.json` / `eslint-config-kelo-{nextjs,nestjs}`):
 
-레거시 `@jkit/code-plugin` git 의존성이 남아 있으면 버전만 바꿔서는 동작하지 않습니다 (`eslint.config.mjs` 재생성 필요). 스크립트가 해당 파일을 경고로 보고하므로, 사용자에게 `/jkit:<framework>-sync` 실행을 안내합니다.
+레거시 `@jkit/code-plugin` git 의존성이 남아 있으면 버전만 바꿔서는 동작하지 않습니다 (`eslint.config.mjs` 재생성 필요). 스크립트가 해당 파일을 경고로 보고하므로, 사용자에게 `/kelo:<framework>-sync` 실행을 안내합니다.
 ```bash
-$JKIT_DIR/scripts/typescript/dependencies/update-code-plugin-ref.mjs [<ref>] --project-dir <user-project-dir> [--dry-run]
+$KELO_DIR/scripts/typescript/dependencies/update-code-plugin-ref.mjs [<ref>] --project-dir <user-project-dir> [--dry-run]
 ```
 
 **architecture-lint** (`pubspec.yaml` / `architecture_lint`):
 ```bash
-$JKIT_DIR/scripts/flutter/dependencies/update-architecture-lint-ref.mjs [<ref>] --project-dir <user-project-dir> [--dry-run]
+$KELO_DIR/scripts/flutter/dependencies/update-architecture-lint-ref.mjs [<ref>] --project-dir <user-project-dir> [--dry-run]
 ```
 
 **leaf-kit** (`pubspec.yaml` / `flutter_leaf_kit`):
 ```bash
-$JKIT_DIR/scripts/flutter/dependencies/update-leaf-kit-ref.mjs <ref> --project-dir <user-project-dir> [--dry-run]
+$KELO_DIR/scripts/flutter/dependencies/update-leaf-kit-ref.mjs <ref> --project-dir <user-project-dir> [--dry-run]
 ```
 
 - `<user-project-dir>`: 사용자의 현재 작업 디렉토리 (절대 경로)

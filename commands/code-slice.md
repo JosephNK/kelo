@@ -7,9 +7,9 @@ argument-hint: '--mode <full|compact> [<file1.md> <file2.md> ...]'
 # Task 슬라이스 생성
 
 이미 작성된 `TASKS.md` / `QA.md` 같은 Task 단위 마크다운 문서를 **Task 1개당 하나의 파일**로 분할합니다.
-`/jkit:code-harness` 실행 시 Generator/Evaluator가 전체 문서가 아닌 슬라이스만 읽도록 하여 라운드별 토큰 소비를 줄입니다.
+`/kelo:code-harness` 실행 시 Generator/Evaluator가 전체 문서가 아닌 슬라이스만 읽도록 하여 라운드별 토큰 소비를 줄입니다.
 
-> 보통은 `/jkit:code-tasks` / `/jkit:code-qa`가 자동으로 슬라이싱하므로 이 커맨드는 **이미 만들어둔 TASKS.md/QA.md에 대해 한 번 수동 슬라이싱이 필요할 때**만 사용합니다. 이후 편집은 `/jkit:code-harness`가 SHA로 stale 감지하여 자동 재슬라이싱합니다.
+> 보통은 `/kelo:code-tasks` / `/kelo:code-qa`가 자동으로 슬라이싱하므로 이 커맨드는 **이미 만들어둔 TASKS.md/QA.md에 대해 한 번 수동 슬라이싱이 필요할 때**만 사용합니다. 이후 편집은 `/kelo:code-harness`가 SHA로 stale 감지하여 자동 재슬라이싱합니다.
 
 ## Arguments
 
@@ -33,7 +33,7 @@ slice_dir = <dirname(input)> / <basename(input) lowercase, .md 제거> /
 - `code-harness/QA.md` → `code-harness/qa/Task-N.md`
 - `path/to/MyTasks.md` → `path/to/mytasks/Task-N.md`
 
-> 이 규칙은 `/jkit:code-harness` Step 2.5의 슬라이스 경로 매핑과 일치한다. 다른 디렉토리에 출력하면 harness가 슬라이스를 인식하지 못한다.
+> 이 규칙은 `/kelo:code-harness` Step 2.5의 슬라이스 경로 매핑과 일치한다. 다른 디렉토리에 출력하면 harness가 슬라이스를 인식하지 못한다.
 
 ## Procedure
 
@@ -54,7 +54,7 @@ slice_dir = <dirname(input)> / <basename(input) lowercase, .md 제거> /
 각 입력 파일에 대해 출력 디렉토리를 위 규칙으로 계산한 뒤 `slice-tasks.mjs` 호출:
 
 ```bash
-JKIT_DIR=$(jq -r '.plugins["jkit@jkit"][0].installPath' ~/.claude/plugins/installed_plugins.json)
+KELO_DIR=$(jq -r '.plugins["kelo@kelo"][0].installPath' ~/.claude/plugins/installed_plugins.json)
 mode="<파싱한 mode: full|compact>"
 
 for input in <입력 파일 목록>; do
@@ -62,7 +62,7 @@ for input in <입력 파일 목록>; do
   base=$(basename "$input" .md | tr '[:upper:]' '[:lower:]')
   out_dir="$dir/$base/"
   echo ">> Slicing $input -> $out_dir"
-  "$JKIT_DIR/scripts/slice-tasks.mjs" --mode "$mode" "$input" "$out_dir" || echo "  ⚠ failed: $input"
+  "$KELO_DIR/scripts/slice-tasks.mjs" --mode "$mode" "$input" "$out_dir" || echo "  ⚠ failed: $input"
 done
 ```
 
@@ -100,16 +100,16 @@ done
 
 ```bash
 # TASKS.md 기본 위치를 compact로 재생성
-/jkit:code-slice --mode compact code-harness/TASKS.md
+/kelo:code-slice --mode compact code-harness/TASKS.md
 
 # QA.md 기본 위치를 full로 재생성
-/jkit:code-slice --mode full code-harness/QA.md
+/kelo:code-slice --mode full code-harness/QA.md
 
 # 기본 파일 둘 다 같은 모드로 재생성
-/jkit:code-slice --mode compact
+/kelo:code-slice --mode compact
 
 # 다른 경로의 파일들
-/jkit:code-slice --mode full docs/MyQA.md
+/kelo:code-slice --mode full docs/MyQA.md
 ```
 
 ## 주의

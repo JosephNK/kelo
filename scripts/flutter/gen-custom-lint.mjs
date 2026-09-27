@@ -4,7 +4,7 @@
 // plugins in analysis_options.yaml via the new top-level `plugins:` section
 // (analysis_server_plugin, Dart 3.10+).
 //
-// Each lint package is vendored into `.jkit/plugins/<package>/` next to the
+// Each lint package is vendored into `.kelo/plugins/<package>/` next to the
 // analysis_options.yaml that hosts `plugins:` and registered with a relative
 // `path:` — portable across machines/CI. No umbrella custom_lint package. Also strips legacy
 // custom_lint dev dependency and `analyzer.plugins:` registration if present.
@@ -59,7 +59,7 @@ const HELP = `Usage: gen-custom-lint.mjs flutter -p <project-dir> [-entry <dir>]
 Registers architecture_lint (base) + optional stack lint packages (e.g.
 leaf_kit_lint when --stacks includes leaf-kit) as analyzer plugins in
 analysis_options.yaml via the top-level \`plugins:\` section. Plugin sources
-are copied from this plugin's checkout into \`.jkit/plugins/<package>/\` (commit
+are copied from this plugin's checkout into \`.kelo/plugins/<package>/\` (commit
 it) and registered with a relative \`path:\`, so they work on every machine/CI.
 
 Use \`dart analyze\` (not \`flutter analyze\`, flutter/flutter#187999) to see
@@ -205,7 +205,7 @@ function main() {
     );
   }
 
-  // Vendor plugin sources into .jkit/plugins/ and register relative `path:`
+  // Vendor plugin sources into .kelo/plugins/ and register relative `path:`
   // deps (see inject-custom-lint.mjs header for why not git/absolute path).
   const injectArgs = [
     injectScript,

@@ -1,5 +1,5 @@
 {
-  "name": "jkit",
+  "name": "kelo",
   "owner": {
     "name": "josephnk"
   },
@@ -8,7 +8,7 @@
   },
   "plugins": [
     {
-      "name": "jkit",
+      "name": "kelo",
       "source": "./",
       "description": "Personal development toolkit for Claude Code — scaffolding, conventions, and config generation",
       "version": "0.3.80",

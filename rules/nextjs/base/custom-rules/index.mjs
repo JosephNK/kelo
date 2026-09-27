@@ -1,5 +1,5 @@
 // =============================================================================
-// JKit NextJS — Custom ESLint Plugin
+// Kelo NextJS — Custom ESLint Plugin
 // -----------------------------------------------------------------------------
 
 import noInlineStyleTokens from "./no-inline-style-tokens.mjs";

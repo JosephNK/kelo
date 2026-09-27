@@ -7,7 +7,7 @@ Incrementally fix build and analysis errors with minimal, safe changes.
 Run Flutter build and static analysis:
 
 ```bash
-# Static analysis (lint + type checks + jkit analyzer plugin rules)
+# Static analysis (lint + type checks + kelo analyzer plugin rules)
 # Use `dart analyze`, not `flutter analyze` — flutter analyze drops analyzer
 # plugin diagnostics (flutter/flutter#187999).
 dart analyze --fatal-infos

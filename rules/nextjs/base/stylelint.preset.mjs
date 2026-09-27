@@ -1,9 +1,9 @@
 // =============================================================================
-// JKit Next.js Stylelint preset
+// Kelo Next.js Stylelint preset
 // -----------------------------------------------------------------------------
 // 소비 프로젝트의 stylelint.config.mjs:
 //
-//   export { default } from "@josephnk/eslint-config-nextjs/stylelint";
+//   export { default } from "eslint-config-kelo-nextjs/stylelint";
 //
 // 룰 원본은 ./stylelint.rules.mjs (reference 문서 생성 대상). 이 파일은 거기에
 // Tailwind CSS v4 호환 설정과 ignore 경로를 더한 최종 config만 조립한다.

@@ -1,7 +1,7 @@
 # GENERATED FILE - DO NOT MODIFY BY HAND
-# Managed by jkit (overwritten by /jkit:flutter-init and -sync).
-# Workspace member: workspace root + package:jkit_analysis rules
+# Managed by kelo (overwritten by /kelo:flutter-init and -sync).
+# Workspace member: workspace root + package:kelo_analysis rules
 
 include:
   - {{INCLUDE_PATH}}
-  - package:jkit_analysis/analysis_options.yaml
+  - package:kelo_analysis/analysis_options.yaml

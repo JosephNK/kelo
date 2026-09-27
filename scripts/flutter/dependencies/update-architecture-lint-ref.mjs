@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // =============================================================================
-// Flutter 프로젝트의 jkit 분석 의존성 ref를 갱신한다.
-//   - pubspec.yaml `dev_dependencies.jkit_analysis` (git) 의 ref → 새 버전
+// Flutter 프로젝트의 kelo 분석 의존성 ref를 갱신한다.
+//   - pubspec.yaml `dev_dependencies.kelo_analysis` (git) 의 ref → 새 버전
 //   - analysis_options.yaml `plugins:` 의 architecture_lint / leaf_kit_lint /
-//     freezed_lint 는 프로젝트 안 .jkit/plugins/ 에 vendoring 되므로 ref가 없다.
-//     등록 방식을 점검해 안내만 한다 (갱신·전환은 /jkit:flutter-sync).
+//     freezed_lint 는 프로젝트 안 .kelo/plugins/ 에 vendoring 되므로 ref가 없다.
+//     등록 방식을 점검해 안내만 한다 (갱신·전환은 /kelo:flutter-sync).
 //
 // Usage:
 //   update-architecture-lint-ref.mjs <ref> --project-dir <dir> [--dry-run]
@@ -25,8 +25,8 @@ const LINT_PACKAGE_NAMES = [
 
 const HELP = `Usage: update-architecture-lint-ref.mjs [<ref>] --project-dir <dir> [--dry-run]
 
-모든 pubspec.yaml 의 jkit_analysis git ref 를 업데이트하고, analysis_options.yaml
-plugins: 의 jkit lint 플러그인(vendoring) 상태를 점검합니다.
+모든 pubspec.yaml 의 kelo_analysis git ref 를 업데이트하고, analysis_options.yaml
+plugins: 의 kelo lint 플러그인(vendoring) 상태를 점검합니다.
 
 Arguments:
   <ref>              선택. 새로운 git ref 값 (예: v0.3.1, 0.3.1, main).
@@ -151,18 +151,18 @@ function findFiles(projectRoot, fileName) {
   return results.sort();
 }
 
-// pubspec.yaml dev_dependencies.jkit_analysis.git.ref 갱신
-function updateJkitAnalysisRef(pubspecPath, newRef, dryRun) {
+// pubspec.yaml dev_dependencies.kelo_analysis.git.ref 갱신
+function updateKeloAnalysisRef(pubspecPath, newRef, dryRun) {
   const doc = YAML.parseDocument(fs.readFileSync(pubspecPath, "utf-8"));
   if (doc.contents === null) return 0;
-  const gitNode = doc.getIn(["dev_dependencies", "jkit_analysis", "git"]);
+  const gitNode = doc.getIn(["dev_dependencies", "kelo_analysis", "git"]);
   if (!YAML.isMap(gitNode)) return 0;
 
   const refNode = gitNode.get("ref", true);
   const oldRef = YAML.isScalar(refNode) ? String(refNode.value) : null;
   if (oldRef === newRef) {
     process.stdout.write(
-      `  ⏭️  ${pubspecPath} [jkit_analysis]: 이미 동일한 ref (${oldRef})\n`,
+      `  ⏭️  ${pubspecPath} [kelo_analysis]: 이미 동일한 ref (${oldRef})\n`,
     );
     return 0;
   }
@@ -171,13 +171,13 @@ function updateJkitAnalysisRef(pubspecPath, newRef, dryRun) {
 
   const mark = dryRun ? "🔍" : "✅";
   process.stdout.write(
-    `  ${mark} ${pubspecPath} [jkit_analysis]: ${oldRef ?? "(없음)"} → ${newRef}${dryRun ? " (dry-run)" : ""}\n`,
+    `  ${mark} ${pubspecPath} [kelo_analysis]: ${oldRef ?? "(없음)"} → ${newRef}${dryRun ? " (dry-run)" : ""}\n`,
   );
   if (!dryRun) fs.writeFileSync(pubspecPath, String(doc));
   return 1;
 }
 
-// analysis_options.yaml plugins: 의 jkit 플러그인 등록 방식 점검 (수정하지 않음)
+// analysis_options.yaml plugins: 의 kelo 플러그인 등록 방식 점검 (수정하지 않음)
 function reportLintPlugins(analysisPath) {
   const doc = YAML.parseDocument(fs.readFileSync(analysisPath, "utf-8"));
   const plugins = doc.contents === null ? null : doc.get("plugins");
@@ -189,13 +189,13 @@ function reportLintPlugins(analysisPath) {
     const p = entry.get("path");
     if (typeof p === "string" && !path.isAbsolute(p)) {
       process.stdout.write(
-        `  📦 ${analysisPath} [${pkgName}]: vendoring (${p}) — 규칙 갱신은 /jkit:flutter-sync\n`,
+        `  📦 ${analysisPath} [${pkgName}]: vendoring (${p}) — 규칙 갱신은 /kelo:flutter-sync\n`,
       );
     } else {
       legacy += 1;
       const how = entry.get("git") ? "git" : `절대 경로 ${p}`;
       process.stdout.write(
-        `  ⚠️  ${analysisPath} [${pkgName}]: 레거시 등록(${how}) — 다른 PC/CI에서 동작하지 않음. /jkit:flutter-sync로 vendoring 전환 필요\n`,
+        `  ⚠️  ${analysisPath} [${pkgName}]: 레거시 등록(${how}) — 다른 PC/CI에서 동작하지 않음. /kelo:flutter-sync로 vendoring 전환 필요\n`,
       );
     }
   }
@@ -225,12 +225,12 @@ function main() {
   process.stdout.write(`발견된 pubspec.yaml: ${pubspecs.length}개\n\n`);
   let updatedCount = 0;
   for (const file of pubspecs) {
-    updatedCount += updateJkitAnalysisRef(file, ref, args.dryRun);
+    updatedCount += updateKeloAnalysisRef(file, ref, args.dryRun);
   }
 
   process.stdout.write("\n");
   if (updatedCount === 0) {
-    process.stdout.write("변경된 jkit_analysis ref가 없습니다.\n");
+    process.stdout.write("변경된 kelo_analysis ref가 없습니다.\n");
   } else {
     const action = args.dryRun ? "변경 예정" : "업데이트 완료";
     process.stdout.write(`${updatedCount}개 항목 ${action}\n`);
@@ -243,7 +243,7 @@ function main() {
   }
   if (legacy > 0) {
     process.stdout.write(
-      `\n레거시 등록 ${legacy}건 — /jkit:flutter-sync를 실행해 .jkit/plugins/ vendoring으로 전환하세요.\n`,
+      `\n레거시 등록 ${legacy}건 — /kelo:flutter-sync를 실행해 .kelo/plugins/ vendoring으로 전환하세요.\n`,
     );
   }
 }

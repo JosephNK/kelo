@@ -7,9 +7,9 @@ code-tasks가 PLAN → TASKS.md → Task 슬라이스를 만들듯, code-phases�
 ## 사용법
 
 ```
-/jkit:code-phases <plan-file-path>
-/jkit:code-phases code-harness/PLAN.md
-/jkit:code-phases code-harness/PLAN.md -o code-harness/PHASES.md
+/kelo:code-phases <plan-file-path>
+/kelo:code-phases code-harness/PLAN.md
+/kelo:code-phases code-harness/PLAN.md -o code-harness/PHASES.md
 ```
 
 ## 인자
@@ -321,8 +321,8 @@ slice_dir = <dirname of OUTPUT> / <basename(OUTPUT) lowercase, .md 제거> /
 실행 전에 `slice-phases.mjs`의 존재 여부와 실행 권한을 확인합니다. 스크립트가 없거나 실행할 수 없으면 경고 후 PHASES.md 저장은 유지.
 
 ```bash
-JKIT_DIR=$(jq -r '.plugins["jkit@jkit"][0].installPath' ~/.claude/plugins/installed_plugins.json)
-$JKIT_DIR/scripts/slice-phases.mjs --mode compact <OUTPUT> <slice_dir>
+KELO_DIR=$(jq -r '.plugins["kelo@kelo"][0].installPath' ~/.claude/plugins/installed_plugins.json)
+$KELO_DIR/scripts/slice-phases.mjs --mode compact <OUTPUT> <slice_dir>
 ```
 
 스크립트 수행 내용:
@@ -351,7 +351,7 @@ code-harness/phases/Phase-1.md
 - 적용된 수정 룰(V1~V12) 목록 + 스킵된 룰 목록
 - Step 8 검증 결과 요약 (전체 통과 / N/A 항목)
 - 커밋은 하지 않음 — 사용자가 직접 커밋
-- **다음 단계 안내**: `/jkit:code-qa {OUTPUT}` 실행으로 Phase 단위 QA 체크리스트 문서 생성 가능
+- **다음 단계 안내**: `/kelo:code-qa {OUTPUT}` 실행으로 Phase 단위 QA 체크리스트 문서 생성 가능
 
 ## 주의사항
 

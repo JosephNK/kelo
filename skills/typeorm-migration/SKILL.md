@@ -1,7 +1,7 @@
 ---
 name: typeorm-migration
 description: 'TypeORM 마이그레이션 SQL 파일 생성. Entity 변경, DB 스키마 변경, 마이그레이션 작성 요청 시 자동 트리거. migrations/ 디렉토리에 프로젝트 컨벤션에 맞는 SQL 파일을 생성한다.'
-origin: jKit
+origin: Kelo
 ---
 
 ## 목적

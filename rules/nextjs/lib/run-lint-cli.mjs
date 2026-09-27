@@ -1,6 +1,6 @@
 // =============================================================================
-// JKit lint CLI 공용 구현 — 프로젝트의 eslint.config.mjs를 무시하고
-// jkit 팩토리(+ jkit.lint.json + eslint.project.config.mjs)만으로 검사한다.
+// Kelo lint CLI 공용 구현 — 프로젝트의 eslint.config.mjs를 무시하고
+// kelo 팩토리(+ kelo.lint.json + eslint.project.config.mjs)만으로 검사한다.
 // -----------------------------------------------------------------------------
 // rules/nestjs/lib/run-lint-cli.mjs 와 rules/nextjs/lib/run-lint-cli.mjs 는
 // 동일 내용을 유지한다.
@@ -14,9 +14,9 @@ import { pathToFileURL } from "node:url";
 import { ESLint } from "eslint";
 
 const PROJECT_CONFIG_FILE = "eslint.project.config.mjs";
-const LINT_CONFIG_FILE = "jkit.lint.json";
+const LINT_CONFIG_FILE = "kelo.lint.json";
 
-// dir에서 위로 올라가며 jkit.lint.json이 있는 프로젝트 루트를 찾는다.
+// dir에서 위로 올라가며 kelo.lint.json이 있는 프로젝트 루트를 찾는다.
 function findProjectRoot(dir) {
   let cur = path.resolve(dir);
   for (;;) {
@@ -61,7 +61,7 @@ function parseArgs(argv, binName) {
     else if (a === "-h" || a === "--help") {
       process.stdout.write(
         `Usage: ${binName} [--fix] [--max-warnings <n>] [patterns...]\n\n` +
-          "프로젝트의 eslint.config.mjs 대신 jkit 규칙(+ jkit.lint.json,\n" +
+          "프로젝트의 eslint.config.mjs 대신 kelo 규칙(+ kelo.lint.json,\n" +
           "eslint.project.config.mjs)으로 검사합니다. 패턴 생략 시 '.' 전체.\n",
       );
       process.exit(0);
@@ -84,7 +84,7 @@ async function loadProjectConfig(root) {
  * @param {object} options
  * @param {string} options.binName CLI 이름 (도움말 표시용)
  * @param {(opts: {root: string, project: unknown[]}) => unknown[]} options.factory
- * @param {string} options.formatterPath jkit formatter 절대 경로
+ * @param {string} options.formatterPath kelo formatter 절대 경로
  */
 export async function runLintCli({ binName, factory, formatterPath }) {
   const args = parseArgs(process.argv.slice(2), binName);
@@ -103,7 +103,7 @@ export async function runLintCli({ binName, factory, formatterPath }) {
         overrideConfig: factory({ root, project }),
         fix: args.fix,
         errorOnUnmatchedPattern: false,
-        // lint-staged가 jkit.lint.json ignores 대상 파일을 넘겨도 경고하지 않는다
+        // lint-staged가 kelo.lint.json ignores 대상 파일을 넘겨도 경고하지 않는다
         warnIgnored: false,
       });
       const groupResults = await eslint.lintFiles(patterns);

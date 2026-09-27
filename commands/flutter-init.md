@@ -1,28 +1,28 @@
 ---
-description: Initialize JKit in Flutter project
+description: Initialize Kelo in Flutter project
 ---
 
-# JKit Flutter Init
+# Kelo Flutter Init
 
-Flutter 프로젝트에 JKit 설정을 초기화합니다. 생성 스크립트로 동작합니다.
+Flutter 프로젝트에 Kelo 설정을 초기화합니다. 생성 스크립트로 동작합니다.
 
 ## 플러그인 경로 확인
 
-스크립트를 실행하기 전에 jkit 플러그인 설치 경로를 확인합니다:
+스크립트를 실행하기 전에 kelo 플러그인 설치 경로를 확인합니다:
 
 ```bash
-JKIT_DIR=$(jq -r '.plugins["jkit@jkit"][0].installPath' ~/.claude/plugins/installed_plugins.json)
+KELO_DIR=$(jq -r '.plugins["kelo@kelo"][0].installPath' ~/.claude/plugins/installed_plugins.json)
 ```
 
-이후 모든 스크립트 경로는 `$JKIT_DIR`를 기준 디렉토리로 사용합니다.
+이후 모든 스크립트 경로는 `$KELO_DIR`를 기준 디렉토리로 사용합니다.
 
 ## 플러그인 의존성 보장
 
 `gen-analysis-options.mjs` / `gen-custom-lint.mjs`는 `yaml` 패키지를 사용합니다. 플러그인이 새 버전으로 캐시될 때 `node_modules`가 비어 있을 수 있으므로 사전 설치합니다.
 
 ```bash
-if [ ! -d "$JKIT_DIR/node_modules/yaml" ]; then
-  (cd "$JKIT_DIR" && npm install --silent)
+if [ ! -d "$KELO_DIR/node_modules/yaml" ]; then
+  (cd "$KELO_DIR" && npm install --silent)
 fi
 ```
 
@@ -36,9 +36,9 @@ PROJECT_ROOT="$(pwd)"   # 의도한 프로젝트 루트에서 실행
 
 아래 모든 shell 블록은 `cd "$PROJECT_ROOT"`가 해당 스텝에서 이미 실행된 상태를 전제로 합니다.
 
-## 매니페스트 (`jkit.project.json`)
+## 매니페스트 (`kelo.project.json`)
 
-프로젝트 루트의 `jkit.project.json`은 init/sync가 쓰는 셋업 source-of-truth입니다. **있으면** 아래 프롬프트 스텝(이름·스택 선택·엔트리 디렉토리·AGENTS 생성 여부)을 건너뛰고 매니페스트 값으로 무인 재현합니다. **없으면** 지금처럼 대화형으로 진행하고, 마지막에 수집한 값으로 매니페스트를 작성합니다.
+프로젝트 루트의 `kelo.project.json`은 init/sync가 쓰는 셋업 source-of-truth입니다. **있으면** 아래 프롬프트 스텝(이름·스택 선택·엔트리 디렉토리·AGENTS 생성 여부)을 건너뛰고 매니페스트 값으로 무인 재현합니다. **없으면** 지금처럼 대화형으로 진행하고, 마지막에 수집한 값으로 매니페스트를 작성합니다.
 
 스펙 (Flutter — eslint/tsconfig 스택 없음, 대신 `entryDir`):
 
@@ -56,12 +56,17 @@ PROJECT_ROOT="$(pwd)"   # 의도한 프로젝트 루트에서 실행
 
 ```bash
 cd "$PROJECT_ROOT"
-MANIFEST_PATH="$PROJECT_ROOT/jkit.project.json"
+MANIFEST_PATH="$PROJECT_ROOT/kelo.project.json"
+# 레거시 이름(jkit.project.json)은 kelo 이름으로 옮긴다
+if [ ! -f "$MANIFEST_PATH" ] && [ -f "$PROJECT_ROOT/jkit.project.json" ]; then
+  mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"
+  echo "[manifest] jkit.project.json → kelo.project.json 이름 변경"
+fi
 
 if [ -f "$MANIFEST_PATH" ]; then
   MF_FRAMEWORK=$(jq -r '.framework // ""' "$MANIFEST_PATH")
   if [ "$MF_FRAMEWORK" != "flutter" ]; then
-    echo "Error: jkit.project.json framework='$MF_FRAMEWORK' (expected 'flutter')" >&2
+    echo "Error: kelo.project.json framework='$MF_FRAMEWORK' (expected 'flutter')" >&2
     exit 1
   fi
   PROJECT_NAME=$(jq -r '.projectName // ""' "$MANIFEST_PATH")
@@ -69,11 +74,11 @@ if [ -f "$MANIFEST_PATH" ]; then
   ENTRY_DIR=$(jq -r '.entryDir // "app"' "$MANIFEST_PATH")
   GEN_AGENTS=$(jq -r '.generateAgents // true' "$MANIFEST_PATH")
   MANIFEST_MODE="apply"
-  echo "[manifest] apply mode — jkit.project.json 로드:"
+  echo "[manifest] apply mode — kelo.project.json 로드:"
   echo "  projectName=$PROJECT_NAME conv=[$USER_CONV_STACKS] entryDir=$ENTRY_DIR agents=$GEN_AGENTS"
 else
   MANIFEST_MODE="prompt"
-  echo "[manifest] prompt mode — jkit.project.json 없음. 대화형 진행 후 작성합니다."
+  echo "[manifest] prompt mode — kelo.project.json 없음. 대화형 진행 후 작성합니다."
 fi
 ```
 
@@ -110,7 +115,7 @@ fi
 `GEN_AGENTS=true`이면:
 ```bash
 cd "$PROJECT_ROOT"
-$JKIT_DIR/scripts/gen-agents.mjs flutter -p . -n "$PROJECT_NAME" --docs-dir docs
+$KELO_DIR/scripts/gen-agents.mjs flutter -p . -n "$PROJECT_NAME" --docs-dir docs
 ```
 
 ### 5. 패키지 매니저 감지 및 package.json 보장
@@ -178,34 +183,34 @@ cd "$PROJECT_ROOT"
 [ "$MANIFEST_MODE" = "prompt" ] && ENTRY_DIR="<entry-dir>"
 
 # 1. GIT.md
-$JKIT_DIR/scripts/gen-git.mjs -p docs
+$KELO_DIR/scripts/gen-git.mjs -p docs
 
 # 2. ARCHITECTURE.md
-$JKIT_DIR/scripts/gen-architecture.mjs flutter -p docs
+$KELO_DIR/scripts/gen-architecture.mjs flutter -p docs
 
 # 3. STRUCTURE.md (lint-rules-structure-reference 복사)
-$JKIT_DIR/scripts/gen-structure.mjs flutter -p docs
+$KELO_DIR/scripts/gen-structure.mjs flutter -p docs
 
 # 4. CONVENTIONS.md
 if [ -n "$USER_CONV_STACKS" ]; then
-  $JKIT_DIR/scripts/gen-conventions.mjs flutter -p docs --with "$USER_CONV_STACKS"
+  $KELO_DIR/scripts/gen-conventions.mjs flutter -p docs --with "$USER_CONV_STACKS"
 else
-  $JKIT_DIR/scripts/gen-conventions.mjs flutter -p docs
+  $KELO_DIR/scripts/gen-conventions.mjs flutter -p docs
 fi
 
 # 5. LINT.md (base + 선택 stack lint-rules)
 if [ -n "$USER_CONV_STACKS" ]; then
-  $JKIT_DIR/scripts/gen-lint.mjs flutter -p docs --with "$USER_CONV_STACKS"
+  $KELO_DIR/scripts/gen-lint.mjs flutter -p docs --with "$USER_CONV_STACKS"
 else
-  $JKIT_DIR/scripts/gen-lint.mjs flutter -p docs
+  $KELO_DIR/scripts/gen-lint.mjs flutter -p docs
 fi
 
 # 6. Husky hooks (.husky/pre-commit에 $ENTRY_DIR이 인라인 치환됨, .husky/commit-msg)
 #    + package.json에 husky/@commitlint devDeps와 scripts.prepare 주입
-$JKIT_DIR/scripts/gen-husky.mjs flutter -p . -entry "$ENTRY_DIR"
+$KELO_DIR/scripts/gen-husky.mjs flutter -p . -entry "$ENTRY_DIR"
 
 # 7. commitlint.config.mjs (Conventional Commits + 프로젝트 허용 타입 강제)
-$JKIT_DIR/scripts/gen-commitlint.mjs -p .
+$KELO_DIR/scripts/gen-commitlint.mjs -p .
 ```
 
 해당 생성기에 사용자가 선택한 스택이 없으면 `--with` 인자를 생략합니다.
@@ -226,27 +231,27 @@ esac
 
 ### 8. analysis_options.yaml scaffold (analyzer/linter 룰 템플릿)
 
-엔트리(+ 워크스페이스 모드에선 워크스페이스 root)의 `analysis_options.yaml`을 jkit 표준 템플릿(`rules/flutter/base/templates/`)으로 **무조건 덮어씀**. `flutter create`가 남긴 기본 파일이나 사용자 수정 파일이 있다면 git history로만 복구 가능합니다.
+엔트리(+ 워크스페이스 모드에선 워크스페이스 root)의 `analysis_options.yaml`을 kelo 표준 템플릿(`rules/flutter/base/templates/`)으로 **무조건 덮어씀**. `flutter create`가 남긴 기본 파일이나 사용자 수정 파일이 있다면 git history로만 복구 가능합니다.
 
-analyzer/linter 규칙 본체는 `jkit_analysis` Dart 패키지(`rules/flutter/base/analysis/jkit_analysis/`)에 있고, 엔트리의 `analysis_options.yaml`은 `include: package:jkit_analysis/analysis_options.yaml`만 가집니다 (워크스페이스 멤버는 `include: [<root>, package:jkit_analysis/...]`). 스크립트가 엔트리 `pubspec.yaml`의 `dev_dependencies`에 `jkit_analysis`를 git 의존성(`ref: v<plugin-version>`)으로 추가합니다. 규칙 변경은 jkit-code-plugin에서 합니다 — 프로젝트에서 규칙을 끄거나 severity를 낮추면 `dart run jkit_analysis:verify`(pre-commit에 연결)가 실패합니다.
+analyzer/linter 규칙 본체는 `kelo_analysis` Dart 패키지(`rules/flutter/base/analysis/kelo_analysis/`)에 있고, 엔트리의 `analysis_options.yaml`은 `include: package:kelo_analysis/analysis_options.yaml`만 가집니다 (워크스페이스 멤버는 `include: [<root>, package:kelo_analysis/...]`). 스크립트가 엔트리 `pubspec.yaml`의 `dev_dependencies`에 `kelo_analysis`를 git 의존성(`ref: v<plugin-version>`)으로 추가합니다. 규칙 변경은 kelo 저장소에서 합니다 — 프로젝트에서 규칙을 끄거나 severity를 낮추면 `dart run kelo_analysis:verify`(pre-commit에 연결)가 실패합니다.
 
 ```bash
 cd "$PROJECT_ROOT"
-$JKIT_DIR/scripts/flutter/gen-analysis-options.mjs flutter -p . -entry "$ENTRY_DIR"
+$KELO_DIR/scripts/flutter/gen-analysis-options.mjs flutter -p . -entry "$ENTRY_DIR"
 ```
 
 이 스크립트는 `plugins:` 섹션을 작성하지 않습니다. 다음 스텝의 `gen-custom-lint.mjs`가 같은 파일에 `plugins:`를 YAML round-trip으로 추가합니다 (템플릿 컨텐츠 보존).
 
 ### 9. architecture_lint 주입 (+ stack lint 패키지)
 
-Flutter 엔트리(워크스페이스 모드에선 root)의 `analysis_options.yaml` top-level `plugins:` 섹션에 `architecture_lint`(base)와 선택한 컨벤션 스택의 stack lint 패키지(예: `leaf-kit` → `leaf_kit_lint`)를 등록합니다. 플러그인 소스는 같은 폴더의 `.jkit/plugins/<package>/`로 **복사(vendoring)**되고 상대 경로(`path: .jkit/plugins/<package>`)로 등록되므로, 다른 PC와 CI에서도 동작합니다 — `.jkit/plugins/`는 **git에 커밋**하세요. (`git:` 등록은 Dart 3.13.4에서도 진단이 나오지 않고, 절대 경로는 한 PC에서만 동작합니다.) 복사본은 `.jkit-vendor.json` 해시로 보호되어, 직접 수정하면 `dart run jkit_analysis:verify`가 실패합니다. analysis_server_plugin(Dart 3.10+)이 두 패키지를 독립 isolate로 로드해 IDE 및 `dart analyze`에서 동작합니다. 레거시 `custom_lint` dev dep와 `analyzer.plugins:` 항목은 자동으로 제거됩니다. 이 스텝은 **무조건** 실행되어야 합니다.
+Flutter 엔트리(워크스페이스 모드에선 root)의 `analysis_options.yaml` top-level `plugins:` 섹션에 `architecture_lint`(base)와 선택한 컨벤션 스택의 stack lint 패키지(예: `leaf-kit` → `leaf_kit_lint`)를 등록합니다. 플러그인 소스는 같은 폴더의 `.kelo/plugins/<package>/`로 **복사(vendoring)**되고 상대 경로(`path: .kelo/plugins/<package>`)로 등록되므로, 다른 PC와 CI에서도 동작합니다 — `.kelo/plugins/`는 **git에 커밋**하세요. (`git:` 등록은 Dart 3.13.4에서도 진단이 나오지 않고, 절대 경로는 한 PC에서만 동작합니다.) 복사본은 `.kelo-vendor.json` 해시로 보호되어, 직접 수정하면 `dart run kelo_analysis:verify`가 실패합니다. analysis_server_plugin(Dart 3.10+)이 두 패키지를 독립 isolate로 로드해 IDE 및 `dart analyze`에서 동작합니다. 레거시 `custom_lint` dev dep와 `analyzer.plugins:` 항목은 자동으로 제거됩니다. 이 스텝은 **무조건** 실행되어야 합니다.
 
 ```bash
 cd "$PROJECT_ROOT"
 if [ -n "$USER_CONV_STACKS" ]; then
-  $JKIT_DIR/scripts/flutter/gen-custom-lint.mjs flutter -p . -entry "$ENTRY_DIR" --stacks "$USER_CONV_STACKS"
+  $KELO_DIR/scripts/flutter/gen-custom-lint.mjs flutter -p . -entry "$ENTRY_DIR" --stacks "$USER_CONV_STACKS"
 else
-  $JKIT_DIR/scripts/flutter/gen-custom-lint.mjs flutter -p . -entry "$ENTRY_DIR"
+  $KELO_DIR/scripts/flutter/gen-custom-lint.mjs flutter -p . -entry "$ENTRY_DIR"
 fi
 ```
 
@@ -258,11 +263,11 @@ fi
 cd "$PROJECT_ROOT/$ENTRY_DIR" && dart pub get && cd "$PROJECT_ROOT"
 ```
 
-> `gen-custom-lint.mjs`는 매번 복사본을 현재 jkit 버전으로 교체하고, `plugins:` 등록은 동일하면 건드리지 않습니다 (idempotent). stack ↔ 패키지 매핑은 `inject-custom-lint.mjs`의 `STACK_PACKAGES`에 정의 (현재 `leaf-kit` → `leaf_kit_lint`, `freezed` → `freezed_lint`).
+> `gen-custom-lint.mjs`는 매번 복사본을 현재 kelo 버전으로 교체하고, `plugins:` 등록은 동일하면 건드리지 않습니다 (idempotent). stack ↔ 패키지 매핑은 `inject-custom-lint.mjs`의 `STACK_PACKAGES`에 정의 (현재 `leaf-kit` → `leaf_kit_lint`, `freezed` → `freezed_lint`).
 
 ### 10. 매니페스트 작성 (`MANIFEST_MODE=prompt`인 경우만)
 
-prompt 모드로 진행했다면 수집한 값으로 `jkit.project.json`을 작성합니다. 작성 직전 사용자에게 내용을 보여주고 확인을 받습니다. 다음 init/sync는 이 파일로 무인 재현됩니다. (apply 모드면 이미 매니페스트가 있으므로 건너뜁니다.)
+prompt 모드로 진행했다면 수집한 값으로 `kelo.project.json`을 작성합니다. 작성 직전 사용자에게 내용을 보여주고 확인을 받습니다. 다음 init/sync는 이 파일로 무인 재현됩니다. (apply 모드면 이미 매니페스트가 있으므로 건너뜁니다.)
 
 ```bash
 cd "$PROJECT_ROOT"
@@ -282,7 +287,7 @@ fi
 ### 11. 보고
 
 사용자에게 생성된 항목을 보고합니다:
-- `jkit.project.json` — JKit 셋업 매니페스트 (prompt 모드에서 신규 작성; 다음 init/sync 무인 재현용)
+- `kelo.project.json` — Kelo 셋업 매니페스트 (prompt 모드에서 신규 작성; 다음 init/sync 무인 재현용)
 - `AGENTS.md` — AI 에이전트 엔트리 포인트
 - `CLAUDE.md` → `AGENTS.md` 심볼릭 링크
 - `AGENTS.PROJECT.md` — 사용자 소유 프로젝트 고유 가이드 (최초 1회만 생성, 이후 보존)
@@ -292,9 +297,9 @@ fi
 - `CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (하단에 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `CONVENTIONS.PROJECT.md` — 사용자 소유 프로젝트 고유 컨벤션 (최초 1회만 생성, 이후 보존)
 - `package.json` — `devDependencies`(`husky`, `@commitlint/cli`, `@commitlint/config-conventional`) + `scripts.prepare: "husky"`
-- `.husky/pre-commit` — husky pre-commit 훅 (`dart run jkit_analysis:verify`, dart format, `dart analyze --fatal-infos`; 엔트리 디렉토리가 파일에 베이킹됨)
+- `.husky/pre-commit` — husky pre-commit 훅 (`dart run kelo_analysis:verify`, dart format, `dart analyze --fatal-infos`; 엔트리 디렉토리가 파일에 베이킹됨)
 - `.husky/commit-msg` — husky commit-msg 훅 (`commitlint --edit $1`)
 - `commitlint.config.mjs` — Conventional Commits 설정 (허용 타입: feat, fix, refactor, docs, test, chore, perf, ci)
-- `jkit_analysis` — 엔트리 `pubspec.yaml` dev_dependencies(git dep)에 추가, `analysis_options.yaml`이 include하는 analyzer/linter 규칙 + `verify` CLI
-- `architecture_lint` (base) — `.jkit/plugins/architecture_lint/`에 vendoring, `analysis_options.yaml` `plugins:`에 상대 경로로 등록 (커밋 대상). analysis_server_plugin이 IDE/`dart analyze`에 진단 통합
+- `kelo_analysis` — 엔트리 `pubspec.yaml` dev_dependencies(git dep)에 추가, `analysis_options.yaml`이 include하는 analyzer/linter 규칙 + `verify` CLI
+- `architecture_lint` (base) — `.kelo/plugins/architecture_lint/`에 vendoring, `analysis_options.yaml` `plugins:`에 상대 경로로 등록 (커밋 대상). analysis_server_plugin이 IDE/`dart analyze`에 진단 통합
 - stack lint 패키지(선택한 스택 기반) — `leaf-kit` 선택 시 `leaf_kit_lint`도 동일하게 `plugins:`에 등록

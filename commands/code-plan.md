@@ -5,17 +5,17 @@ Claude Code 내장 `Plan` 에이전트를 호출하여 요구사항 정리 → �
 - `code-harness/PLAN.md` — **기능 계획** (정본). 트랙 모드 헤더 포함.
 - `code-harness/PLAN-DESIGN.md` — **디자인 계획**. 디자인 도구 ≠ none 인 경우에만 생성.
 
-생성된 `PLAN.md`는 이후 `/jkit:code-tasks` / `/jkit:code-phases` / `/jkit:code-qa` 커맨드의 진입점이며, 디자인 도구 ≠ none 일 때 다운스트림 커맨드는 PLAN.md 헤더의 `디자인 계획 문서:` 포인터를 따라 `PLAN-DESIGN.md`를 추가로 로드합니다.
+생성된 `PLAN.md`는 이후 `/kelo:code-tasks` / `/kelo:code-phases` / `/kelo:code-qa` 커맨드의 진입점이며, 디자인 도구 ≠ none 일 때 다운스트림 커맨드는 PLAN.md 헤더의 `디자인 계획 문서:` 포인터를 따라 `PLAN-DESIGN.md`를 추가로 로드합니다.
 
 ## 사용법
 
 ```
-/jkit:code-plan <요구사항 또는 설명>
-/jkit:code-plan 로그인 화면에 2FA 추가
-/jkit:code-plan 로그인 화면에 2FA 추가 -o code-harness/PLAN.md
-/jkit:code-plan 로그인 화면에 2FA 추가 -od code-harness/PLAN-DESIGN.md
-/jkit:code-plan 로그인 화면에 2FA 추가 -arch docs/ARCHITECTURE.md -conv docs/CONVENTIONS.md
-/jkit:code-plan 로그인 화면 디자인을 새 Figma로 교체 --design-only
+/kelo:code-plan <요구사항 또는 설명>
+/kelo:code-plan 로그인 화면에 2FA 추가
+/kelo:code-plan 로그인 화면에 2FA 추가 -o code-harness/PLAN.md
+/kelo:code-plan 로그인 화면에 2FA 추가 -od code-harness/PLAN-DESIGN.md
+/kelo:code-plan 로그인 화면에 2FA 추가 -arch docs/ARCHITECTURE.md -conv docs/CONVENTIONS.md
+/kelo:code-plan 로그인 화면 디자인을 새 Figma로 교체 --design-only
 ```
 
 ## 인자
@@ -319,7 +319,7 @@ Plan 에이전트가 생성한 전체 계획을 **두 파일로 분리**해 저�
   - PLAN.md: `{OUTPUT}` (항상)
   - PLAN-DESIGN.md: `{OUTPUT_DESIGN}` (디자인 도구 ≠ none 일 때만; 그 외엔 "생성 안 됨 (디자인 도구: none)"으로 표기)
 - 모드 요약: `기능 트랙: yes/no` + `디자인 도구: figma/stitch/none`
-- 다음 단계 안내: `/jkit:code-tasks {OUTPUT}` 실행으로 Task 문서 생성 가능. 다운스트림 커맨드는 PLAN.md를 진입점으로 사용하며, 디자인 도구 ≠ none 일 때 PLAN.md 헤더의 `디자인 계획 문서:` 포인터를 따라 PLAN-DESIGN.md를 자동 로드합니다.
+- 다음 단계 안내: `/kelo:code-tasks {OUTPUT}` 실행으로 Task 문서 생성 가능. 다운스트림 커맨드는 PLAN.md를 진입점으로 사용하며, 디자인 도구 ≠ none 일 때 PLAN.md 헤더의 `디자인 계획 문서:` 포인터를 따라 PLAN-DESIGN.md를 자동 로드합니다.
 
 **`--design-only` 모드** (`DESIGN_ONLY = true`):
 - 변경 요약:
@@ -327,9 +327,9 @@ Plan 에이전트가 생성한 전체 계획을 **두 파일로 분리**해 저�
   - PLAN-DESIGN.md (`{OUTPUT_DESIGN}`): 새로 저장됨
 - 디자인 도구 변경 여부: 기존 `{OLD_TOOL}` → 새 `{NEW_TOOL}` (동일하면 "동일")
 - 다음 단계 안내 — 다운스트림 재생성 필요:
-  - `/jkit:code-tasks {OUTPUT}` (TASKS.md + 슬라이스 갱신)
-  - `/jkit:code-phases {OUTPUT}` (PHASES.md + 슬라이스 갱신)
-  - `/jkit:code-qa <TASKS_OR_PHASES>` (QA 재생성)
+  - `/kelo:code-tasks {OUTPUT}` (TASKS.md + 슬라이스 갱신)
+  - `/kelo:code-phases {OUTPUT}` (PHASES.md + 슬라이스 갱신)
+  - `/kelo:code-qa <TASKS_OR_PHASES>` (QA 재생성)
   - 진행 중인 `code-harness` 라운드가 있으면 **`code-harness/harness-state/`를 수동 삭제** 후 재시작 (디자인 시스템/screen Task ID 충돌 방지)
 
 ## 주의사항
@@ -344,8 +344,8 @@ Plan 에이전트가 생성한 전체 계획을 **두 파일로 분리**해 저�
   - 트랙 모드 플래그(`기능 트랙`, `디자인 도구`)와 `디자인 계획 문서:` 포인터의 **정본은 PLAN.md**. PLAN-DESIGN.md의 `트랙 모드` 섹션은 가독성을 위한 복사본이며, 두 파일이 불일치하면 PLAN.md를 신뢰합니다.
   - 디자인 트랙의 모든 상세(Figma URL/Stitch 경로/디자인 토큰/공통 컴포넌트/상태 계약/위젯 교체 가능성)는 **PLAN-DESIGN.md에만** 둡니다. PLAN.md에 디자인 상세가 새지 않도록 Step 5-4 검증을 통과시킵니다.
 - **디자인만 갈아끼우는 워크플로우** (`--design-only` 권장):
-  - 1순위: `/jkit:code-plan <새 디자인 요구사항> --design-only` — 기존 PLAN.md를 그대로 두고 PLAN-DESIGN.md만 새로 생성. 상태 계약 표 "의존 대상"은 기존 인터페이스를 강제 유지 (위젯 교체 시 상태관리 영향 금지 원칙).
+  - 1순위: `/kelo:code-plan <새 디자인 요구사항> --design-only` — 기존 PLAN.md를 그대로 두고 PLAN-DESIGN.md만 새로 생성. 상태 계약 표 "의존 대상"은 기존 인터페이스를 강제 유지 (위젯 교체 시 상태관리 영향 금지 원칙).
   - 2순위: PLAN-DESIGN.md를 수동 편집 — 가벼운 수정 시 (단, 자체 검증을 거치지 않으므로 위 분리 원칙은 사용자가 직접 보장).
   - 3순위: `-od code-harness/PLAN-DESIGN-v2.md`로 별도 파일 생성 후 PLAN.md `디자인 계획 문서:` 포인터를 수동 갱신 — A/B 비교나 이력 보존 목적.
-  - 어느 경로든 새 PLAN-DESIGN.md가 만들어지면 `/jkit:code-tasks` / `/jkit:code-phases` / `/jkit:code-qa` 재실행이 필요합니다 (다운스트림은 PLAN-DESIGN.md를 자동 로드하지만 TASKS/PHASES/QA 산출물은 수동 재생성).
-- **PLAN/TASKS 교체 시 주의**: 기능 구현 완료 후 디자인 트랙을 추가하거나 새 PLAN으로 전환할 때는, `/jkit:code-harness` 실행 전 `code-harness/harness-state/`를 수동으로 삭제하세요. 이전 라운드의 `state.json`(currentTaskId/taskQueue/completedTasks)이 새 Task ID 세트와 충돌할 수 있습니다.
+  - 어느 경로든 새 PLAN-DESIGN.md가 만들어지면 `/kelo:code-tasks` / `/kelo:code-phases` / `/kelo:code-qa` 재실행이 필요합니다 (다운스트림은 PLAN-DESIGN.md를 자동 로드하지만 TASKS/PHASES/QA 산출물은 수동 재생성).
+- **PLAN/TASKS 교체 시 주의**: 기능 구현 완료 후 디자인 트랙을 추가하거나 새 PLAN으로 전환할 때는, `/kelo:code-harness` 실행 전 `code-harness/harness-state/`를 수동으로 삭제하세요. 이전 라운드의 `state.json`(currentTaskId/taskQueue/completedTasks)이 새 Task ID 세트와 충돌할 수 있습니다.

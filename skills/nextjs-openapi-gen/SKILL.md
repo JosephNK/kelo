@@ -6,7 +6,7 @@ argument-hint: "<spec> [--dry-run] [--out-dir <dir>] | --config <file>"
 
 <!--
 OpenAPI 3.x specification files for code generation.
-/jkit:nextjs-openapi-gen specs/openapi.yaml
+/kelo:nextjs-openapi-gen specs/openapi.yaml
 -->
 
 # Next.js OpenAPI Code Generator Skill
@@ -29,11 +29,11 @@ OpenAPI 3.x specification files for code generation.
 - `--dry-run` (optional): Preview only — no files written
 - `--out-dir <dir>` (optional): 출력 프로젝트 루트(=`src/http`의 부모)를 명시 지정. cwd 기준 해석. 기본값은 cwd 위쪽 가장 가까운 `package.json` 위치. 모노레포에서 특정 패키지로 보낼 때 사용 — 예: `--out-dir packages/http` → `packages/http/src/http/_generated/...` + `packages/http/specs/`
 - `--config <file>` (optional): 여러 `spec → outDir` 타깃을 매니페스트 한 파일로 일괄 생성. `spec`/`--out-dir`와 동시 사용 불가 (각 타깃 안에서 지정). 모노레포에서 앱·패키지별 클라이언트를 한 번에 생성할 때 사용. 아래 **Config Manifest (멀티 타깃)** 참조.
-- **무인자 자동 감지**: `spec`도 `--config`도 없이 실행하면 cwd의 `jkit.openapi.json`이 있을 때 자동으로 그 매니페스트를 사용한다 (없으면 usage 출력 후 종료).
+- **무인자 자동 감지**: `spec`도 `--config`도 없이 실행하면 cwd의 `kelo.openapi.json`이 있을 때 자동으로 그 매니페스트를 사용한다 (없으면 usage 출력 후 종료).
 
 ## Config Manifest (멀티 타깃)
 
-모노레포 루트에 `jkit.openapi.json`을 두면 여러 타깃을 한 번에 생성한다. 파일명이 `jkit.openapi.json`이면 **무인자 실행으로 자동 감지**되고, 다른 이름/경로는 `--config <file>`로 지정한다. **이 파일은 `jkit.workspaces.json`과 별개이며, `workspaces-sync`/`workspaces-init`은 이 파일을 읽지 않는다.** 오직 본 스킬이 소비한다.
+모노레포 루트에 `kelo.openapi.json`을 두면 여러 타깃을 한 번에 생성한다. 파일명이 `kelo.openapi.json`이면 **무인자 실행으로 자동 감지**되고, 다른 이름/경로는 `--config <file>`로 지정한다. **이 파일은 `kelo.workspaces.json`과 별개이며, `workspaces-sync`/`workspaces-init`은 이 파일을 읽지 않는다.** 오직 본 스킬이 소비한다.
 
 ```json
 {
@@ -104,7 +104,7 @@ src/http/
 
 ```ts
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// Source: jkit nextjs-openapi-gen
+// Source: kelo nextjs-openapi-gen
 
 export { getApi, resetApiInstance, createApiClient } from "./client";
 export type { ApiClientConfig } from "./client";
@@ -125,11 +125,11 @@ export * from "./users";
 
 ### `src/http/_generated/client.ts` 팩토리 (GENERATED — 매 실행 덮어쓰기)
 
-`client.ts`도 나머지 `_generated/` 산출물과 동일하게 `// GENERATED CODE - DO NOT MODIFY BY HAND` + `// Source: jkit nextjs-openapi-gen` 헤더를 가지며 매 실행 덮어쓴다. 인증·hooks·prefix 같은 비즈니스 로직은 이 파일이 아니라 호출부의 `createApiClient(config)`로 주입하므로, client.ts는 결정적 보일러플레이트가 되어 재생성해도 안전하다.
+`client.ts`도 나머지 `_generated/` 산출물과 동일하게 `// GENERATED CODE - DO NOT MODIFY BY HAND` + `// Source: kelo nextjs-openapi-gen` 헤더를 가지며 매 실행 덮어쓴다. 인증·hooks·prefix 같은 비즈니스 로직은 이 파일이 아니라 호출부의 `createApiClient(config)`로 주입하므로, client.ts는 결정적 보일러플레이트가 되어 재생성해도 안전하다.
 
 ```ts
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// Source: jkit nextjs-openapi-gen
+// Source: kelo nextjs-openapi-gen
 
 import ky, { type Hooks, type KyInstance, type Options } from "ky";
 
@@ -319,19 +319,19 @@ Tag → 파일/클래스명 매핑은 kebab-case (파일) / PascalCase + `Servic
 ## Usage Examples
 
 ```
-/jkit:nextjs-openapi-gen specs/openapi.yaml
+/kelo:nextjs-openapi-gen specs/openapi.yaml
 
-/jkit:nextjs-openapi-gen https://api.example.com/openapi.json
+/kelo:nextjs-openapi-gen https://api.example.com/openapi.json
 
-/jkit:nextjs-openapi-gen specs/openapi.yaml --dry-run
+/kelo:nextjs-openapi-gen specs/openapi.yaml --dry-run
 
 # 모노레포: 루트에서 실행해 특정 패키지로 출력
-/jkit:nextjs-openapi-gen specs/openapi.yaml --out-dir packages/http
+/kelo:nextjs-openapi-gen specs/openapi.yaml --out-dir packages/http
 
-# 모노레포: 매니페스트로 여러 앱·패키지 일괄 생성 (jkit.openapi.json)
-/jkit:nextjs-openapi-gen                         # 무인자 → 루트의 jkit.openapi.json 자동 사용
-/jkit:nextjs-openapi-gen --dry-run               # 자동 감지 + 미리보기
-/jkit:nextjs-openapi-gen --config custom.json    # 다른 이름/경로는 명시
+# 모노레포: 매니페스트로 여러 앱·패키지 일괄 생성 (kelo.openapi.json)
+/kelo:nextjs-openapi-gen                         # 무인자 → 루트의 kelo.openapi.json 자동 사용
+/kelo:nextjs-openapi-gen --dry-run               # 자동 감지 + 미리보기
+/kelo:nextjs-openapi-gen --config custom.json    # 다른 이름/경로는 명시
 ```
 
 ## Notes
@@ -339,4 +339,4 @@ Tag → 파일/클래스명 매핑은 kebab-case (파일) / PascalCase + `Servic
 - Generated files have `// GENERATED CODE - DO NOT MODIFY BY HAND` header.
 - 동일 spec으로 재실행하면 deterministic하게 같은 출력 (idempotent).
 - URL spec은 `specs/openapi.{yaml,json}`로 저장돼 VCS 추적 가능. boundary 검사는 `specs/`를 자동 무시.
-- 본 스킬은 `/jkit:nextjs-init`로 셋업된 `src/http/` 레이아웃을 가정한다.
+- 본 스킬은 `/kelo:nextjs-init`로 셋업된 `src/http/` 레이아웃을 가정한다.

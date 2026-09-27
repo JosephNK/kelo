@@ -1,2 +1,2 @@
 npx lint-staged
-npx jkit-check-i18n
+npx kelo-check-i18n

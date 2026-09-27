@@ -1,4 +1,4 @@
-# jkit-code-plugin
+# kelo
 
 Flutter / Next.js / NestJS용 Claude Code 플러그인 — 프로젝트 셋업, 스크린·BLoC 스캐폴딩, OpenAPI 코드젠, 빌드·배포, TDD·코드리뷰, 컨벤션 관리를 하나로.
 
@@ -11,7 +11,7 @@ Flutter / Next.js / NestJS용 Claude Code 플러그인 — 프로젝트 셋업, 
 /plugin marketplace add https://github.com/JosephNK/jkit-code-plugin
 
 # Install plugin
-/plugin install jkit@jkit
+/plugin install kelo@kelo
 ```
 
 ### Codex
@@ -28,7 +28,7 @@ codex plugin marketplace add JosephNK/jkit-code-plugin
 codex plugin marketplace add JosephNK/jkit-code-plugin --ref <tag>
 ```
 
-추가 후 Codex에서 `jkit:commit` skill을 사용할 수 있다.
+추가 후 Codex에서 `kelo:commit` skill을 사용할 수 있다.
 
 ### Local Development (Plugin Testing)
 
@@ -39,7 +39,7 @@ codex plugin marketplace add JosephNK/jkit-code-plugin --ref <tag>
 claude --plugin-dir .
 
 # 다른 경로에서 실행
-claude --plugin-dir /path/to/jkit-code-plugin
+claude --plugin-dir /path/to/kelo
 ```
 
 ### Team Setup
@@ -49,7 +49,7 @@ Add to your project's `.claude/settings.json` so teammates get the plugin automa
 ```json
 {
   "extraKnownMarketplaces": {
-    "jkit": {
+    "kelo": {
       "source": {
         "source": "github",
         "repo": "JosephNK/jkit-code-plugin"
@@ -63,9 +63,9 @@ Add to your project's `.claude/settings.json` so teammates get the plugin automa
 
 | Framework | Init Command | Convention Stacks |
 |-----------|-------------|-------------------|
-| **Flutter** | `/jkit:flutter-init` | bloc, freezed, go-router, leaf-kit, easy-localization |
-| **Next.js** | `/jkit:nextjs-init` | design-system/mantine, design-system/antd, design-system/shadcn, tanstack-query, next-proxy |
-| **NestJS** | `/jkit:nestjs-init` | typeorm, gcp, anthropic-ai |
+| **Flutter** | `/kelo:flutter-init` | bloc, freezed, go-router, leaf-kit, easy-localization |
+| **Next.js** | `/kelo:nextjs-init` | design-system/mantine, design-system/antd, design-system/shadcn, tanstack-query, next-proxy |
+| **NestJS** | `/kelo:nestjs-init` | typeorm, gcp, anthropic-ai |
 
 Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등 프로젝트 설정 파일을 자동 생성합니다.
 
@@ -75,68 +75,68 @@ Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등
 
 | Command | Description |
 |---------|-------------|
-| `/jkit:flutter-init` | 프로젝트 초기화 (conventions, husky hooks, commitlint 등) |
-| `/jkit:flutter-app-scaffold` | app.dart, main.dart, router, 다국어 리소스 생성 |
-| `/jkit:flutter-android-setup` | build.gradle.kts, AndroidManifest, proguard 설정 |
-| `/jkit:flutter-ios-setup` | pbxproj (4 flavor × 3 build type), xcscheme, Info.plist 설정 |
+| `/kelo:flutter-init` | 프로젝트 초기화 (conventions, husky hooks, commitlint 등) |
+| `/kelo:flutter-app-scaffold` | app.dart, main.dart, router, 다국어 리소스 생성 |
+| `/kelo:flutter-android-setup` | build.gradle.kts, AndroidManifest, proguard 설정 |
+| `/kelo:flutter-ios-setup` | pbxproj (4 flavor × 3 build type), xcscheme, Info.plist 설정 |
 
 ### Flutter — Development
 
 | Command | Description |
 |---------|-------------|
-| `/jkit:flutter-plan` | 요구사항 분석 → 리스크 평가 → 구현 계획 생성 |
-| `/jkit:flutter-tdd` | RED→GREEN→REFACTOR TDD 워크플로우 |
-| `/jkit:flutter-create-bloc-screen` | Screen + BLoC + View + DI + Route 보일러플레이트 생성 |
-| `/jkit:flutter-design` | 프로덕션급 UI 디자인 (LeafTheme + Atomic Design) |
-| `/jkit:flutter-openapi-gen` | OpenAPI 3.x → BuiltValue 모델 + Dio 서비스 코드 생성 |
-| `/jkit:flutter-create-package` | 모노레포 워크스페이스 패키지 생성 |
+| `/kelo:flutter-plan` | 요구사항 분석 → 리스크 평가 → 구현 계획 생성 |
+| `/kelo:flutter-tdd` | RED→GREEN→REFACTOR TDD 워크플로우 |
+| `/kelo:flutter-create-bloc-screen` | Screen + BLoC + View + DI + Route 보일러플레이트 생성 |
+| `/kelo:flutter-design` | 프로덕션급 UI 디자인 (LeafTheme + Atomic Design) |
+| `/kelo:flutter-openapi-gen` | OpenAPI 3.x → BuiltValue 모델 + Dio 서비스 코드 생성 |
+| `/kelo:flutter-create-package` | 모노레포 워크스페이스 패키지 생성 |
 
 ### Flutter — Quality
 
 | Command | Description |
 |---------|-------------|
-| `/jkit:flutter-code-review` | 보안/품질/베스트프랙티스 코드 리뷰 |
-| `/jkit:flutter-build-fix` | 빌드/분석 에러 점진적 수정 |
-| `/jkit:flutter-test-coverage` | 커버리지 분석 + 누락 테스트 자동 생성 (80%+ 목표) |
-| `/jkit:check-conventions` | CONVENTIONS.md 기반 변경 파일 규칙 검증 |
+| `/kelo:flutter-code-review` | 보안/품질/베스트프랙티스 코드 리뷰 |
+| `/kelo:flutter-build-fix` | 빌드/분석 에러 점진적 수정 |
+| `/kelo:flutter-test-coverage` | 커버리지 분석 + 누락 테스트 자동 생성 (80%+ 목표) |
+| `/kelo:check-conventions` | CONVENTIONS.md 기반 변경 파일 규칙 검증 |
 
 ### Flutter — Build & Deploy
 
 | Command | Description |
 |---------|-------------|
-| `/jkit:flutter-build-deploy` | APK / AppBundle / IPA 빌드 (flavor: production/staging/dev/qa) |
-| `/jkit:flutter-android-keystore-info` | 키스토어 인증서 정보 조회 |
-| `/jkit:flutter-android-signing-report` | 키스토어 alias별 서명 정보 |
-| `/jkit:flutter-android-verify-apk` | APK 서명 검증 |
+| `/kelo:flutter-build-deploy` | APK / AppBundle / IPA 빌드 (flavor: production/staging/dev/qa) |
+| `/kelo:flutter-android-keystore-info` | 키스토어 인증서 정보 조회 |
+| `/kelo:flutter-android-signing-report` | 키스토어 alias별 서명 정보 |
+| `/kelo:flutter-android-verify-apk` | APK 서명 검증 |
 
 ### Flutter — Maintenance
 
 | Command | Description |
 |---------|-------------|
-| `/jkit:flutter-update-dependencies` | pub.dev 패키지 최신 버전 업데이트 |
+| `/kelo:flutter-update-dependencies` | pub.dev 패키지 최신 버전 업데이트 |
 
 ### Cross-Framework
 
 | Command | Description |
 |---------|-------------|
-| `/jkit:commit` | 변경 분석 → 한국어 커밋 메시지 자동 생성 (3개 후보) |
-| `/jkit:typeorm-migration` | TypeORM 마이그레이션 SQL 생성 (dev/prod 분리) |
-| `/jkit:update-plugin-ref` | JKit 의존성 git ref 일괄 업데이트 (`code-plugin` / `architecture-lint` / `leaf-kit`) |
+| `/kelo:commit` | 변경 분석 → 한국어 커밋 메시지 자동 생성 (3개 후보) |
+| `/kelo:typeorm-migration` | TypeORM 마이그레이션 SQL 생성 (dev/prod 분리) |
+| `/kelo:update-plugin-ref` | Kelo 의존성 git ref 일괄 업데이트 (`code-plugin` / `architecture-lint` / `leaf-kit`) |
 
 ### Monorepo (Next.js / NestJS)
 
-`jkit.workspaces.json` 매니페스트로 모노레포의 여러 워크스페이스를 한 번에 init/sync. 앱별 스택 선택을 매니페스트에 보관해 반복 실행 시 프롬프트 없이 재현 가능.
+`kelo.workspaces.json` 매니페스트로 모노레포의 여러 워크스페이스를 한 번에 init/sync. 앱별 스택 선택을 매니페스트에 보관해 반복 실행 시 프롬프트 없이 재현 가능.
 
 | Command | Description |
 |---------|-------------|
-| `/jkit:workspaces-init` | 매니페스트 기반 일괄 init. 매니페스트 없으면 워크스페이스 자동 탐색 후 부트스트랩 |
-| `/jkit:workspaces-sync` | 매니페스트 기반 일괄 sync. docs/lint config + husky 훅 갱신 |
+| `/kelo:workspaces-init` | 매니페스트 기반 일괄 init. 매니페스트 없으면 워크스페이스 자동 탐색 후 부트스트랩 |
+| `/kelo:workspaces-sync` | 매니페스트 기반 일괄 sync. docs/lint config + husky 훅 갱신 |
 
-단일 워크스페이스만 갱신할 때는 기존 `/jkit:nextjs-init [path]`, `/jkit:nextjs-sync [path]`, `/jkit:nestjs-init [path]`, `/jkit:nestjs-sync [path]` 도 그대로 사용 가능합니다.
+단일 워크스페이스만 갱신할 때는 기존 `/kelo:nextjs-init [path]`, `/kelo:nextjs-sync [path]`, `/kelo:nestjs-init [path]`, `/kelo:nestjs-sync [path]` 도 그대로 사용 가능합니다.
 
-### 단일 프로젝트 매니페스트 (`jkit.project.json`)
+### 단일 프로젝트 매니페스트 (`kelo.project.json`)
 
-`jkit.workspaces.json`의 단일 프로젝트 버전. 프로젝트 루트에 두면 `nextjs/nestjs/flutter`의 `-init`·`-sync`가 스택 선택 프롬프트 없이 매니페스트 값으로 **무인 재현**합니다. 셋업이 어떤 스택으로 구성됐는지 기록되어 `-sync` 반복 시 드리프트가 없습니다.
+`kelo.workspaces.json`의 단일 프로젝트 버전. 프로젝트 루트에 두면 `nextjs/nestjs/flutter`의 `-init`·`-sync`가 스택 선택 프롬프트 없이 매니페스트 값으로 **무인 재현**합니다. 셋업이 어떤 스택으로 구성됐는지 기록되어 `-sync` 반복 시 드리프트가 없습니다.
 
 ```jsonc
 // nextjs/nestjs
@@ -165,7 +165,7 @@ Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등
 | `-init` | 무인 재현 (프롬프트 생략) | 대화형 진행 후 매니페스트 **자동 작성** |
 | `-sync` | 무인 재현 (프롬프트 생략) | 대화형 진행 (기존과 동일) + 작성 **제안** |
 
-매니페스트가 없으면 기존 대화형 동작이 그대로 유지되므로 하위 호환됩니다. (모노레포의 `jkit.workspaces.json`은 워크스페이스별 동일 필드 집합을 배열로 보관합니다.)
+매니페스트가 없으면 기존 대화형 동작이 그대로 유지되므로 하위 호환됩니다. (모노레포의 `kelo.workspaces.json`은 워크스페이스별 동일 필드 집합을 배열로 보관합니다.)
 
 ## Generator Scripts
 
@@ -218,33 +218,33 @@ lint 규칙과 조립 로직은 npm 패키지로 배포되고, 소비 프로젝�
 
 | 패키지 | 소스 | 제공 |
 |---|---|---|
-| `@josephnk/eslint-config-nextjs` | `rules/nextjs/` | `nextjs()` factory, `./formatter`, `./stylelint`, `jkit-lint-nextjs` CLI |
-| `@josephnk/eslint-config-nestjs` | `rules/nestjs/` | `nestjs()` factory, `./formatter`, `jkit-lint-nestjs` / `jkit-check-i18n` CLI |
+| `eslint-config-kelo-nextjs` | `rules/nextjs/` | `nextjs()` factory, `./formatter`, `./stylelint`, `kelo-lint-nextjs` CLI |
+| `eslint-config-kelo-nestjs` | `rules/nestjs/` | `nestjs()` factory, `./formatter`, `kelo-lint-nestjs` / `kelo-check-i18n` CLI |
 
-소비 프로젝트 구성 (`/jkit:*-init`, `/jkit:*-sync`가 생성):
+소비 프로젝트 구성 (`/kelo:*-init`, `/kelo:*-sync`가 생성):
 
 ```js
-// eslint.config.mjs — jkit 관리 (매 sync 덮어씀, 직접 수정은 hook이 차단)
-import { nestjs } from "@josephnk/eslint-config-nestjs";
+// eslint.config.mjs — kelo 관리 (매 sync 덮어씀, 직접 수정은 hook이 차단)
+import { nestjs } from "eslint-config-kelo-nestjs";
 import projectConfig from "./eslint.project.config.mjs";
 export default nestjs({ root: import.meta.dirname, project: projectConfig });
 ```
 
-- `jkit.lint.json` — jkit 관리. `stacks`(sync가 갱신) + 프로젝트별 확장 `boundaryElements` / `boundaryRules` / `boundaryIgnores` / `ignores`(sync가 보존)
-- `eslint.project.config.mjs` — 사용자 소유. 새 규칙·플러그인 **추가만** 허용. jkit 규칙/settings 재정의, `linterOptions`, 전역 ignores는 로드 시 에러
+- `kelo.lint.json` — kelo 관리. `stacks`(sync가 갱신) + 프로젝트별 확장 `boundaryElements` / `boundaryRules` / `boundaryIgnores` / `ignores`(sync가 보존)
+- `eslint.project.config.mjs` — 사용자 소유. 새 규칙·플러그인 **추가만** 허용. kelo 규칙/settings 재정의, `linterOptions`, 전역 ignores는 로드 시 에러
 - inline `eslint-disable` 주석은 무시됩니다 (`noInlineConfig`)
-- `jkit-lint-<framework>` — 프로젝트 `eslint.config.mjs`를 무시하고 패키지 규칙으로 검사. `scripts.lint`(eslint 기반 `lint:ci`/`lint:fix` 포함)와 lint-staged가 모두 이 CLI로 통일됩니다. 경로/`--ignore-pattern` 인자는 `jkit.lint.json`의 `ignores`로 옮깁니다. 에디터 실시간 표시는 `eslint.config.mjs`가 담당합니다
+- `kelo-lint-<framework>` — 프로젝트 `eslint.config.mjs`를 무시하고 패키지 규칙으로 검사. `scripts.lint`(eslint 기반 `lint:ci`/`lint:fix` 포함)와 lint-staged가 모두 이 CLI로 통일됩니다. 경로/`--ignore-pattern` 인자는 `kelo.lint.json`의 `ignores`로 옮깁니다. 에디터 실시간 표시는 `eslint.config.mjs`가 담당합니다
 
-배포는 npm 레지스트리가 아니라 **GitHub Release**입니다: `./deploy.mjs`(버전 범프 + 태그 + `npm pack` tarball을 Release에 첨부) → 소비 프로젝트는 `package.json`에 Release tarball URL(`…/releases/download/v<ver>/josephnk-eslint-config-<fw>-<ver>.tgz`)을 쓰고, `/jkit:update-plugin-ref code-plugin` 또는 sync로 버전을 올립니다.
-레거시 `@jkit/code-plugin` git 의존성 프로젝트는 `/jkit:<framework>-sync` 한 번으로 전환됩니다.
+배포는 npm 레지스트리가 아니라 **GitHub Release**입니다: `./deploy.mjs`(버전 범프 + 태그 + `npm pack` tarball을 Release에 첨부) → 소비 프로젝트는 `package.json`에 Release tarball URL(`…/releases/download/v<ver>/eslint-config-kelo-<fw>-<ver>.tgz`)을 쓰고, `/kelo:update-plugin-ref code-plugin` 또는 sync로 버전을 올립니다.
+레거시 `@jkit/code-plugin` git 의존성 프로젝트는 `/kelo:<framework>-sync` 한 번으로 전환됩니다.
 
 ## Project Preferences (NestJS)
 
-NestJS 소비 프로젝트의 `package.json`에 `jkit-rules` 객체를 두면 일부 lint 동작을 토글할 수 있습니다. 값은 ESLint config 로드 시점에 평가되므로 **`/jkit:nestjs-sync` 재실행 없이** 다음 ESLint 실행부터 반영됩니다.
+NestJS 소비 프로젝트의 `package.json`에 `kelo-rules` 객체를 두면 일부 lint 동작을 토글할 수 있습니다. 값은 ESLint config 로드 시점에 평가되므로 **`/kelo:nestjs-sync` 재실행 없이** 다음 ESLint 실행부터 반영됩니다.
 
 ```json
 {
-  "jkit-rules": {
+  "kelo-rules": {
     "pathAliasCheck": false
   }
 }
@@ -254,7 +254,7 @@ NestJS 소비 프로젝트의 `package.json`에 `jkit-rules` 객체를 두면 �
 |---|---|---|
 | `pathAliasCheck` | `true` | 모든 레이어에서 상대 parent import(`../**`) 차단 룰 OFF — `@/*` path alias 강제 해제 |
 
-> 옵션을 추가하지 않거나 객체 자체를 두지 않으면 모든 검사가 활성된 기본값으로 동작합니다. 옛 `jkit.pathAliasCheck` 키는 더 이상 인식되지 않으니 `jkit-rules.pathAliasCheck`로 옮겨주세요.
+> 옵션을 추가하지 않거나 객체 자체를 두지 않으면 모든 검사가 활성된 기본값으로 동작합니다. 레거시 `jkit-rules` 키도 계속 인식되지만 `kelo-rules`로 옮기는 것을 권장합니다. 옛 `jkit.pathAliasCheck` 키는 더 이상 인식되지 않으니 `kelo-rules.pathAliasCheck`로 옮겨주세요.
 
 ## ESLint 메시지 포매터 (Next.js / NestJS)
 
@@ -268,7 +268,7 @@ ESLint 기본 `stylish` formatter로 렌더링합니다. 그 외 룰 메시지�
 ```json
 {
   "scripts": {
-    "lint": "eslint --format @josephnk/eslint-config-nextjs/formatter ."
+    "lint": "eslint --format eslint-config-kelo-nextjs/formatter ."
   }
 }
 ```
@@ -277,7 +277,7 @@ ESLint 기본 `stylish` formatter로 렌더링합니다. 그 외 룰 메시지�
 ```json
 {
   "scripts": {
-    "lint": "eslint --format @josephnk/eslint-config-nestjs/formatter ."
+    "lint": "eslint --format eslint-config-kelo-nestjs/formatter ."
   }
 }
 ```

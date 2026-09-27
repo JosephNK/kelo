@@ -1,5 +1,5 @@
 {
-  "name": "jkit",
+  "name": "kelo",
   "version": "0.3.80",
   "description": "Personal development toolkit for Claude Code — scaffolding, conventions, and config generation",
   "author": {
@@ -8,7 +8,7 @@
   "license": "MIT",
   "keywords": [
     "claude-code",
-    "jkit",
+    "kelo",
     "skills",
     "agents"
   ],

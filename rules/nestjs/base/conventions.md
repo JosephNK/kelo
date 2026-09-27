@@ -9,7 +9,7 @@
 
 - **New Domain Exception**: `exception/` 에 `*.error.ts` 생성.
   에러 코드 (snake_case 소문자, 예: `order_not_found`) 는 `src/infrastructure/i18n/locales/<lang>/error.json` 모든 로케일에 key=코드, value=localized message 로 등록.
-  → `npx jkit-check-i18n` 로 검증.
+  → `npx kelo-check-i18n` 로 검증.
 
 ## Response DTO Pattern
 

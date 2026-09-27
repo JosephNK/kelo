@@ -1,7 +1,7 @@
 {
-  "name": "@josephnk/eslint-config-nextjs",
+  "name": "eslint-config-kelo-nextjs",
   "version": "0.3.80",
-  "description": "JKit Next.js ESLint/Stylelint shareable config — architecture boundaries, domain purity, and quality rules",
+  "description": "Kelo Next.js ESLint/Stylelint shareable config — architecture boundaries, domain purity, and quality rules",
   "type": "module",
   "license": "MIT",
   "author": "JosephNK <nkw0608@gmail.com>",
@@ -15,7 +15,7 @@
     "eslintconfig",
     "stylelint",
     "nextjs",
-    "jkit"
+    "kelo"
   ],
   "engines": {
     "node": ">=20.11"
@@ -27,7 +27,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "jkit-lint-nextjs": "./bin/jkit-lint.mjs"
+    "kelo-lint-nextjs": "./bin/kelo-lint.mjs"
   },
   "files": [
     "index.mjs",

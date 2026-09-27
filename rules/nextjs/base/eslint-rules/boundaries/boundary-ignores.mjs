@@ -13,7 +13,7 @@ export const baseBoundaryIgnores = [
   "*.d.ts",
   "types/**",
   "src/lib/types/**",
-  ".jkit/**",
+  ".kelo/**",
   "scripts/**",
   "e2e/**",
   "specs/**",

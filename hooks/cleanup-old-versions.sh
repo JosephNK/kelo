@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cleanup old jkit plugin cache versions on Claude Code session start.
+# Cleanup old kelo plugin cache versions on Claude Code session start.
 # Keeps only the version this hook is currently running from.
 set -euo pipefail
 
@@ -11,9 +11,9 @@ fi
 CACHE_DIR="$(cd "$PLUGIN_ROOT/.." && pwd)"
 CURRENT_VERSION="$(basename "$PLUGIN_ROOT")"
 
-# Safety: only operate inside the jkit/jkit cache namespace.
+# Safety: only operate inside the kelo/kelo cache namespace.
 case "$CACHE_DIR" in
-  */.claude/plugins/cache/jkit/jkit) ;;
+  */.claude/plugins/cache/kelo/kelo) ;;
   *) exit 0 ;;
 esac
 
@@ -27,7 +27,7 @@ for dir in "$CACHE_DIR"/*/; do
 done
 
 if [ "${#removed[@]}" -gt 0 ]; then
-  echo "[jkit] Cleaned old plugin cache: ${removed[*]} (kept $CURRENT_VERSION)" >&2
+  echo "[kelo] Cleaned old plugin cache: ${removed[*]} (kept $CURRENT_VERSION)" >&2
 fi
 
 exit 0

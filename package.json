@@ -1,8 +1,8 @@
 {
-  "name": "jkit-code-plugin",
+  "name": "kelo",
   "version": "0.3.80",
   "private": true,
-  "description": "JKit Claude Code plugin — lint rule sources, generators, and skills. ESLint configs are published from rules/nextjs and rules/nestjs.",
+  "description": "Kelo Claude Code plugin — lint rule sources, generators, and skills. ESLint configs are published from rules/nextjs and rules/nestjs.",
   "type": "module",
   "license": "MIT",
   "author": "JosephNK <nkw0608@gmail.com>",

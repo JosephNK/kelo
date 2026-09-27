@@ -19,7 +19,7 @@ export const baseIgnores = globalIgnores([
   "build/**",
   "coverage/**",
   "next-env.d.ts",
-  ".jkit/**",
+  ".kelo/**",
   "src/http/_generated/**",
   "src/theme.generated.ts",
   "specs/**",

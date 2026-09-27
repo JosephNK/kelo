@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 // =============================================================================
-// Writes <output-dir>/stylelint.config.mjs (jkit-managed, always overwritten)
+// Writes <output-dir>/stylelint.config.mjs (kelo-managed, always overwritten)
 // that re-exports the preset from the framework config package
-// (`@josephnk/eslint-config-<framework>/stylelint`, source:
+// (`eslint-config-kelo-<framework>/stylelint`, source:
 // rules/<framework>/base/stylelint.preset.mjs) and patches
 // <output-dir>/package.json:
 //   - devDependencies: stylelint, stylelint-config-standard,
-//     stylelint-declaration-strict-value, @josephnk/eslint-config-<framework>
+//     stylelint-declaration-strict-value, eslint-config-kelo-<framework>
 //   - scripts.lint:css
 //   - lint-staged glob for CSS files
 //
@@ -19,13 +19,13 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { jkitPackageSpec, patchLintStaged, setDep } from "../common.mjs";
+import { keloPackageSpec, patchLintStaged, setDep } from "../common.mjs";
 
 const HELP = `Usage: gen-stylelint.mjs <framework> -p <output-dir>
 
-Writes <output-dir>/stylelint.config.mjs (re-exports the jkit preset) and
+Writes <output-dir>/stylelint.config.mjs (re-exports the kelo preset) and
 patches <output-dir>/package.json with:
-  - devDependencies: stylelint, stylelint-config-standard, @josephnk/eslint-config-<framework>
+  - devDependencies: stylelint, stylelint-config-standard, eslint-config-kelo-<framework>
   - scripts.lint:css
   - lint-staged glob for CSS files
 
@@ -102,13 +102,13 @@ function main() {
   }
   const configPkg = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"));
 
-  // stylelint.config.mjs — jkit-managed, 매번 덮어쓴다.
+  // stylelint.config.mjs — kelo-managed, 매번 덮어쓴다.
   fs.mkdirSync(args.outputDir, { recursive: true });
   const outputFile = path.join(args.outputDir, "stylelint.config.mjs");
   fs.writeFileSync(
     outputFile,
     `// GENERATED FILE - DO NOT MODIFY BY HAND
-// Managed by jkit (overwritten by /jkit:${args.framework}-init and -sync).
+// Managed by kelo (overwritten by /kelo:${args.framework}-init and -sync).
 // Rules: ${configPkg.name}/stylelint
 
 export { default } from "${configPkg.name}/stylelint";
@@ -141,7 +141,7 @@ export { default } from "${configPkg.name}/stylelint";
     setDep(
       dev,
       configPkg.name,
-      jkitPackageSpec(configPkg.name, configPkg.version),
+      keloPackageSpec(configPkg.name, configPkg.version),
     ),
   );
   if ("@jkit/code-plugin" in dev) {

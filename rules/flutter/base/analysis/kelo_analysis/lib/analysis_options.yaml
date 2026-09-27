@@ -1,6 +1,6 @@
-# jkit Flutter analysis options — include from the project's analysis_options.yaml:
-#   include: package:jkit_analysis/analysis_options.yaml
-# Change rules in jkit-code-plugin; local weakening fails `dart run jkit_analysis:verify`.
+# kelo Flutter analysis options — include from the project's analysis_options.yaml:
+#   include: package:kelo_analysis/analysis_options.yaml
+# Change rules in the kelo repo; local weakening fails `dart run kelo_analysis:verify`.
 
 include: package:flutter_lints/flutter.yaml
 

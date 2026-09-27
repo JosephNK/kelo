@@ -11,7 +11,7 @@ Kelo이 관리하는 의존성의 버전(npm 패키지) 또는 git ref(Dart 패�
 | Target | 매니페스트 | 의존성 | Auto 지원 |
 |--------|-----------|--------|----------|
 | `code-plugin` | `package.json` | `eslint-config-kelo-nextjs`, `eslint-config-kelo-nestjs` (GitHub Release tarball URL `v<version>`) | ✓ plugin.json version |
-| `architecture-lint` | `pubspec.yaml` | `architecture_lint` | ✓ plugin.json version (동일 repo) |
+| `architecture-lint` | `pubspec.yaml` | `kelo_analysis` (git ref) — lint 플러그인(`architecture_lint` 등)은 `.kelo/plugins/`에 vendoring되어 ref가 없으므로 점검만 | ✓ plugin.json version (동일 repo) |
 | `leaf-kit` | `pubspec.yaml` | `flutter_leaf_kit` | ✗ 외부 repo — 명시적 ref 필수 |
 
 ## 호출 형식
@@ -29,7 +29,7 @@ Kelo이 관리하는 의존성의 버전(npm 패키지) 또는 git ref(Dart 패�
 /kelo:update-plugin-ref code-plugin
 /kelo:update-plugin-ref code-plugin 0.3.80
 /kelo:update-plugin-ref architecture-lint
-/kelo:update-plugin-ref architecture-lint v0.1.32
+/kelo:update-plugin-ref architecture-lint v0.4.3
 /kelo:update-plugin-ref leaf-kit v3.0.0
 /kelo:update-plugin-ref leaf-kit main --dry-run
 ```
@@ -66,7 +66,9 @@ target에 따라 해당 백엔드 스크립트를 실행합니다.
 $KELO_DIR/scripts/typescript/dependencies/update-code-plugin-ref.mjs [<ref>] --project-dir <user-project-dir> [--dry-run]
 ```
 
-**architecture-lint** (`pubspec.yaml` / `architecture_lint`):
+**architecture-lint** (`pubspec.yaml` / `kelo_analysis`):
+
+`kelo_analysis` git ref만 갱신합니다. `analysis_options.yaml` `plugins:`의 `architecture_lint`·`leaf_kit_lint`·`freezed_lint`는 `.kelo/plugins/`에 vendoring되어 있어 ref가 없고, 스크립트는 등록 방식만 점검해 안내합니다. vendoring 갱신·레거시 등록(절대 경로/`git:`) 전환은 사용자에게 `/kelo:flutter-sync` 실행을 안내합니다.
 ```bash
 $KELO_DIR/scripts/flutter/dependencies/update-architecture-lint-ref.mjs [<ref>] --project-dir <user-project-dir> [--dry-run]
 ```

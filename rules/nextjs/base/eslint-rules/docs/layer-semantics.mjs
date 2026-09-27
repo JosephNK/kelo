@@ -88,9 +88,10 @@ export const baseLayerSemantics = {
     role: "HTTP 클라이언트 팩토리 (ky 래퍼). createApiClient(config)로 prefix·retry·hooks를 주입받아 KyInstance 생성 — 인증·prefix 같은 비즈니스 로직은 호출부가 주입.",
     contains: [
       "createApiClient 팩토리·getApi 싱글톤 export — `src/http/_generated/client.ts` (generator 산출물)",
+      "이전 구조의 `src/http/client.ts` (generator가 `_generated/`로 옮기기 전 위치, 같은 레이어로 인식)",
     ],
     forbids: [
-      "수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)",
+      "`_generated/client.ts` 수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)",
       "이 파일에서 다른 레이어 import (순수 통신 경계; allow: [])",
     ],
   },

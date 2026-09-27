@@ -51,15 +51,16 @@
     ├── hooks/                    # shared-hook — 전역 재사용 React hook
     ├── http/
     │   ├── _generated/
-    │   │   ├── client.ts         # http-client — (generated) HTTP 클라이언트 팩토리
+    │   │   ├── client.ts         # http-client — HTTP 클라이언트 팩토리 (generated, 이전 위치 `src/http/client.ts` 포함)
     │   │   ├── endpoints.ts      # http-endpoint — (generated) URL 헬퍼
     │   │   ├── services/
     │   │   │   └── *.ts          # http-service — (generated) tag별 API 서비스 클래스
     │   │   └── types.ts          # http-dto — (generated) DTO 타입
-    │   └── <feature>/            # feature module — 실제 이름 가변 (예: `users/`, `products/`, `dashboard/`)
-    │       ├── hook.ts           # http-hook — TanStack Query 훅
-    │       ├── mapper.ts         # http-mapper — DTO ↔ Domain 변환
-    │       └── repository.ts     # http-repository — Port 구현체
+    │   ├── <feature>/            # feature module — 실제 이름 가변 (예: `users/`, `products/`, `dashboard/`)
+    │   │   ├── hook.ts           # http-hook — TanStack Query 훅
+    │   │   ├── mapper.ts         # http-mapper — DTO ↔ Domain 변환
+    │   │   └── repository.ts     # http-repository — Port 구현체
+    │   └── client.ts             # http-client — HTTP 클라이언트 팩토리 (generated, 이전 위치 `src/http/client.ts` 포함)
     ├── i18n/
     │   ├── *.ts                  # i18n-config — next-intl 런타임 설정 (routing/request/navigation)
     │   ├── dictionaries/         # 로케일별 i18n 사전 (`<locale>.json` 또는 `<locale>.ts`)
@@ -89,7 +90,7 @@
 | `domain-error` | `src/domain/*/errors.ts` | `full` | 도메인 에러 |
 | `domain-port` | `src/domain/*/port.ts` | `full` | Repository 인터페이스 |
 | `domain-service` | `src/domain/*/service.ts` | `full` | UseCase/서비스 |
-| `http-client` | `src/http/_generated/client.ts` | `full` | (generated) HTTP 클라이언트 팩토리 |
+| `http-client` | `src/http/_generated/client.ts` / `src/http/client.ts` | `full` | HTTP 클라이언트 팩토리 (generated, 이전 위치 `src/http/client.ts` 포함) |
 | `http-endpoint` | `src/http/_generated/endpoints.ts` | `full` | (generated) URL 헬퍼 |
 | `http-dto` | `src/http/_generated/types.ts` | `full` | (generated) DTO 타입 |
 | `http-service` | `src/http/_generated/services/*.ts` | `full` | (generated) tag별 API 서비스 클래스 |

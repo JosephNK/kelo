@@ -17,8 +17,8 @@ export const baseBoundaryElements = [
   {
     type: "http-client",
     mode: "full",
-    pattern: ["src/http/_generated/client.ts"],
-  }, // (generated) HTTP 클라이언트 팩토리
+    pattern: ["src/http/_generated/client.ts", "src/http/client.ts"],
+  }, // HTTP 클라이언트 팩토리 (generated, 이전 위치 `src/http/client.ts` 포함)
   {
     type: "http-endpoint",
     mode: "full",

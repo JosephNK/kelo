@@ -1,6 +1,6 @@
 {
   "name": "kelo",
-  "version": "0.3.80",
+  "version": "0.4.0",
   "description": "Personal Codex toolkit for kelo workflows, project scaffolding, conventions, and commit support",
   "author": {
     "name": "josephnk",

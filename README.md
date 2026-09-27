@@ -8,7 +8,7 @@ Flutter / Next.js / NestJS용 Claude Code 플러그인 — 프로젝트 셋업, 
 
 ```bash
 # Add marketplace
-/plugin marketplace add https://github.com/JosephNK/jkit-code-plugin
+/plugin marketplace add https://github.com/JosephNK/kelo
 
 # Install plugin
 /plugin install kelo@kelo
@@ -19,13 +19,13 @@ Flutter / Next.js / NestJS용 Claude Code 플러그인 — 프로젝트 셋업, 
 Codex에서 이 플러그인을 사용하려면 marketplace를 추가한다.
 
 ```bash
-codex plugin marketplace add JosephNK/jkit-code-plugin
+codex plugin marketplace add JosephNK/kelo
 ```
 
 특정 릴리스로 고정하려면:
 
 ```bash
-codex plugin marketplace add JosephNK/jkit-code-plugin --ref <tag>
+codex plugin marketplace add JosephNK/kelo --ref <tag>
 ```
 
 추가 후 Codex에서 `kelo:commit` skill을 사용할 수 있다.
@@ -52,7 +52,7 @@ Add to your project's `.claude/settings.json` so teammates get the plugin automa
     "kelo": {
       "source": {
         "source": "github",
-        "repo": "JosephNK/jkit-code-plugin"
+        "repo": "JosephNK/kelo"
       }
     }
   }

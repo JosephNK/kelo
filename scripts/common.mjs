@@ -145,7 +145,7 @@ export function patchLintStaged(lintStaged, lintGlob, lintCmd, detectToken) {
 // deploy.mjs attaches `npm pack` tarballs to the GitHub Release of each tag and
 // consumers depend on the tarball URL.
 export const KELO_RELEASE_BASE =
-  "https://github.com/JosephNK/jkit-code-plugin/releases/download";
+  "https://github.com/JosephNK/kelo/releases/download";
 
 // `npm pack` file name for a (possibly scoped) package: @a/b → a-b-<ver>.tgz
 export function packTarballName(name, version) {

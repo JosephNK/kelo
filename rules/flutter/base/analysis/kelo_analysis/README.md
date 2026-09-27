@@ -15,4 +15,4 @@ dart run kelo_analysis:verify   # CI / pre-commit
 lowering `analyzer.errors` severities, turning off `analyzer.language` strict
 modes, disabling kelo plugin diagnostics (`al_*`, `lk_*`, `fz_*`), or adding
 `// ignore:` comments for kelo rules. Rule changes belong in
-[kelo](https://github.com/JosephNK/jkit-code-plugin).
+[kelo](https://github.com/JosephNK/kelo).

@@ -299,7 +299,7 @@ $KELO_DIR/scripts/gen-commitlint.mjs -p .
 
 - `eslint.config.mjs` — 패키지 factory 호출만 담은 짧은 생성물 (매 sync마다 덮어씀)
 - `kelo.lint.json` — 선택한 스택(`stacks`) + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
-- `package.json` — `devDependencies`에 `"eslint-config-kelo-nextjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v<current-version>/eslint-config-kelo-nextjs-<current-version>.tgz"` 추가 (GitHub Release tarball — npm 레지스트리 미사용) (레거시 `@jkit/code-plugin` git 의존성은 제거), lint-staged TS/JS glob은 `kelo-lint-nextjs --fix`, `scripts.lint`를 `kelo-lint-nextjs`로 통일 (eslint 기반 `lint:ci`/`lint:fix`도 교체 — 경로/`--ignore-pattern` 인자는 `kelo.lint.json` `ignores`로 이전)
+- `package.json` — `devDependencies`에 `"eslint-config-kelo-nextjs": "https://github.com/JosephNK/kelo/releases/download/v<current-version>/eslint-config-kelo-nextjs-<current-version>.tgz"` 추가 (GitHub Release tarball — npm 레지스트리 미사용) (레거시 `@jkit/code-plugin` git 의존성은 제거), lint-staged TS/JS glob은 `kelo-lint-nextjs --fix`, `scripts.lint`를 `kelo-lint-nextjs`로 통일 (eslint 기반 `lint:ci`/`lint:fix`도 교체 — 경로/`--ignore-pattern` 인자는 `kelo.lint.json` `ignores`로 이전)
 
 의존성을 실제로 설치합니다. 명령은 Step 7에서 결정된 `PM` 변수에 따라 분기합니다.
 

@@ -7,8 +7,8 @@
     "email": "nkw0608@gmail.com",
     "url": "https://github.com/JosephNK"
   },
-  "homepage": "https://github.com/JosephNK/jkit-code-plugin",
-  "repository": "https://github.com/JosephNK/jkit-code-plugin",
+  "homepage": "https://github.com/JosephNK/kelo",
+  "repository": "https://github.com/JosephNK/kelo",
   "license": "MIT",
   "keywords": [
     "kelo",
@@ -30,7 +30,7 @@
       "Read",
       "Write"
     ],
-    "websiteURL": "https://github.com/JosephNK/jkit-code-plugin",
+    "websiteURL": "https://github.com/JosephNK/kelo",
     "defaultPrompt": [
       "커밋 하자"
     ]

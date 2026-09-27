@@ -7,7 +7,7 @@
   "author": "JosephNK <nkw0608@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JosephNK/jkit-code-plugin.git",
+    "url": "git+https://github.com/JosephNK/kelo.git",
     "directory": "rules/nextjs"
   },
   "keywords": [

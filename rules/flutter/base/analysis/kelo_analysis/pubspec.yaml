@@ -3,7 +3,7 @@ version: 0.3.80
 description: >-
   Kelo Flutter analysis options (analyzer/linter policy) and a verify CLI that
   rejects local overrides weakening the kelo rules.
-repository: https://github.com/JosephNK/jkit-code-plugin/tree/main/rules/flutter/base/analysis/kelo_analysis
+repository: https://github.com/JosephNK/kelo/tree/main/rules/flutter/base/analysis/kelo_analysis
 
 environment:
   sdk: ">=3.10.0 <4.0.0"

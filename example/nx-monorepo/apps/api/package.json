@@ -30,7 +30,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
-    "eslint-config-kelo-nestjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v0.3.80/eslint-config-kelo-nestjs-0.3.80.tgz",
+    "eslint-config-kelo-nestjs": "https://github.com/JosephNK/kelo/releases/download/v0.3.80/eslint-config-kelo-nestjs-0.3.80.tgz",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",

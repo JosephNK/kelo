@@ -223,8 +223,7 @@ function scaffoldFile(targetAbsPath, templateContent, label) {
 }
 
 const KELO_ANALYSIS_PACKAGE = "kelo_analysis";
-const KELO_ANALYSIS_GIT_URL =
-  "https://github.com/JosephNK/jkit-code-plugin.git";
+const KELO_ANALYSIS_GIT_URL = "https://github.com/JosephNK/kelo.git";
 const KELO_ANALYSIS_GIT_PATH = "rules/flutter/base/analysis/kelo_analysis";
 
 function readPluginVersion(pluginRoot) {

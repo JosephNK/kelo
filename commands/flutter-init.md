@@ -59,7 +59,7 @@ cd "$PROJECT_ROOT"
 MANIFEST_PATH="$PROJECT_ROOT/kelo.project.json"
 # 레거시 이름(jkit.project.json)은 kelo 이름으로 옮긴다
 if [ ! -f "$MANIFEST_PATH" ] && [ -f "$PROJECT_ROOT/jkit.project.json" ]; then
-  mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"
+  if git ls-files --error-unmatch "$PROJECT_ROOT/jkit.project.json" >/dev/null 2>&1; then git mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; else mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; fi
   echo "[manifest] jkit.project.json → kelo.project.json 이름 변경"
 fi
 
@@ -263,6 +263,17 @@ fi
 ```bash
 cd "$PROJECT_ROOT/$ENTRY_DIR" && dart pub get && cd "$PROJECT_ROOT"
 ```
+
+**lock 변경 범위 확인 (필수)**: `kelo_analysis` 추가·ref 변경은 `kelo_analysis`(와 그 의존성 `crypto`·`yaml` 정도)만 바꿔야 합니다. 관련 없는 패키지 버전이 대량으로 바뀌었으면 받아들이지 말고 되돌린 뒤 다시 받습니다.
+
+```bash
+cd "$PROJECT_ROOT"
+git diff --stat -- '*pubspec.lock'
+git diff -- '*pubspec.lock' | grep -E '^[-+]    version:' | wc -l   # 버전이 바뀐 줄 수 — kelo_analysis 몇 줄을 넘으면 확인
+```
+
+- 대량 변경의 흔한 원인: 첫 `pub get`이 중간에 실패(예: `package_graph.json: dependencies for … missing`)한 뒤 다시 실행해 전체가 재해석된 경우. vocabit에서 이렇게 54개 패키지가 올라가(dio 5.9 → 5.11) 앱 테스트가 컴파일 실패했습니다.
+- 대응: lock을 커밋된 상태로 되돌리고(`git show HEAD:<path>/pubspec.lock > <path>/pubspec.lock`, 되돌리기 명령이 hook에 막히면 사용자에게 요청) 실패 원인을 해결한 뒤 `dart pub get`을 **한 번에** 다시 실행합니다. `pub upgrade`는 쓰지 않습니다.
 
 > `gen-custom-lint.mjs`는 매번 복사본을 현재 kelo 버전으로 교체하고, `plugins:` 등록은 동일하면 건드리지 않습니다 (idempotent). stack ↔ 패키지 매핑은 `inject-custom-lint.mjs`의 `STACK_PACKAGES`에 정의 (현재 `leaf-kit` → `leaf_kit_lint`, `freezed` → `freezed_lint`).
 

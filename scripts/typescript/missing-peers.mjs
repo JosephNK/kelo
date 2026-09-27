@@ -41,7 +41,10 @@ function main() {
     else if (a === "-h" || a === "--help") {
       process.stdout.write(HELP);
       process.exit(0);
-    } else specs.push(a);
+    } else {
+      // zsh는 따옴표 없는 $PEERS를 단어로 나누지 않으므로 인자 안의 공백도 구분자로 본다
+      specs.push(...a.split(/\s+/).filter(Boolean));
+    }
   }
   if (!dir) {
     process.stderr.write(HELP);

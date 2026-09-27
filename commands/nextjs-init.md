@@ -71,7 +71,7 @@ cd "$PROJECT_ROOT"
 MANIFEST_PATH="$PROJECT_ROOT/kelo.project.json"
 # 레거시 이름(jkit.project.json)은 kelo 이름으로 옮긴다
 if [ ! -f "$MANIFEST_PATH" ] && [ -f "$PROJECT_ROOT/jkit.project.json" ]; then
-  mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"
+  if git ls-files --error-unmatch "$PROJECT_ROOT/jkit.project.json" >/dev/null 2>&1; then git mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; else mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; fi
   echo "[manifest] jkit.project.json → kelo.project.json 이름 변경"
 fi
 
@@ -298,7 +298,7 @@ $KELO_DIR/scripts/gen-commitlint.mjs -p .
 `gen-eslint.mjs`는 kelo ESLint 패키지를 쓰도록 프로젝트를 연결합니다:
 
 - `eslint.config.mjs` — 패키지 factory 호출만 담은 짧은 생성물 (매 sync마다 덮어씀)
-- `kelo.lint.json` — 선택한 스택(`stacks`) + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
+- `kelo.lint.json` — 선택한 스택(`stacks`) + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`) + 추가 금지 목록(`domainBannedPackages`: 도메인 레이어, `restrictedPatterns`: 전역 `{ group, message }` — 스택 목록 뒤에 추가만)
 - `package.json` — `devDependencies`에 `"eslint-config-kelo-nextjs": "https://github.com/JosephNK/kelo/releases/download/v<current-version>/eslint-config-kelo-nextjs-<current-version>.tgz"` 추가 (GitHub Release tarball — npm 레지스트리 미사용) (레거시 `@jkit/code-plugin` git 의존성은 제거), lint-staged TS/JS glob은 `kelo-lint-nextjs --fix`, `scripts.lint`를 `kelo-lint-nextjs`로 통일 (eslint 기반 `lint:ci`/`lint:fix`도 교체 — 경로/`--ignore-pattern` 인자는 `kelo.lint.json` `ignores`로 이전)
 
 의존성을 실제로 설치합니다. 명령은 Step 7에서 결정된 `PM` 변수에 따라 분기합니다.
@@ -313,6 +313,8 @@ case "$PM" in
 esac
 # lockfile에 kelo Release tarball의 integrity가 빠졌으면 자산 sha512로 채우고, 있으면 자산과 대조 (pnpm·npm)
 $KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-dir .
+# kelo가 생성한 docs를 프로젝트 prettier 설정으로 맞춤 — lint:ci의 prettier --check가 생성물 때문에 실패하지 않도록 (prettier가 없으면 건너뜀)
+ls docs/GIT.md docs/ARCHITECTURE.md docs/STRUCTURE.md docs/CONVENTIONS.md docs/LINT.md 2>/dev/null | xargs npx --no-install prettier --write >/dev/null 2>&1 || true
 ```
 
 > 규칙 원본과 조립 로직은 `node_modules/eslint-config-kelo-nextjs/`에 있습니다. 규칙 변경은 kelo 저장소에서 수정·배포(GitHub Release)하고, 프로젝트는 `/kelo:update-plugin-ref code-plugin` 또는 sync로 URL 버전을 올려 반영합니다.
@@ -338,10 +340,10 @@ $KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-d
 >
 > NEXTJS_PEERS=$($KELO_DIR/scripts/typescript/missing-peers.mjs -p . $NEXTJS_PEERS)  # 이미 범위를 만족하는 peer는 제외
 > [ -n "$NEXTJS_PEERS" ] && case "$PM" in
->   npm)  npm install -D $NEXTJS_PEERS ;;
->   yarn) yarn add -D $NEXTJS_PEERS ;;
->   pnpm) pnpm add -D $NEXTJS_PEERS ;;
->   bun)  bun add -d $NEXTJS_PEERS ;;
+>   npm)  echo "$NEXTJS_PEERS" | xargs npm install -D ;;
+>   yarn) echo "$NEXTJS_PEERS" | xargs yarn add -D ;;
+>   pnpm) echo "$NEXTJS_PEERS" | xargs pnpm add -D ;;
+>   bun)  echo "$NEXTJS_PEERS" | xargs bun add -d ;;
 > esac
 > ```
 
@@ -378,7 +380,7 @@ fi
 - `CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (하단에 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `CONVENTIONS.PROJECT.md` — 사용자 소유 프로젝트 고유 컨벤션 (최초 1회만 생성, 이후 보존)
 - `eslint.config.mjs` — kelo 관리 생성물. `eslint-config-kelo-nextjs`의 `nextjs()` factory 호출 (직접 수정 금지 — hook이 차단)
-- `kelo.lint.json` — kelo 관리. 선택한 스택 + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`)
+- `kelo.lint.json` — kelo 관리. 선택한 스택 + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`) + 추가 금지 목록(`domainBannedPackages`: 도메인 레이어, `restrictedPatterns`: 전역 `{ group, message }` — 스택 목록 뒤에 추가만)
 - `eslint.project.config.mjs` — 사용자 소유 프로젝트 전용 규칙 추가 파일 (최초 1회만 스텁 생성, 이후 보존). kelo 규칙 재정의 시 ESLint 로드 에러
 - `stylelint.config.mjs` — kelo 관리 생성물. `eslint-config-kelo-nextjs/stylelint` preset re-export
 - `prettier.config.mjs` — Prettier 설정 (`prettier-plugin-tailwindcss` 포함)

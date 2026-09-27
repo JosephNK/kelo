@@ -69,7 +69,7 @@ else
   MANIFEST_PATH="$MONOREPO_ROOT/kelo.workspaces.json"
   # 레거시 이름(jkit.workspaces.json)은 kelo 이름으로 옮긴다
   if [ ! -f "$MANIFEST_PATH" ] && [ -f "$MONOREPO_ROOT/jkit.workspaces.json" ]; then
-    mv "$MONOREPO_ROOT/jkit.workspaces.json" "$MANIFEST_PATH"
+    if git ls-files --error-unmatch "$MONOREPO_ROOT/jkit.workspaces.json" >/dev/null 2>&1; then git mv "$MONOREPO_ROOT/jkit.workspaces.json" "$MANIFEST_PATH"; else mv "$MONOREPO_ROOT/jkit.workspaces.json" "$MANIFEST_PATH"; fi
     echo "[manifest] jkit.workspaces.json → kelo.workspaces.json 이름 변경"
   fi
 fi
@@ -134,6 +134,11 @@ for i in $(seq 0 $((WS_COUNT - 1))); do
   echo ""
   echo "=== Syncing $WS_PATH ($WS_FRAMEWORK) ==="
   cd "$PROJECT_ROOT"
+  # 워크스페이스의 레거시 매니페스트(jkit.project.json)도 kelo 이름으로 옮긴다 (git 추적 파일이면 git mv로 이력 유지)
+  if [ -f jkit.project.json ] && [ ! -f kelo.project.json ]; then
+    if git ls-files --error-unmatch jkit.project.json >/dev/null 2>&1; then git mv jkit.project.json kelo.project.json; else mv jkit.project.json kelo.project.json; fi
+    echo "[manifest] $WS_PATH/jkit.project.json → kelo.project.json 이름 변경"
+  fi
 
   case "$WS_FRAMEWORK" in
     nextjs)
@@ -208,6 +213,11 @@ case "$PM" in
 esac
 # lockfile에 kelo Release tarball의 integrity가 빠졌으면 자산 sha512로 채우고, 있으면 자산과 대조 (pnpm·npm)
 $KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-dir .
+# kelo가 생성한 워크스페이스 docs를 각 워크스페이스 prettier 설정으로 맞춤 — lint:ci의 prettier --check 대비 (prettier가 없으면 건너뜀)
+for i in $(seq 0 $((WS_COUNT - 1))); do
+  WS_PATH=$(jq -r ".workspaces[$i].path" "$MANIFEST_PATH")
+  ( cd "$MONOREPO_ROOT/$WS_PATH" 2>/dev/null && ls docs/GIT.md docs/ARCHITECTURE.md docs/STRUCTURE.md docs/CONVENTIONS.md docs/LINT.md 2>/dev/null | xargs npx --no-install prettier --write >/dev/null 2>&1 ) || true
+done
 ```
 
 #### peer 누락 보강 (워크스페이스별)
@@ -233,10 +243,10 @@ for i in $(seq 0 $((WS_COUNT - 1))); do
 
   PEERS=$($KELO_DIR/scripts/typescript/missing-peers.mjs -p . $PEERS)  # 이미 범위를 만족하는 peer는 제외
   [ -n "$PEERS" ] && case "$PM" in
-    npm)  npm install -D $PEERS ;;
-    yarn) yarn add -D $PEERS ;;
-    pnpm) pnpm add -D $PEERS ;;
-    bun)  bun add -d $PEERS ;;
+    npm)  echo "$PEERS" | xargs npm install -D ;;
+    yarn) echo "$PEERS" | xargs yarn add -D ;;
+    pnpm) echo "$PEERS" | xargs pnpm add -D ;;
+    bun)  echo "$PEERS" | xargs bun add -d ;;
   esac
   cd "$MONOREPO_ROOT"
 done

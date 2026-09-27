@@ -58,7 +58,7 @@ cd "$PROJECT_ROOT"
 MANIFEST_PATH="$PROJECT_ROOT/kelo.project.json"
 # 레거시 이름(jkit.project.json)은 kelo 이름으로 옮긴다
 if [ ! -f "$MANIFEST_PATH" ] && [ -f "$PROJECT_ROOT/jkit.project.json" ]; then
-  mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"
+  if git ls-files --error-unmatch "$PROJECT_ROOT/jkit.project.json" >/dev/null 2>&1; then git mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; else mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; fi
   echo "[manifest] jkit.project.json → kelo.project.json 이름 변경"
 fi
 
@@ -196,6 +196,8 @@ case "$PM" in
 esac
 # lockfile에 kelo Release tarball의 integrity가 빠졌으면 자산 sha512로 채우고, 있으면 자산과 대조 (pnpm·npm)
 $KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-dir .
+# kelo가 생성한 docs를 프로젝트 prettier 설정으로 맞춤 — lint:ci의 prettier --check가 생성물 때문에 실패하지 않도록 (prettier가 없으면 건너뜀)
+ls docs/GIT.md docs/ARCHITECTURE.md docs/STRUCTURE.md docs/CONVENTIONS.md docs/LINT.md 2>/dev/null | xargs npx --no-install prettier --write >/dev/null 2>&1 || true
 ```
 
 #### peer 누락 보강
@@ -207,10 +209,10 @@ cd "$PROJECT_ROOT"
 NESTJS_PEERS="eslint-plugin-boundaries@^7 eslint-plugin-import eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-prettier eslint-config-prettier typescript-eslint"
 NESTJS_PEERS=$($KELO_DIR/scripts/typescript/missing-peers.mjs -p . $NESTJS_PEERS)  # 이미 범위를 만족하는 peer는 제외
 [ -n "$NESTJS_PEERS" ] && case "$PM" in
-  npm)  npm install -D $NESTJS_PEERS ;;
-  yarn) yarn add -D $NESTJS_PEERS ;;
-  pnpm) pnpm add -D $NESTJS_PEERS ;;
-  bun)  bun add -d $NESTJS_PEERS ;;
+  npm)  echo "$NESTJS_PEERS" | xargs npm install -D ;;
+  yarn) echo "$NESTJS_PEERS" | xargs yarn add -D ;;
+  pnpm) echo "$NESTJS_PEERS" | xargs pnpm add -D ;;
+  bun)  echo "$NESTJS_PEERS" | xargs bun add -d ;;
 esac
 ```
 

@@ -87,4 +87,5 @@ $KELO_DIR/scripts/flutter/dependencies/update-leaf-kit-ref.mjs <ref> --project-d
 
 - `--dry-run`이었다면 변경될 파일 목록을 보여주고 "실제로 적용할까요?"를 묻습니다.
 - 스크립트가 실패하면 가능한 원인을 안내합니다 (예: 대상 manifest 미발견, 해당 의존성 없음, plugin.json 파싱 실패).
+- `architecture-lint`를 실제로 적용했다면 엔트리에서 `dart pub get`을 실행하고, `pubspec.lock` 변경이 `kelo_analysis`에만 그쳤는지 확인하도록 안내합니다. 관련 없는 패키지가 대량으로 바뀌었으면 lock을 커밋된 상태로 되돌린 뒤 다시 받습니다 (상세: `/kelo:flutter-sync`의 "lock 변경 범위 확인").
 - `code-plugin`을 실제로 적용했다면 install 후 `$KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-dir <user-project-dir>`를 실행하도록 안내합니다. pnpm은 tarball URL 의존성의 lockfile `integrity`를 빠뜨리는 경우가 있어, 이 스크립트가 Release 자산 sha512로 채우고 기존 값은 자산과 대조합니다 (`pnpm install --fix-lockfile`은 integrity를 채우지 못하고 deprecated 메타데이터만 지우므로 쓰지 않습니다).

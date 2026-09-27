@@ -341,15 +341,20 @@ function main() {
       scripts[name] = cmd;
       notes.push(`  Set:       scripts.lint → ${cmd}`);
     } else if (typeof old === "string" && /^eslint(\s|$)/.test(old)) {
+      // 첫 eslint 명령만 교체하고 뒤에 이어진 명령(`&& tsc --noEmit` 등)은 보존한다
+      const chainAt = old.search(/\s*(&&|\|\||;)/);
+      const eslintPart = chainAt === -1 ? old : old.slice(0, chainAt);
+      const rest = chainAt === -1 ? "" : old.slice(chainAt);
       // 기존 명령이 --fix였다면 자동 수정 동작을 유지한다 (nest new 기본 lint 등)
-      const next =
-        /(^|\s)--fix(\s|$)/.test(old) && !cmd.endsWith("--fix")
+      const replaced =
+        /(^|\s)--fix(\s|$)/.test(eslintPart) && !cmd.endsWith("--fix")
           ? `${cmd} --fix`
           : cmd;
+      const next = replaced + rest;
       if (old === next) continue;
       scripts[name] = next;
       notes.push(`  Replaced:  scripts.${name} "${old}" → ${next}`);
-      if (/--ignore-pattern|\s[^-\s][^\s]*\//.test(old)) {
+      if (/--ignore-pattern|\s[^-\s][^\s]*\//.test(eslintPart)) {
         notes.push(
           `             ↳ 경로/ignore 인자는 kelo.lint.json "ignores"로 옮기세요 (이전: ${old})`,
         );

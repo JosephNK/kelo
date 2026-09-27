@@ -86,7 +86,7 @@ packages:
   kelo_analysis:
     dependency: "direct dev"
     description:
-      path: "/Users/josephnk/workspace/development/jkit-code-plugin/rules/flutter/base/analysis/kelo_analysis"
+      path: "/Users/josephnk/workspace/development/kelo/rules/flutter/base/analysis/kelo_analysis"
       relative: false
     source: path
     version: "0.3.80"

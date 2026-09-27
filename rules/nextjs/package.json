@@ -1,6 +1,6 @@
 {
   "name": "eslint-config-kelo-nextjs",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Kelo Next.js ESLint/Stylelint shareable config — architecture boundaries, domain purity, and quality rules",
   "type": "module",
   "license": "MIT",

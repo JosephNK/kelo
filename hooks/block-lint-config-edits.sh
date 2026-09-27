@@ -58,11 +58,16 @@ case "$TOOL_NAME" in
       exit 0
     fi
     # 보호 파일명이 등장하는 세그먼트에서 쓰기 패턴만 차단 (읽기와 kelo gen-*.mjs 실행은 허용)
-    WRITE_RE="(>>?[[:space:]]*[^[:space:]]*${PROTECTED_WORD_RE})|(sed[[:space:]]+(-[a-zA-Z]*[[:space:]]+)*-[a-zA-Z]*i)|(perl[[:space:]]+-[a-zA-Z]*i)|(^|[[:space:]])(tee|mv|cp|rm|truncate|ln)([[:space:]]|$)"
+    WRITE_RE="(>>?[[:space:]]*[^[:space:]]*${PROTECTED_WORD_RE})|(sed[[:space:]]+(-[a-zA-Z]*[[:space:]]+)*-[a-zA-Z]*i)|(perl[[:space:]]+-[a-zA-Z]*i)|(^|[[:space:]])(tee|mv|rm|truncate|ln)([[:space:]]|$)"
+    CP_RE='(^|[[:space:]])cp([[:space:]]|$)'
     while IFS= read -r seg; do
       echo "$seg" | grep -qE "$PROTECTED_WORD_RE" || continue
-      echo "$seg" | grep -qE "$WRITE_RE" || continue
-      block "$seg"
+      echo "$seg" | grep -qE "$WRITE_RE" && block "$seg"
+      # cp는 보호 파일이 복사 대상(마지막 인자)일 때만 쓰기다. 원본으로 읽는 복사는 허용.
+      if echo "$seg" | grep -qE "$CP_RE"; then
+        dest=$(echo "$seg" | awk '{print $NF}')
+        echo "$dest" | grep -qE "$PROTECTED_WORD_RE" && block "$seg"
+      fi
     done < <(printf '%s\n' "$COMMAND" | tr ';&|' '\n')
     ;;
 esac

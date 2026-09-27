@@ -37,6 +37,21 @@
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-destructive-git.sh\"",
             "description": "Block destructive git commands (stash, reset --hard, clean -f, push --force, rebase, commit --amend 등)"
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-lint-config-edits.sh\"",
+            "description": "Block shell writes to jkit-managed lint config files (eslint.config.mjs, stylelint.config.mjs, jkit.lint.json, analysis_options.yaml, .jkit/plugins/**)"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-lint-config-edits.sh\"",
+            "description": "Block edits to jkit-managed lint config files (eslint.config.mjs, stylelint.config.mjs, jkit.lint.json, analysis_options.yaml, .jkit/plugins/**)"
           }
         ]
       }

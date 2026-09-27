@@ -5,8 +5,8 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@josephnk/eslint-config-nestjs': file:.local-packages/josephnk-eslint-config-nestjs-0.3.80.tgz
-  '@josephnk/eslint-config-nextjs': file:.local-packages/josephnk-eslint-config-nextjs-0.3.80.tgz
+  eslint-config-kelo-nestjs: file:.local-packages/eslint-config-kelo-nestjs-0.3.80.tgz
+  eslint-config-kelo-nextjs: file:.local-packages/eslint-config-kelo-nextjs-0.3.80.tgz
 
 importers:
 
@@ -21,9 +21,6 @@ importers:
 
   apps/admin:
     devDependencies:
-      '@josephnk/eslint-config-nextjs':
-        specifier: file:../../.local-packages/josephnk-eslint-config-nextjs-0.3.80.tgz
-        version: file:.local-packages/josephnk-eslint-config-nextjs-0.3.80.tgz(eslint-config-next@16.3.6(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint-config-prettier@9.1.2(eslint@9.39.5))(eslint-import-resolver-typescript@3.10.1)(eslint-plugin-boundaries@7.2.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.5))(eslint-plugin-sonarjs@3.0.7(eslint@9.39.5))(eslint-plugin-unused-imports@4.4.1(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5))(eslint@9.39.5)(stylelint-config-standard@40.0.0(stylelint@17.15.0(typescript@5.9.3)))(stylelint-declaration-strict-value@1.12.1(stylelint@17.15.0(typescript@5.9.3)))(stylelint@17.15.0(typescript@5.9.3))(typescript-eslint@8.70.1(eslint@9.39.5)(typescript@5.9.3))
       '@tanstack/react-query':
         specifier: ^5.101.0
         version: 5.104.0(react@19.3.0)
@@ -39,6 +36,9 @@ importers:
       eslint:
         specifier: ^9.0.0
         version: 9.39.5
+      eslint-config-kelo-nextjs:
+        specifier: file:../../.local-packages/eslint-config-kelo-nextjs-0.3.80.tgz
+        version: file:.local-packages/eslint-config-kelo-nextjs-0.3.80.tgz(609a2b6caa2f4c97dab1b0e9c6d7a517)
       eslint-config-next:
         specifier: ^16
         version: 16.3.6(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3)
@@ -115,9 +115,6 @@ importers:
       '@eslint/js':
         specifier: ^9.18.0
         version: 9.39.5
-      '@josephnk/eslint-config-nestjs':
-        specifier: file:../../.local-packages/josephnk-eslint-config-nestjs-0.3.80.tgz
-        version: file:.local-packages/josephnk-eslint-config-nestjs-0.3.80.tgz(@eslint/js@9.39.5)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint-import-resolver-typescript@3.10.1)(eslint-plugin-boundaries@7.2.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5))(eslint-plugin-import@2.32.0)(eslint-plugin-prettier@5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.9))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.5))(eslint-plugin-unused-imports@4.4.1(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5))(eslint@9.39.5)(globals@17.12.0)(prettier@3.9.9)(typescript-eslint@8.70.1(eslint@9.39.5)(typescript@5.9.3))
       '@nestjs/cli':
         specifier: ^11.0.0
         version: 11.0.24(@types/node@24.19.0)(prettier@3.9.9)
@@ -142,6 +139,9 @@ importers:
       eslint:
         specifier: ^9.18.0
         version: 9.39.5
+      eslint-config-kelo-nestjs:
+        specifier: file:../../.local-packages/eslint-config-kelo-nestjs-0.3.80.tgz
+        version: file:.local-packages/eslint-config-kelo-nestjs-0.3.80.tgz(@eslint/js@9.39.5)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint-import-resolver-typescript@3.10.1)(eslint-plugin-boundaries@7.2.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5))(eslint-plugin-import@2.32.0)(eslint-plugin-prettier@5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.9))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.5))(eslint-plugin-unused-imports@4.4.1(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5))(eslint@9.39.5)(globals@17.12.0)(prettier@3.9.9)(typescript-eslint@8.70.1(eslint@9.39.5)(typescript@5.9.3))
       eslint-config-prettier:
         specifier: ^10.0.1
         version: 10.1.8(eslint@9.39.5)
@@ -965,51 +965,6 @@ packages:
   '@jest/types@30.5.1':
     resolution: {integrity: sha512-LvVYn83nnXPl+Rg98nvcFgjx6nRMTArhSn6RAX/w3ELn54S8A42TYZvsCMdGUqTM8S0wyXbtlQdU6Hi6dykj9g==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
-
-  '@josephnk/eslint-config-nestjs@file:.local-packages/josephnk-eslint-config-nestjs-0.3.80.tgz':
-    resolution: {integrity: sha512-CAKVKnjbzJ+Uyamtr7FtvntrHG89M1peAFsd6wTCdb0BosnY1+6KyQfIbeX50HsOlRTGyYAw15U+7FHbLJR0Sw==, tarball: file:.local-packages/josephnk-eslint-config-nestjs-0.3.80.tgz}
-    version: 0.3.80
-    engines: {node: '>=20.11'}
-    hasBin: true
-    peerDependencies:
-      '@eslint/js': ^9.0.0
-      eslint: ^9.22.0
-      eslint-config-prettier: ^9.0.0 || ^10.0.0
-      eslint-import-resolver-typescript: ^3.6.3 || ^4.0.0
-      eslint-plugin-boundaries: ^7.0.0
-      eslint-plugin-import: ^2.31.0
-      eslint-plugin-prettier: ^5.0.0
-      eslint-plugin-simple-import-sort: ^12.0.0 || ^13.0.0 || ^14.0.0
-      eslint-plugin-unused-imports: ^4.0.0
-      globals: ^15.0.0 || ^16.0.0 || ^17.0.0
-      prettier: ^3.0.0
-      typescript-eslint: ^8.0.0
-
-  '@josephnk/eslint-config-nextjs@file:.local-packages/josephnk-eslint-config-nextjs-0.3.80.tgz':
-    resolution: {integrity: sha512-Q60GZb2rh0rSbLdilkdOT7SZSxll6Kg0lkDCnncYBmxVIF34qA/uF1P2H9F4QdHb9YdnpVV6cgdevMKYezP6Tg==, tarball: file:.local-packages/josephnk-eslint-config-nextjs-0.3.80.tgz}
-    version: 0.3.80
-    engines: {node: '>=20.11'}
-    hasBin: true
-    peerDependencies:
-      eslint: ^9.22.0
-      eslint-config-next: ^16.0.0
-      eslint-config-prettier: ^9.0.0 || ^10.0.0
-      eslint-import-resolver-typescript: ^3.6.3 || ^4.0.0
-      eslint-plugin-boundaries: ^7.0.0
-      eslint-plugin-simple-import-sort: ^12.0.0 || ^13.0.0 || ^14.0.0
-      eslint-plugin-sonarjs: ^3.0.0 || ^4.0.0
-      eslint-plugin-unused-imports: ^4.0.0
-      stylelint: ^16.0.0 || ^17.0.0
-      stylelint-config-standard: ^38.0.0 || ^39.0.0 || ^40.0.0
-      stylelint-declaration-strict-value: ^1.11.0
-      typescript-eslint: ^8.0.0
-    peerDependenciesMeta:
-      stylelint:
-        optional: true
-      stylelint-config-standard:
-        optional: true
-      stylelint-declaration-strict-value:
-        optional: true
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -2427,6 +2382,51 @@ packages:
   escape-string-regexp@4.0.0:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
+
+  eslint-config-kelo-nestjs@file:.local-packages/eslint-config-kelo-nestjs-0.3.80.tgz:
+    resolution: {integrity: sha512-cmbBkKSPf9TwY/ryEA7jmpUq+LORJEfX+7VIxqUK+ZR2x1B/8FdVtVcXbA/7avYyHg/bM7HcmB8cLFipQgs/kg==, tarball: file:.local-packages/eslint-config-kelo-nestjs-0.3.80.tgz}
+    version: 0.3.80
+    engines: {node: '>=20.11'}
+    hasBin: true
+    peerDependencies:
+      '@eslint/js': ^9.0.0
+      eslint: ^9.22.0
+      eslint-config-prettier: ^9.0.0 || ^10.0.0
+      eslint-import-resolver-typescript: ^3.6.3 || ^4.0.0
+      eslint-plugin-boundaries: ^7.0.0
+      eslint-plugin-import: ^2.31.0
+      eslint-plugin-prettier: ^5.0.0
+      eslint-plugin-simple-import-sort: ^12.0.0 || ^13.0.0 || ^14.0.0
+      eslint-plugin-unused-imports: ^4.0.0
+      globals: ^15.0.0 || ^16.0.0 || ^17.0.0
+      prettier: ^3.0.0
+      typescript-eslint: ^8.0.0
+
+  eslint-config-kelo-nextjs@file:.local-packages/eslint-config-kelo-nextjs-0.3.80.tgz:
+    resolution: {integrity: sha512-4iFyL3gKMmUZXREXjsIwSrxDW7L5NqUxwM9altmgbziu+Oz8MubLUCt3H9bQK0h6HqkrCDtQEx8K9PvsjPa2aw==, tarball: file:.local-packages/eslint-config-kelo-nextjs-0.3.80.tgz}
+    version: 0.3.80
+    engines: {node: '>=20.11'}
+    hasBin: true
+    peerDependencies:
+      eslint: ^9.22.0
+      eslint-config-next: ^16.0.0
+      eslint-config-prettier: ^9.0.0 || ^10.0.0
+      eslint-import-resolver-typescript: ^3.6.3 || ^4.0.0
+      eslint-plugin-boundaries: ^7.0.0
+      eslint-plugin-simple-import-sort: ^12.0.0 || ^13.0.0 || ^14.0.0
+      eslint-plugin-sonarjs: ^3.0.0 || ^4.0.0
+      eslint-plugin-unused-imports: ^4.0.0
+      stylelint: ^16.0.0 || ^17.0.0
+      stylelint-config-standard: ^38.0.0 || ^39.0.0 || ^40.0.0
+      stylelint-declaration-strict-value: ^1.11.0
+      typescript-eslint: ^8.0.0
+    peerDependenciesMeta:
+      stylelint:
+        optional: true
+      stylelint-config-standard:
+        optional: true
+      stylelint-declaration-strict-value:
+        optional: true
 
   eslint-config-next@16.3.6:
     resolution: {integrity: sha512-1Upt3U7BDwU+ilpe2byZjAfts9oNq4d4fv/zXEvs8/4yS+cwOQW/WCxUNy8gCDquX67SzeehDvKblVC6ZBMocQ==}
@@ -5634,37 +5634,6 @@ snapshots:
       '@types/yargs': 17.0.35
       chalk: 4.1.2
 
-  '@josephnk/eslint-config-nestjs@file:.local-packages/josephnk-eslint-config-nestjs-0.3.80.tgz(@eslint/js@9.39.5)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint-import-resolver-typescript@3.10.1)(eslint-plugin-boundaries@7.2.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5))(eslint-plugin-import@2.32.0)(eslint-plugin-prettier@5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.9))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.5))(eslint-plugin-unused-imports@4.4.1(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5))(eslint@9.39.5)(globals@17.12.0)(prettier@3.9.9)(typescript-eslint@8.70.1(eslint@9.39.5)(typescript@5.9.3))':
-    dependencies:
-      '@eslint/js': 9.39.5
-      eslint: 9.39.5
-      eslint-config-prettier: 10.1.8(eslint@9.39.5)
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.5)
-      eslint-plugin-boundaries: 7.2.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5)
-      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5)
-      eslint-plugin-prettier: 5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.9)
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.39.5)
-      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)
-      globals: 17.12.0
-      prettier: 3.9.9
-      typescript-eslint: 8.70.1(eslint@9.39.5)(typescript@5.9.3)
-
-  '@josephnk/eslint-config-nextjs@file:.local-packages/josephnk-eslint-config-nextjs-0.3.80.tgz(eslint-config-next@16.3.6(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint-config-prettier@9.1.2(eslint@9.39.5))(eslint-import-resolver-typescript@3.10.1)(eslint-plugin-boundaries@7.2.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.5))(eslint-plugin-sonarjs@3.0.7(eslint@9.39.5))(eslint-plugin-unused-imports@4.4.1(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5))(eslint@9.39.5)(stylelint-config-standard@40.0.0(stylelint@17.15.0(typescript@5.9.3)))(stylelint-declaration-strict-value@1.12.1(stylelint@17.15.0(typescript@5.9.3)))(stylelint@17.15.0(typescript@5.9.3))(typescript-eslint@8.70.1(eslint@9.39.5)(typescript@5.9.3))':
-    dependencies:
-      eslint: 9.39.5
-      eslint-config-next: 16.3.6(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3)
-      eslint-config-prettier: 9.1.2(eslint@9.39.5)
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.5)
-      eslint-plugin-boundaries: 7.2.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5)
-      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.39.5)
-      eslint-plugin-sonarjs: 3.0.7(eslint@9.39.5)
-      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)
-      typescript-eslint: 8.70.1(eslint@9.39.5)(typescript@5.9.3)
-    optionalDependencies:
-      stylelint: 17.15.0(typescript@5.9.3)
-      stylelint-config-standard: 40.0.0(stylelint@17.15.0(typescript@5.9.3))
-      stylelint-declaration-strict-value: 1.12.1(stylelint@17.15.0(typescript@5.9.3))
-
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
@@ -7129,6 +7098,37 @@ snapshots:
   escape-string-regexp@2.0.0: {}
 
   escape-string-regexp@4.0.0: {}
+
+  eslint-config-kelo-nestjs@file:.local-packages/eslint-config-kelo-nestjs-0.3.80.tgz(@eslint/js@9.39.5)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint-import-resolver-typescript@3.10.1)(eslint-plugin-boundaries@7.2.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5))(eslint-plugin-import@2.32.0)(eslint-plugin-prettier@5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.9))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.5))(eslint-plugin-unused-imports@4.4.1(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5))(eslint@9.39.5)(globals@17.12.0)(prettier@3.9.9)(typescript-eslint@8.70.1(eslint@9.39.5)(typescript@5.9.3)):
+    dependencies:
+      '@eslint/js': 9.39.5
+      eslint: 9.39.5
+      eslint-config-prettier: 10.1.8(eslint@9.39.5)
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.5)
+      eslint-plugin-boundaries: 7.2.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5)
+      eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5)
+      eslint-plugin-prettier: 5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.9)
+      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.39.5)
+      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)
+      globals: 17.12.0
+      prettier: 3.9.9
+      typescript-eslint: 8.70.1(eslint@9.39.5)(typescript@5.9.3)
+
+  eslint-config-kelo-nextjs@file:.local-packages/eslint-config-kelo-nextjs-0.3.80.tgz(609a2b6caa2f4c97dab1b0e9c6d7a517):
+    dependencies:
+      eslint: 9.39.5
+      eslint-config-next: 16.3.6(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3)
+      eslint-config-prettier: 9.1.2(eslint@9.39.5)
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.5)
+      eslint-plugin-boundaries: 7.2.0(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5)
+      eslint-plugin-simple-import-sort: 12.1.1(eslint@9.39.5)
+      eslint-plugin-sonarjs: 3.0.7(eslint@9.39.5)
+      eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.70.1(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)
+      typescript-eslint: 8.70.1(eslint@9.39.5)(typescript@5.9.3)
+    optionalDependencies:
+      stylelint: 17.15.0(typescript@5.9.3)
+      stylelint-config-standard: 40.0.0(stylelint@17.15.0(typescript@5.9.3))
+      stylelint-declaration-strict-value: 1.12.1(stylelint@17.15.0(typescript@5.9.3))
 
   eslint-config-next@16.3.6(@typescript-eslint/parser@8.70.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3):
     dependencies:

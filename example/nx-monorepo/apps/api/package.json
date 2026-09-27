@@ -12,13 +12,13 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "lint": "jkit-lint-nestjs",
+    "lint": "kelo-lint-nestjs",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "lint:ci": "jkit-lint-nestjs"
+    "lint:ci": "kelo-lint-nestjs"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -30,7 +30,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
-    "@josephnk/eslint-config-nestjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v0.3.80/josephnk-eslint-config-nestjs-0.3.80.tgz",
+    "eslint-config-kelo-nestjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v0.3.80/eslint-config-kelo-nestjs-0.3.80.tgz",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
@@ -77,11 +77,11 @@
   },
   "lint-staged": {
     "*.ts": [
-      "jkit-lint-nestjs --fix",
+      "kelo-lint-nestjs --fix",
       "prettier --write"
     ],
     "*.{ts,tsx,js,jsx,mjs}": [
-      "jkit-lint-nestjs --fix",
+      "kelo-lint-nestjs --fix",
       "prettier --write"
     ],
     "*.{json,md,yml,yaml}": "prettier --write"

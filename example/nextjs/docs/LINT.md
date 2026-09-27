@@ -120,7 +120,7 @@ export class OrderService {
 
 **Forbids**
 
-- 수기 편집 (jkit:nextjs-openapi-gen으로만 갱신)
+- 수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)
 - 다른 레이어 import (allow: [])
 
 ### `http-dto`
@@ -133,7 +133,7 @@ export class OrderService {
 
 **Forbids**
 
-- 수기 편집 (jkit:nextjs-openapi-gen으로만 갱신)
+- 수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)
 - 도메인 변환 로직 (→ http-mapper)
 - 다른 레이어 import (allow: [])
 
@@ -460,7 +460,7 @@ Boundary 검사 제외 (boundaries/no-unknown-files 오탐 방지).
 - **테스트/설정 파일**: `**/*.test.ts`, `**/*.test.tsx`, `**/*.spec.ts`, `**/*.spec.tsx`, `*.config.*`
 - **타입/메타 파일**: `*.ts`, `*.d.ts`, `types/**`, `src/lib/types/**`
 - **특수 경로**: `specs/**`
-- **빌드/툴 산출물 (코드 작성 무관)**: `.jkit/**`, `scripts/**`, `e2e/**`, `.next/**`, `out/**`, `build/**`, `coverage/**`, `next-env.d.ts`
+- **빌드/툴 산출물 (코드 작성 무관)**: `.kelo/**`, `scripts/**`, `e2e/**`, `.next/**`, `out/**`, `build/**`, `coverage/**`, `next-env.d.ts`
 
 # Lint Rules — Structure Reference (nextjs/base)
 

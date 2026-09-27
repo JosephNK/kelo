@@ -1,8 +1,8 @@
 // GENERATED FILE - DO NOT MODIFY BY HAND
-// Managed by jkit (overwritten by /jkit:nestjs-init and -sync).
-// Rules: @josephnk/eslint-config-nestjs | Stacks: jkit.lint.json | Project rules: eslint.project.config.mjs
+// Managed by kelo (overwritten by /kelo:nestjs-init and -sync).
+// Rules: eslint-config-kelo-nestjs | Stacks: kelo.lint.json | Project rules: eslint.project.config.mjs
 
-import { nestjs } from '@josephnk/eslint-config-nestjs';
+import { nestjs } from 'eslint-config-kelo-nestjs';
 
 import projectConfig from './eslint.project.config.mjs';
 

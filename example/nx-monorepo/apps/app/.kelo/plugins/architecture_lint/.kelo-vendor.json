@@ -1,9 +1,9 @@
 {
-  "$comment": "Vendored by jkit — do not edit. Regenerate with /jkit:flutter-sync.",
+  "$comment": "Vendored by kelo — do not edit. Regenerate with /kelo:flutter-sync.",
   "package": "architecture_lint",
-  "source": "jkit-code-plugin@0.3.80/rules/flutter/base/custom-lint/architecture_lint",
+  "source": "kelo@0.3.80/rules/flutter/base/custom-lint/architecture_lint",
   "files": {
-    "lib/architecture_lint.dart": "19a1a4520dbf4b79b10ad25b03fc947b3ef7fa279c4f966063feb2f1c4a8c3a0",
+    "lib/architecture_lint.dart": "8244f4b35cbb153a2eaf17052f0783ba7e1e9af4b245064d2904b4ce4a29c21e",
     "lib/main.dart": "c42acb64377460e9e20d61e29b00e89dade9a0efe2d8331d3c1830249dce2b41",
     "lib/plugin.dart": "5740e9cdc9019007bc1b115b0883ffdafbd89ea575aa86afc34017b7c803742a",
     "lib/src/boundary_element.dart": "1e5a528127a255c608eed33393ae78c0ac1ed5dc361440b06c6e9a871d1be99b",

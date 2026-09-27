@@ -1,4 +1,4 @@
-# jkit-code-plugin — Project-specific Conventions
+# kelo — Project-specific Conventions
 
 > 프로젝트 컨벤션을 작성하세요.
 

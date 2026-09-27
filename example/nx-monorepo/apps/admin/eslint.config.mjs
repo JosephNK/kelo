@@ -1,8 +1,8 @@
 // GENERATED FILE - DO NOT MODIFY BY HAND
-// Managed by jkit (overwritten by /jkit:nextjs-init and -sync).
-// Rules: @josephnk/eslint-config-nextjs | Stacks: jkit.lint.json | Project rules: eslint.project.config.mjs
+// Managed by kelo (overwritten by /kelo:nextjs-init and -sync).
+// Rules: eslint-config-kelo-nextjs | Stacks: kelo.lint.json | Project rules: eslint.project.config.mjs
 
-import { nextjs } from "@josephnk/eslint-config-nextjs";
+import { nextjs } from "eslint-config-kelo-nextjs";
 
 import projectConfig from "./eslint.project.config.mjs";
 

@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// Source: jkit nextjs-openapi-gen
+// Source: kelo nextjs-openapi-gen
 
 import type { KyInstance } from "ky";
 

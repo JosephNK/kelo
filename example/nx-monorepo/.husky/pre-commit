@@ -4,10 +4,10 @@ pnpm exec lint-staged
 
 # api i18n 키 검사 — apps/api 변경이 staged 일 때만.
 if git diff --cached --name-only | grep -q '^apps/api/'; then
-  pnpm --filter @demo/api exec jkit-check-i18n
+  pnpm --filter @demo/api exec kelo-check-i18n
 fi
 
 # app(Flutter) — staged .dart 파일이 있을 때만.
 if git diff --cached --name-only | grep -q '^apps/app/.*\.dart$'; then
-  (cd apps/app/app && dart run jkit_analysis:verify -p ..)
+  (cd apps/app/app && dart run kelo_analysis:verify -p ..)
 fi

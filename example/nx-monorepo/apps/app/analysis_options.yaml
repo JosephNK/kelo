@@ -1,11 +1,11 @@
 # GENERATED FILE - DO NOT MODIFY BY HAND
-# Managed by jkit (overwritten by /jkit:flutter-init and -sync).
+# Managed by kelo (overwritten by /kelo:flutter-init and -sync).
 # Workspace root: flutter_lints + plugins: (managed by gen-custom-lint.mjs)
 
 include: package:flutter_lints/flutter.yaml
 plugins:
   architecture_lint:
-    path: .jkit/plugins/architecture_lint
+    path: .kelo/plugins/architecture_lint
     diagnostics:
       al_e1_entities_import: true
       al_e2_usecases_dependency: true
@@ -21,7 +21,7 @@ plugins:
       al_s1_file_size: true
       al_s2_unknown_path: true
   leaf_kit_lint:
-    path: .jkit/plugins/leaf_kit_lint
+    path: .kelo/plugins/leaf_kit_lint
     diagnostics:
       lk_e2_no_bloc_in_usecases: true
       lk_e3_bloc_dependency: true

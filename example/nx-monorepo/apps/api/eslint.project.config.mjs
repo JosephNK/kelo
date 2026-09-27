@@ -1,6 +1,6 @@
 // Project-specific ESLint rules (user-owned — created once, never overwritten by sync).
-// Allowed: new rules/plugins. Redefining jkit rules/settings, linterOptions, or
-// global ignores fails at load time — use jkit.lint.json `ignores` for exclusions.
+// Allowed: new rules/plugins. Redefining kelo rules/settings, linterOptions, or
+// global ignores fails at load time — use kelo.lint.json `ignores` for exclusions.
 // Install any plugin you import here as a devDependency of this project.
 
 // import groupDepPlugin from "eslint-plugin-import";

@@ -1,7 +1,7 @@
-/// JKit Flutter — Architecture Lint Package (Base)
+/// Kelo Flutter — Architecture Lint Package (Base)
 ///
 /// Flutter 프로젝트의 Clean Architecture + Feature-first 구조를 정적 분석으로 강제.
-/// `analysis_server_plugin` 기반으로 IDE 및 `dart analyze` / `flutter analyze`에서 동작.
+/// `analysis_server_plugin` 기반으로 IDE 및 `dart analyze`에서 동작 (`flutter analyze`는 plugin 진단 미보고 — flutter/flutter#187999).
 /// stack-specific 룰(예: bloc)은 별도 패키지로 분리.
 ///
 /// ## 룰 요약 (13종)

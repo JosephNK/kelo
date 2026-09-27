@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// Source: jkit nextjs-openapi-gen
+// Source: kelo nextjs-openapi-gen
 
 import ky, { type Hooks, type KyInstance, type Options } from "ky";
 

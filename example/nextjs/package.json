@@ -4,11 +4,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "lint": "jkit-lint-nextjs",
+    "lint": "kelo-lint-nextjs",
     "lint:css": "stylelint \"**/*.{css,scss}\" --fix"
   },
   "devDependencies": {
-    "@josephnk/eslint-config-nextjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v0.3.80/josephnk-eslint-config-nextjs-0.3.80.tgz",
+    "eslint-config-kelo-nextjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v0.3.80/eslint-config-kelo-nextjs-0.3.80.tgz",
     "@tanstack/react-query": "^5.101.0",
     "@types/node": "^25.9.1",
     "@types/react": "^19.0.0",
@@ -33,7 +33,7 @@
     "typescript": "^5.0.0"
   },
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,mjs}": "jkit-lint-nextjs --fix",
+    "*.{ts,tsx,js,jsx,mjs}": "kelo-lint-nextjs --fix",
     "*.{css,scss}": "stylelint --fix"
   }
 }

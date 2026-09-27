@@ -49,8 +49,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
-  jkit_analysis:
-    path: /Users/josephnk/workspace/development/jkit-code-plugin/rules/flutter/base/analysis/jkit_analysis
+  kelo_analysis:
+    path: /Users/josephnk/workspace/development/jkit-code-plugin/rules/flutter/base/analysis/kelo_analysis
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

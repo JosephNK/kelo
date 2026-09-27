@@ -16,6 +16,16 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    # Build output and platform scaffolds. `flutter pub get` (AnalysisOptionsMigration)
+    # adds these to the project's analysis_options.yaml unless an include already
+    # excludes them — keeping them here stops it from editing the generated file.
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 linter:
   rules:

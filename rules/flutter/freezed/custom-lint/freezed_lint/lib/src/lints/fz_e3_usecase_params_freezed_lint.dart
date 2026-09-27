@@ -12,10 +12,7 @@ import '../helpers.dart';
 /// codegen 산출물과 `_` 프리픽스 private class는 검사 제외.
 class FzE3UsecaseParamsFreezedLint extends AnalysisRule {
   FzE3UsecaseParamsFreezedLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'fz_e3_usecase_params_freezed',

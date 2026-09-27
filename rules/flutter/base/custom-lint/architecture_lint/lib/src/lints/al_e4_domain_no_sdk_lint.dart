@@ -14,10 +14,7 @@ import '../constants.dart';
 /// 금지 목록은 `infraPackages` (dio·http·drift·sqflite·firebase 계열 등).
 class AlE4DomainNoSdkLint extends AnalysisRule {
   AlE4DomainNoSdkLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'al_e4_domain_no_sdk',

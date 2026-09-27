@@ -82,24 +82,16 @@ const projectStructureAnnotations = <String, List<AnnotationNode>>{
               name: 'ports',
               note: 'Abstract interfaces (*_port.dart)',
             ),
-            AnnotationNode(
-              name: 'adapters',
-              note: 'Port 구현체 (*_adapter.dart)',
-            ),
+            AnnotationNode(name: 'adapters', note: 'Port 구현체 (*_adapter.dart)'),
             AnnotationNode(
               name: 'usecases',
               note: 'nested — 비즈니스 로직 (feature가 의존하는 진입점)',
             ),
-            AnnotationNode(
-              name: 'exceptions',
-              note: 'nested — 서비스 자체 도메인 예외',
-            ),
+            AnnotationNode(name: 'exceptions', note: 'nested — 서비스 자체 도메인 예외'),
             AnnotationNode(
               name: 'support',
               note: '보조 구현 파일 (config/types/helpers 등) — 양 모드 공통',
-              children: [
-                AnnotationNode(name: '*.dart'),
-              ],
+              children: [AnnotationNode(name: '*.dart')],
             ),
           ],
         ),
@@ -125,19 +117,13 @@ const projectStructureAnnotations = <String, List<AnnotationNode>>{
               name: 'ports',
               note: 'Abstract interfaces (*_port.dart)',
             ),
-            AnnotationNode(
-              name: 'usecases',
-              note: '비즈니스 로직 (*_usecase.dart)',
-            ),
+            AnnotationNode(name: 'usecases', note: '비즈니스 로직 (*_usecase.dart)'),
           ],
         ),
         AnnotationNode(
           name: 'infrastructure',
           children: [
-            AnnotationNode(
-              name: 'adapters',
-              note: 'Port 구현체 (*_adapter.dart)',
-            ),
+            AnnotationNode(name: 'adapters', note: 'Port 구현체 (*_adapter.dart)'),
           ],
         ),
         AnnotationNode(
@@ -152,9 +138,7 @@ const projectStructureAnnotations = <String, List<AnnotationNode>>{
       ],
     ),
   ],
-  'app/lib/router': [
-    AnnotationNode(name: 'router.dart', note: 'GoRouter 설정'),
-  ],
+  'app/lib/router': [AnnotationNode(name: 'router.dart', note: 'GoRouter 설정')],
   'packages': [
     AnnotationNode(
       name: '<package>',

@@ -15,10 +15,7 @@ import '../classification.dart';
 /// `app/lib/` 외부는 검사 대상이 아니다.
 class AlS2UnknownPathLint extends AnalysisRule {
   AlS2UnknownPathLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'al_s2_unknown_path',

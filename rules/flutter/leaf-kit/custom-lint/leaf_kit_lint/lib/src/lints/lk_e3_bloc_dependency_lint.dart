@@ -16,10 +16,7 @@ import '../helpers.dart';
 /// FZ_E2가 강제하는 `@freezed` Event/State 작성을 위해 import를 자동 허용.
 class LkE3BlocDependencyLint extends AnalysisRule {
   LkE3BlocDependencyLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const _forbidden = <String>{'adapters', 'ports'};
 

@@ -13,10 +13,7 @@ import '../helpers.dart';
 /// usecase를 호출). bloc → usecase는 정상, usecase → bloc은 archi 위반.
 class LkE2NoBlocInUsecasesLint extends AnalysisRule {
   LkE2NoBlocInUsecasesLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'lk_e2_no_bloc_in_usecases',

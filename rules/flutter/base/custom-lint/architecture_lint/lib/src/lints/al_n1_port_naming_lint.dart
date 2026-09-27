@@ -12,10 +12,7 @@ import '../classification.dart';
 /// 클래스명만으로 레이어 역할을 즉시 식별 — grep/리뷰 효율.
 class AlN1PortNamingLint extends AnalysisRule {
   AlN1PortNamingLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'al_n1_port_naming',

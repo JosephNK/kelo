@@ -14,10 +14,7 @@ import '../constants.dart';
 /// 제외 대상은 `generatedFileSuffixes` (build_runner/freezed/auto_route/injectable/mockito).
 class AlS1FileSizeLint extends AnalysisRule {
   AlS1FileSizeLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'al_s1_file_size',

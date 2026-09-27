@@ -12,10 +12,7 @@ import '../helpers.dart';
 /// codegen 산출물(`.freezed.dart`/`.g.dart`)과 `_` 프리픽스 private class는 검사 제외.
 class FzE1EntitiesFreezedLint extends AnalysisRule {
   FzE1EntitiesFreezedLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'fz_e1_entities_freezed',

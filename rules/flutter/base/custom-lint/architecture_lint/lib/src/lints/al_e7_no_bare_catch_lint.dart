@@ -10,10 +10,7 @@ import 'package:analyzer/error/error.dart';
 /// 의도한 예외만 처리하고 프로그래밍 오류(`Error` 계열)는 전파한다.
 class AlE7NoBareCatchLint extends AnalysisRule {
   AlE7NoBareCatchLint()
-      : super(
-          name: code.lowerCaseName,
-          description: code.problemMessage,
-        );
+    : super(name: code.lowerCaseName, description: code.problemMessage);
 
   static const code = LintCode(
     'al_e7_no_bare_catch',

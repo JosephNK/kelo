@@ -62,11 +62,38 @@ function assertNarrowIgnores(file, data) {
   }
 }
 
+// 프레임워크별 추가 금지 목록 키의 값 검증 — 스택 데이터와 같은 형태만 받는다.
+function assertExtraListShapes(file, data, frameworkKeys) {
+  for (const key of frameworkKeys) {
+    if (data[key] === undefined) continue;
+    const value = data[key];
+    const ok =
+      Array.isArray(value) &&
+      value.every((item) =>
+        key === "restrictedPatterns"
+          ? item &&
+            Array.isArray(item.group) &&
+            item.group.length > 0 &&
+            item.group.every((g) => typeof g === "string" && g) &&
+            (item.message === undefined || typeof item.message === "string")
+          : typeof item === "string" && item.length > 0,
+      );
+    if (!ok) {
+      throw new Error(
+        key === "restrictedPatterns"
+          ? `[kelo] ${file}: restrictedPatterns는 { group: string[], message?: string } 배열이어야 합니다.`
+          : `[kelo] ${file}: ${key}는 패키지 glob 문자열 배열이어야 합니다 (예: ["@vendor/*"]).`,
+      );
+    }
+  }
+}
+
 /**
  * `<root>/kelo.lint.json`을 읽는다. 파일이 없으면 빈 설정(스택 없음)으로 동작한다.
  * 알 수 없는 키는 오타일 가능성이 높으므로 에러로 처리하고, 너무 넓은 제외 패턴은 거부한다.
+ * `frameworkKeys`는 프레임워크가 추가로 받는 금지 목록 키 (base·스택 목록 뒤에 추가만 된다).
  */
-export function loadLintConfig(root) {
+export function loadLintConfig(root, frameworkKeys = []) {
   const file = path.join(root, LINT_CONFIG_FILE);
   if (!fs.existsSync(file)) return {};
   let data;
@@ -75,15 +102,17 @@ export function loadLintConfig(root) {
   } catch (err) {
     throw new Error(`[kelo] ${file} 파싱 실패: ${err.message}`);
   }
+  const allowed = new Set([...LINT_CONFIG_KEYS, ...frameworkKeys]);
   const unknown = Object.keys(data).filter(
-    (k) => !k.startsWith("$") && !LINT_CONFIG_KEYS.has(k),
+    (k) => !k.startsWith("$") && !allowed.has(k),
   );
   if (unknown.length > 0) {
     throw new Error(
-      `[kelo] ${file}: 알 수 없는 키 ${unknown.join(", ")} (허용: ${[...LINT_CONFIG_KEYS].join(", ")})`,
+      `[kelo] ${file}: 알 수 없는 키 ${unknown.join(", ")} (허용: ${[...allowed].join(", ")})`,
     );
   }
   assertNarrowIgnores(file, data);
+  assertExtraListShapes(file, data, frameworkKeys);
   return data;
 }
 

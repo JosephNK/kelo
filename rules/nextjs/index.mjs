@@ -111,6 +111,9 @@ function patchBoundaryRules(rules, patches) {
   });
 }
 
+/** kelo.lint.json에서 nextjs가 추가로 받는 금지 목록 키 (추가만, 기존 목록 제거 불가). */
+const NEXTJS_LINT_CONFIG_KEYS = ["domainBannedPackages", "restrictedPatterns"];
+
 /**
  * kelo 관리 블록만 조립한다 (project override/ignore 제외).
  * `nextjs()`와 CLI(`kelo-lint-nextjs`)가 공유한다.
@@ -123,6 +126,7 @@ function buildKeloBlocks(root, lintConfig) {
   const allRestrictedPatterns = [
     ...baseRestrictedPatterns,
     ...pick("restrictedPatterns"),
+    ...(lintConfig.restrictedPatterns ?? []),
   ];
 
   return [
@@ -144,7 +148,11 @@ function buildKeloBlocks(root, lintConfig) {
 
     // [4] 도메인 순수성 — 프레임워크/브라우저 글로벌 차단
     ...buildDomainPurity(
-      [...baseDomainBannedPackages, ...pick("domainBannedPackages")],
+      [
+        ...baseDomainBannedPackages,
+        ...pick("domainBannedPackages"),
+        ...(lintConfig.domainBannedPackages ?? []),
+      ],
       allRestrictedPatterns,
     ),
 
@@ -206,7 +214,7 @@ export function nextjs({ root, project = [] } = {}) {
       "[kelo] nextjs({ root })가 필요합니다 — eslint.config.mjs에서 `root: import.meta.dirname`을 전달하세요.",
     );
   }
-  const lintConfig = loadLintConfig(root);
+  const lintConfig = loadLintConfig(root, NEXTJS_LINT_CONFIG_KEYS);
   const keloBlocks = buildKeloBlocks(root, lintConfig);
   assertProjectConfig(project, keloBlocks);
 

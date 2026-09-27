@@ -64,6 +64,12 @@ export const nestjsStacks = {
   },
 };
 
+/** kelo.lint.json에서 nestjs가 추가로 받는 금지 목록 키 (추가만, 기존 목록 제거 불가). */
+const NESTJS_LINT_CONFIG_KEYS = [
+  "frameworkBannedPackages",
+  "infraBannedPackages",
+];
+
 /**
  * kelo 관리 블록만 조립한다 (project override/ignore 제외).
  * `nestjs()`와 CLI(`kelo-lint-nestjs`)가 공유한다.
@@ -87,9 +93,17 @@ function buildKeloBlocks(root, lintConfig) {
 
     // [3] 헥사고날 레이어별 import 제한 — path alias 검사는
     //     package.json `kelo-rules.pathAliasCheck`로 토글
+    //     kelo.lint.json의 frameworkBannedPackages·infraBannedPackages는 뒤에 추가만 된다
     ...buildLayerRestrictions(
-      [...baseFrameworkBannedPackages, ...pick("frameworkBannedPackages")],
-      pick("infraBannedPackages"),
+      [
+        ...baseFrameworkBannedPackages,
+        ...pick("frameworkBannedPackages"),
+        ...(lintConfig.frameworkBannedPackages ?? []),
+      ],
+      [
+        ...pick("infraBannedPackages"),
+        ...(lintConfig.infraBannedPackages ?? []),
+      ],
       resolvePathAliasPattern(root),
     ),
 
@@ -143,7 +157,7 @@ export function nestjs({ root, project = [] } = {}) {
       "[kelo] nestjs({ root })가 필요합니다 — eslint.config.mjs에서 `root: import.meta.dirname`을 전달하세요.",
     );
   }
-  const lintConfig = loadLintConfig(root);
+  const lintConfig = loadLintConfig(root, NESTJS_LINT_CONFIG_KEYS);
   const keloBlocks = buildKeloBlocks(root, lintConfig);
   assertProjectConfig(project, keloBlocks);
 

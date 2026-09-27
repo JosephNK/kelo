@@ -52,7 +52,7 @@ dart run kelo_analysis:verify    # 규칙 약화 검사
 | 프로젝트 | 결과 |
 |---|---|
 | nestjs | `npx eslint src` 6건 (import 정렬, type import, floating promise). `kelo-lint-nestjs`(= `yarn lint`)는 test/ 포함 10건, exit 1 |
-| nextjs | `npx eslint .` = `npm run lint` = 10건 (boundaries 의존 규칙, 미등록 파일, i18n 경로 제한, import 정렬) |
+| nextjs | `npx eslint .` = `npm run lint` = 9건 (boundaries 의존 규칙, 미등록 파일, i18n 경로 제한, import 정렬). 0.4.2부터 이전 위치 `src/http/client.ts`도 `http-client`로 인식해 10건 → 9건 |
 | nextjs stylelint | 토큰 하드코딩(`color: #fff`) 1건 검출 |
 | flutter | 깨끗한 상태 `verify` OK. probe 파일에서 `al_e7_no_bare_catch`, `al_s2_unknown_path`, `avoid_print` 검출 (probe는 삭제함) |
 

@@ -11,7 +11,7 @@
     "lint:css": "stylelint \"**/*.{css,scss}\" --fix"
   },
   "devDependencies": {
-    "eslint-config-kelo-nextjs": "https://github.com/JosephNK/kelo/releases/download/v0.3.80/eslint-config-kelo-nextjs-0.3.80.tgz",
+    "eslint-config-kelo-nextjs": "https://github.com/JosephNK/kelo/releases/download/v0.4.1/eslint-config-kelo-nextjs-0.4.1.tgz",
     "@tanstack/react-query": "^5.101.0",
     "@types/node": "^25.9.1",
     "@types/react": "^19.0.0",

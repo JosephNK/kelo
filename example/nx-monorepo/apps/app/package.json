@@ -1,0 +1,10 @@
+{
+  "name": "@demo/app",
+  "private": true,
+  "scripts": {
+    "lint:ci": "cd app && dart analyze && dart run jkit_analysis:verify -p .."
+  },
+  "nx": {
+    "name": "app"
+  }
+}

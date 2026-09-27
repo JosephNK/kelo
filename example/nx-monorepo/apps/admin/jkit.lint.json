@@ -1,0 +1,7 @@
+{
+  "stacks": [
+    "design-system/shadcn",
+    "next-proxy",
+    "tanstack-query"
+  ]
+}

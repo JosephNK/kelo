@@ -1,0 +1,73 @@
+openapi: 3.0.0
+info:
+  title: Example API
+  version: "1.0.0"
+paths:
+  /users:
+    get:
+      operationId: listUsers
+      tags: [Users]
+      parameters:
+        - { name: status, in: query, required: false, schema: { $ref: "#/components/schemas/UserStatusDto" } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/UserDto" } }
+    post:
+      operationId: createUser
+      tags: [Users]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateUserDto" }
+      responses:
+        "201":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserDto" }
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [Users]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UserDto" }
+  /posts:
+    get:
+      operationId: listPosts
+      tags: [Posts]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/PostDto" } }
+components:
+  schemas:
+    UserStatusDto:
+      type: string
+      enum: [active, inactive, banned]
+    UserDto:
+      type: object
+      required: [id, email, status]
+      properties:
+        id: { type: string }
+        email: { type: string }
+        status: { $ref: "#/components/schemas/UserStatusDto" }
+        createdAt: { type: string, format: date-time }
+    CreateUserDto:
+      type: object
+      required: [email]
+      properties:
+        email: { type: string }
+    PostDto:
+      type: object
+      required: [id, title]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        authorId: { type: string }

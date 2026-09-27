@@ -1,0 +1,53 @@
+{
+  "name": "@demo/admin",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "lint": "jkit-lint-nextjs",
+    "lint:ci": "jkit-lint-nextjs",
+    "lint:css": "stylelint \"**/*.{css,scss}\" --fix"
+  },
+  "devDependencies": {
+    "@josephnk/eslint-config-nextjs": "https://github.com/JosephNK/jkit-code-plugin/releases/download/v0.3.80/josephnk-eslint-config-nextjs-0.3.80.tgz",
+    "@tanstack/react-query": "^5.101.0",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-import-resolver-typescript": "^3.6.3",
+    "eslint-plugin-boundaries": "^7.2.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-simple-import-sort": "^12.0.0",
+    "eslint-plugin-sonarjs": "^3.0.0",
+    "eslint-plugin-unused-imports": "^4.0.0",
+    "ky": "^2.0.2",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "stylelint": "^17.11.1",
+    "stylelint-config-standard": "^40.0.0",
+    "stylelint-declaration-strict-value": "^1.11.1",
+    "typescript": "^5.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "jkit-lint-nextjs --fix"
+    ],
+    "*.{ts,tsx,js,jsx,mjs}": [
+      "jkit-lint-nextjs --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": "prettier --write",
+    "*.{css,scss}": "stylelint --fix"
+  },
+  "nx": {
+    "name": "admin"
+  }
+}

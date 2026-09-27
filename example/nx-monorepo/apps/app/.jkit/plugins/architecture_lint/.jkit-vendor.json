@@ -1,0 +1,29 @@
+{
+  "$comment": "Vendored by jkit — do not edit. Regenerate with /jkit:flutter-sync.",
+  "package": "architecture_lint",
+  "source": "jkit-code-plugin@0.3.80/rules/flutter/base/custom-lint/architecture_lint",
+  "files": {
+    "lib/architecture_lint.dart": "19a1a4520dbf4b79b10ad25b03fc947b3ef7fa279c4f966063feb2f1c4a8c3a0",
+    "lib/main.dart": "c42acb64377460e9e20d61e29b00e89dade9a0efe2d8331d3c1830249dce2b41",
+    "lib/plugin.dart": "5740e9cdc9019007bc1b115b0883ffdafbd89ea575aa86afc34017b7c803742a",
+    "lib/src/boundary_element.dart": "1e5a528127a255c608eed33393ae78c0ac1ed5dc361440b06c6e9a871d1be99b",
+    "lib/src/classification.dart": "6eda3152dbc510646afa4242548c193da5d56e690f1d21d8ce947cf17fac19e0",
+    "lib/src/constants.dart": "e7f05687d9430b048cb2c995791d6d0fc9853cd7f72773b81e153e5ddb1bc734",
+    "lib/src/layer_semantics.dart": "2d6408909042cc042e064c988a20ebafaf087d6f07989a961304a1d12cae2320",
+    "lib/src/lints/al_e1_entities_import_lint.dart": "6fd8fcade0bbdb7263fa12fe82821f92e7b9cf75a5f8d6560bbf237c6f58e8cd",
+    "lib/src/lints/al_e2_usecases_dependency_lint.dart": "b1739801c1a8f5c7b51d23b1a27c98800e06342a1fe0a44d040857acf4f9d254",
+    "lib/src/lints/al_e4_domain_no_sdk_lint.dart": "7d04060a22edf6a902be14cd6f37f5aeae19f420c0f387f9cf8e3914eab296d5",
+    "lib/src/lints/al_e5_ports_no_framework_lint.dart": "61e6f9ffa8bdf591a839c178696fd148cdffcd61e52a83777b992f5b5de0c478",
+    "lib/src/lints/al_e6_cross_feature_lint.dart": "79b59d23f554c63dde51820543e876b9ce7014b260fa30b8393271b41b2dc131",
+    "lib/src/lints/al_e7_no_bare_catch_lint.dart": "75acd319167266ea0ab49862386389b49e8a6c8c253bc953a8ac0ca3393c4170",
+    "lib/src/lints/al_e8_presentation_dependency_lint.dart": "53671f5fcd2369b1fa2954e129a42db4ef63ac55f7538618f7b01bb0034210e9",
+    "lib/src/lints/al_e9_no_private_widget_in_views_lint.dart": "0c61641c5543e40ecf53ab0ee6e385166d013e63115313a7e82f9b66f406a0ba",
+    "lib/src/lints/al_n1_port_naming_lint.dart": "b037b692ea272f48b3d52f4bfdcaad458ec27f5e9153aaf7e36a543e9a57f0ab",
+    "lib/src/lints/al_n2_adapter_naming_lint.dart": "51acc98a40b420dcd409c09478646502b75fdabd37e625ed4b581de1f0dde0e2",
+    "lib/src/lints/al_n3_usecase_naming_lint.dart": "6286d2645d15d3b9a2e7865d9cec9e867fe1cd3be039e6aacd640b759b006e7e",
+    "lib/src/lints/al_s1_file_size_lint.dart": "ba6f266157a1263fe166d3dd2cfd1019e6ef1704868efc533a00836bfb48da02",
+    "lib/src/lints/al_s2_unknown_path_lint.dart": "1855bbd860808e0428d98400c05fec4837809f1bd94ca282db548f4d19b1cca8",
+    "lib/src/structure_annotation.dart": "ba9adc848adaaa41fa24189a3f54945106ec566e375435a12c92a17f4964fd59",
+    "pubspec.yaml": "490dceee78cb1b04120a3e511f55b288da806526eb5bedba171f97d93e5d8155"
+  }
+}

@@ -1,0 +1,13 @@
+# (예시 — 이 저장소 안이라 husky는 설치하지 않았다. vocabit 루트 훅 구조와 동일)
+# lint-staged 는 staged 파일마다 가장 가까운 설정(apps/*/package.json)을 찾아 그 디렉터리에서 실행한다.
+pnpm exec lint-staged
+
+# api i18n 키 검사 — apps/api 변경이 staged 일 때만.
+if git diff --cached --name-only | grep -q '^apps/api/'; then
+  pnpm --filter @demo/api exec jkit-check-i18n
+fi
+
+# app(Flutter) — staged .dart 파일이 있을 때만.
+if git diff --cached --name-only | grep -q '^apps/app/.*\.dart$'; then
+  (cd apps/app/app && dart run jkit_analysis:verify -p ..)
+fi

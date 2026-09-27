@@ -1,0 +1,18 @@
+{
+  "$comment": "Vendored by jkit — do not edit. Regenerate with /jkit:flutter-sync.",
+  "package": "leaf_kit_lint",
+  "source": "jkit-code-plugin@0.3.80/rules/flutter/leaf-kit/custom-lint/leaf_kit_lint",
+  "files": {
+    "lib/leaf_kit_lint.dart": "5d1ad7be9ad16dec93ddb5e9fbe9a1ad1b2d94e25993e76a327fa3cfd2419620",
+    "lib/main.dart": "c1fda28adf372a4abd81ccfefa2a92607daf0cb1476973dc01d893211d60985c",
+    "lib/plugin.dart": "17959979605c9a1fbb1f5bd039a7eb3ca508133a4a802a712f4edb84f9c67e31",
+    "lib/src/constants.dart": "5fecf99321f7037a88c7e354ba769c7c84d430cc1980ffd4872d666119050116",
+    "lib/src/helpers.dart": "b02520b302f4f90675eba6bf7a7426879e1f0d4f18ffe0920575ab16c0029baf",
+    "lib/src/lints/lk_e2_no_bloc_in_usecases_lint.dart": "b22d4e5f8d514ff8511a39d0594e379ba60adc89f09f31567d3a8d1995e36c35",
+    "lib/src/lints/lk_e3_bloc_dependency_lint.dart": "440cd01f726d9d0343079623d3eb16858b4f3b233a86a8e607cfb555297a8cfa",
+    "lib/src/lints/lk_e6_no_cross_bloc_lint.dart": "fdbf58fedcc1516ffd1280e984dc46f0fd1de29236ac31bbdc06fcb5f9caac16",
+    "lib/src/lints/lk_e8_no_direct_usecase_in_view_lint.dart": "2df3480ff36323c645fc337194556359b114fcf07b0ffaa04cd3e4194a32a996",
+    "lib/src/lints/lk_e9_preferred_widget_lint.dart": "9df6638d0b285b933c06e124c1ed271b5896cd9d091b2037775596b4e1764be9",
+    "pubspec.yaml": "8954fc4ee6c77e09cc3746f771ada00f11136fc95b884a1b98c010fa4357a24d"
+  }
+}

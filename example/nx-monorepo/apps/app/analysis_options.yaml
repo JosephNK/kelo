@@ -1,0 +1,30 @@
+# GENERATED FILE - DO NOT MODIFY BY HAND
+# Managed by jkit (overwritten by /jkit:flutter-init and -sync).
+# Workspace root: flutter_lints + plugins: (managed by gen-custom-lint.mjs)
+
+include: package:flutter_lints/flutter.yaml
+plugins:
+  architecture_lint:
+    path: .jkit/plugins/architecture_lint
+    diagnostics:
+      al_e1_entities_import: true
+      al_e2_usecases_dependency: true
+      al_e4_domain_no_sdk: true
+      al_e5_ports_no_framework: true
+      al_e6_cross_feature: true
+      al_e7_no_bare_catch: true
+      al_e8_presentation_dependency: true
+      al_e9_no_private_widget_in_views: true
+      al_n1_port_naming: true
+      al_n2_adapter_naming: true
+      al_n3_usecase_naming: true
+      al_s1_file_size: true
+      al_s2_unknown_path: true
+  leaf_kit_lint:
+    path: .jkit/plugins/leaf_kit_lint
+    diagnostics:
+      lk_e2_no_bloc_in_usecases: true
+      lk_e3_bloc_dependency: true
+      lk_e6_no_cross_bloc: true
+      lk_e8_no_direct_usecase_in_view: true
+      lk_e9_preferred_widget: true

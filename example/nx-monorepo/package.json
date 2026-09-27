@@ -1,0 +1,12 @@
+{
+  "name": "jkit-nx-monorepo-example",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "lint": "nx run-many -t lint:ci"
+  },
+  "devDependencies": {
+    "lint-staged": "^17.0.5",
+    "nx": "23.2.1"
+  }
+}

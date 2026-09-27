@@ -1,0 +1,14 @@
+# vocabit 구조를 본뜬 검증용 nx 모노레포.
+# apps/app(Flutter)은 Nx 타깃 정의용 package.json 만 가진다 (npm 의존성 없음).
+packages:
+  - apps/*
+
+onlyBuiltDependencies:
+  - nx
+  - unrs-resolver
+
+# 배포 전 검증용 — 앱 package.json은 실제와 같은 `^0.3.80`을 쓰고,
+# 설치만 로컬 tarball(scripts/pack-jkit-local.sh 생성)로 대체한다.
+overrides:
+  "@josephnk/eslint-config-nestjs": "file:.local-packages/josephnk-eslint-config-nestjs-0.3.80.tgz"
+  "@josephnk/eslint-config-nextjs": "file:.local-packages/josephnk-eslint-config-nextjs-0.3.80.tgz"

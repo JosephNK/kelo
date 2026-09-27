@@ -1,0 +1,30 @@
+{
+  "workspaces": [
+    {
+      "path": "apps/api",
+      "framework": "nestjs",
+      "projectName": "demo-api",
+      "conventionStacks": ["typeorm"],
+      "eslintStacks": ["typeorm", "gcp", "anthropic-ai"],
+      "tsconfigStacks": ["typeorm"],
+      "generateAgents": false
+    },
+    {
+      "path": "apps/admin",
+      "framework": "nextjs",
+      "projectName": "demo-admin",
+      "conventionStacks": ["design-system/shadcn", "tanstack-query", "next-proxy"],
+      "eslintStacks": ["design-system/shadcn", "tanstack-query", "next-proxy"],
+      "tsconfigStacks": [],
+      "generateAgents": false
+    },
+    {
+      "path": "apps/app",
+      "framework": "flutter",
+      "projectName": "demo_app",
+      "conventionStacks": ["leaf-kit"],
+      "entryDir": "app",
+      "generateAgents": false
+    }
+  ]
+}

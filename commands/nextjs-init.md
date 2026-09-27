@@ -334,7 +334,8 @@ esac
 >
 > NEXTJS_PEERS="eslint-plugin-boundaries@^7 eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-sonarjs eslint-config-prettier eslint-config-next@^16"
 >
-> case "$PM" in
+> NEXTJS_PEERS=$($KELO_DIR/scripts/typescript/missing-peers.mjs -p . $NEXTJS_PEERS)  # 이미 범위를 만족하는 peer는 제외
+> [ -n "$NEXTJS_PEERS" ] && case "$PM" in
 >   npm)  npm install -D $NEXTJS_PEERS ;;
 >   yarn) yarn add -D $NEXTJS_PEERS ;;
 >   pnpm) pnpm add -D $NEXTJS_PEERS ;;

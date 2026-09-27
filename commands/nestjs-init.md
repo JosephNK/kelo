@@ -297,7 +297,8 @@ esac
 > ```bash
 > cd "$PROJECT_ROOT"
 > NESTJS_PEERS="eslint-plugin-boundaries@^7 eslint-plugin-import eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-prettier eslint-config-prettier typescript-eslint"
-> case "$PM" in
+> NESTJS_PEERS=$($KELO_DIR/scripts/typescript/missing-peers.mjs -p . $NESTJS_PEERS)  # 이미 범위를 만족하는 peer는 제외
+> [ -n "$NESTJS_PEERS" ] && case "$PM" in
 >   npm)  npm install -D $NESTJS_PEERS ;;
 >   yarn) yarn add -D $NESTJS_PEERS ;;
 >   pnpm) pnpm add -D $NESTJS_PEERS ;;

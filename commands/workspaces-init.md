@@ -341,7 +341,8 @@ for i in $(seq 0 $((WS_COUNT - 1))); do
     *)      cd "$MONOREPO_ROOT"; continue ;;
   esac
 
-  case "$PM" in
+  PEERS=$($KELO_DIR/scripts/typescript/missing-peers.mjs -p . $PEERS)  # 이미 범위를 만족하는 peer는 제외
+  [ -n "$PEERS" ] && case "$PM" in
     npm)  npm install -D $PEERS ;;
     yarn) yarn add -D $PEERS ;;
     pnpm) pnpm add -D $PEERS ;;

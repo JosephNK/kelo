@@ -210,7 +210,7 @@ esac
 
 #### peer 누락 보강 (워크스페이스별)
 
-기존 워크스페이스가 레거시 `@jkit/code-plugin` 또는 구버전 `eslint-config-kelo-*`로 설치되어 신규 peer가 누락된 경우 framework별로 보강합니다. 이미 있으면 매니저가 skip합니다. `eslint-plugin-boundaries@^7`(규칙이 v7 `policies` 문법 사용)과 `eslint-config-next@^16`(`core-web-vitals` flat subpath — v16+)은 메이저를 명시해, 구버전이 설치된 기존 프로젝트도 함께 올립니다.
+기존 워크스페이스가 레거시 `@jkit/code-plugin` 또는 구버전 `eslint-config-kelo-*`로 설치되어 신규 peer가 누락된 경우 framework별로 보강합니다. 이미 범위를 만족하는 peer는 `missing-peers.mjs`가 걸러 기존 범위(예: `^16.3.6`)를 덮어쓰지 않습니다. `eslint-plugin-boundaries@^7`(규칙이 v7 `policies` 문법 사용)과 `eslint-config-next@^16`(`core-web-vitals` flat subpath — v16+)은 메이저를 명시해, 구버전이 설치된 기존 프로젝트도 함께 올립니다.
 
 ```bash
 NEXTJS_PEERS="eslint-plugin-boundaries@^7 eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-sonarjs eslint-config-prettier eslint-config-next@^16"
@@ -229,7 +229,8 @@ for i in $(seq 0 $((WS_COUNT - 1))); do
     *)      cd "$MONOREPO_ROOT"; continue ;;
   esac
 
-  case "$PM" in
+  PEERS=$($KELO_DIR/scripts/typescript/missing-peers.mjs -p . $PEERS)  # 이미 범위를 만족하는 peer는 제외
+  [ -n "$PEERS" ] && case "$PM" in
     npm)  npm install -D $PEERS ;;
     yarn) yarn add -D $PEERS ;;
     pnpm) pnpm add -D $PEERS ;;

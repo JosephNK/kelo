@@ -215,7 +215,7 @@ esac
 
 #### peer 누락 보강
 
-기존 프로젝트가 레거시 `@jkit/code-plugin` 또는 구버전 `eslint-config-kelo-nextjs`로 설치되어 신규 peer가 누락된 경우 보강합니다. 이미 있으면 매니저가 skip합니다. `eslint-plugin-boundaries@^7`(규칙이 v7 `policies` 문법 사용)과 `eslint-config-next@^16`(`core-web-vitals` flat subpath — v16+)은 메이저를 명시해, 구버전이 설치된 기존 프로젝트도 함께 올립니다.
+기존 프로젝트가 레거시 `@jkit/code-plugin` 또는 구버전 `eslint-config-kelo-nextjs`로 설치되어 신규 peer가 누락된 경우 보강합니다. 이미 범위를 만족하는 peer는 `missing-peers.mjs`가 걸러 기존 범위(예: `^16.3.6`)를 덮어쓰지 않습니다. `eslint-plugin-boundaries@^7`(규칙이 v7 `policies` 문법 사용)과 `eslint-config-next@^16`(`core-web-vitals` flat subpath — v16+)은 메이저를 명시해, 구버전이 설치된 기존 프로젝트도 함께 올립니다.
 
 `typescript-eslint`는 `eslint-config-next@16+`가 transitive로 가져오므로 top-level에 명시하지 않는다. 명시 설치 시 `@typescript-eslint` 플러그인이 두 인스턴스로 등록되어 flat config가 거부한다. `gen-eslint.mjs`가 user `package.json`에 항목이 남아 있으면 자동으로 제거한다.
 
@@ -224,7 +224,8 @@ cd "$PROJECT_ROOT"
 
 NEXTJS_PEERS="eslint-plugin-boundaries@^7 eslint-import-resolver-typescript eslint-plugin-simple-import-sort eslint-plugin-unused-imports eslint-plugin-sonarjs eslint-config-prettier eslint-config-next@^16"
 
-case "$PM" in
+NEXTJS_PEERS=$($KELO_DIR/scripts/typescript/missing-peers.mjs -p . $NEXTJS_PEERS)  # 이미 범위를 만족하는 peer는 제외
+[ -n "$NEXTJS_PEERS" ] && case "$PM" in
   npm)  npm install -D $NEXTJS_PEERS ;;
   yarn) yarn add -D $NEXTJS_PEERS ;;
   pnpm) pnpm add -D $NEXTJS_PEERS ;;

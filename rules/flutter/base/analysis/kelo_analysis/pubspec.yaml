@@ -1,5 +1,5 @@
 name: kelo_analysis
-version: 0.4.7
+version: 1.0.0
 description: >-
   Kelo Flutter analysis options (analyzer/linter policy) and a verify CLI that
   rejects local overrides weakening the kelo rules.

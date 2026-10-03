@@ -161,18 +161,12 @@ export function patchLintStaged(lintStaged, lintGlob, lintCmd, detectToken) {
   return `  Skipped:   lint-staged[${pyReprStr(lintGlob)}] (unexpected type: ${typeof existing})`;
 }
 
-// ─── kelo npm config packages (GitHub Release distribution) ─────────────────
-// eslint-config-kelo-{nextjs,nestjs} are not on the npm registry yet —
-// deploy.mjs attaches `npm pack` tarballs to the GitHub Release of each tag and
-// consumers depend on the tarball URL.
-export const KELO_RELEASE_BASE =
-  "https://github.com/JosephNK/kelo/releases/download";
-
-// `npm pack` file name for a (possibly scoped) package: @a/b → a-b-<ver>.tgz
-export function packTarballName(name, version) {
-  return `${name.replace(/^@/, "").replace("/", "-")}-${version}.tgz`;
-}
-
-export function keloPackageSpec(name, version) {
-  return `${KELO_RELEASE_BASE}/v${version}/${packTarballName(name, version)}`;
+// ─── kelo npm config packages (npm registry distribution) ────────────────────
+// eslint-config-kelo-{nextjs,nestjs} are published to the npm registry by
+// deploy.mjs. Consumers pin the exact plugin version — sync/update-plugin-ref
+// move it. (Before 1.0.0 consumers used GitHub Release tarball URLs; Dependabot
+// dropped their lockfile integrity, so the spec is rewritten to the registry
+// version on the next sync.)
+export function keloPackageSpec(_name, version) {
+  return version;
 }

@@ -3,7 +3,7 @@
 // Bumps the plugin version, commits, tags, and pushes in one shot.
 //
 // Usage:
-//   deploy.mjs [<version>|patch|minor|major] [--yes] [--no-release]
+//   deploy.mjs [<version>|patch|minor|major] [--yes] [--no-publish] [--no-release]
 // =============================================================================
 
 import { execFileSync, spawnSync } from "node:child_process";
@@ -14,10 +14,10 @@ import process from "node:process";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 
-const HELP = `Usage: ./deploy.mjs [<version>|patch|minor|major] [--yes] [--no-release]
+const HELP = `Usage: ./deploy.mjs [<version>|patch|minor|major] [--yes] [--no-publish] [--no-release]
 
-Bumps the plugin version, commits, tags, pushes, and attaches the ESLint
-config package tarballs to the GitHub Release in one shot.
+Bumps the plugin version, commits, tags, pushes, publishes the ESLint config
+packages to the npm registry, and creates the GitHub Release in one shot.
 
 Updates:
   - .codex-plugin/plugin.json             (version)
@@ -36,6 +36,7 @@ Then:
   - git add + commit "chore: 버전 <new> 범프"
   - git tag v<new>
   - git push origin <branch> --follow-tags
+  - npm publish ./rules/nextjs, ./rules/nestjs → npm registry (needs 'npm login')
   - npm pack ./rules/nextjs, ./rules/nestjs → GitHub Release v<new> assets (gh)
 
 Arguments:
@@ -46,7 +47,8 @@ Arguments:
 
 Options:
   --yes, -y     Skip confirmation prompt
-  --no-release  Skip the GitHub Release (tag/push only)
+  --no-publish  Skip npm publish
+  --no-release  Skip the GitHub Release
   -h, --help Show this help
 
 Examples:
@@ -66,6 +68,7 @@ function parseArgs(argv) {
     bump: "patch",
     explicitVersion: "",
     yes: false,
+    publish: true,
     release: true,
   };
   const rest = argv.slice(2);
@@ -81,6 +84,9 @@ function parseArgs(argv) {
       case "--yes":
       case "-y":
         args.yes = true;
+        break;
+      case "--no-publish":
+        args.publish = false;
         break;
       case "--no-release":
         args.release = false;
@@ -272,6 +278,35 @@ async function main() {
     }
   }
 
+  // 소비 프로젝트는 npm 레지스트리 버전을 의존성으로 쓴다 (scripts/common.mjs keloPackageSpec).
+  // publish도 태그 push 이후라 시작 전에 npm 로그인과 버전 중복을 확인한다.
+  if (args.publish) {
+    const who = spawnSync("npm", ["whoami"], { encoding: "utf-8" });
+    if (who.status !== 0) {
+      process.stderr.write(
+        "Error: npm 로그인이 필요합니다. 'npm login' 후 다시 실행하거나 --no-publish를 사용하세요.\n",
+      );
+      process.exit(1);
+    }
+    process.stdout.write(`npm user:        ${who.stdout.trim()}\n`);
+    for (const p of npmPackageJsonPaths) {
+      const { name } = JSON.parse(fs.readFileSync(p, "utf-8"));
+      const view = spawnSync(
+        "npm",
+        ["view", `${name}@${newVersion}`, "version"],
+        {
+          encoding: "utf-8",
+        },
+      );
+      if (view.status === 0 && view.stdout.trim()) {
+        process.stderr.write(
+          `Error: ${name}@${newVersion} is already published\n`,
+        );
+        process.exit(1);
+      }
+    }
+  }
+
   process.stdout.write(`New version:     ${newVersion}\n`);
   process.stdout.write(`New tag:         ${tag}\n`);
 
@@ -339,9 +374,14 @@ async function main() {
   process.stdout.write(`  11. git tag ${tag}\n`);
   process.stdout.write(`  12. git push origin ${branch} --follow-tags\n`);
   process.stdout.write(
+    args.publish
+      ? `  13. npm publish ${npmPackageDirs.map((d) => `./${d}`).join(", ")}\n`
+      : "  13. npm publish (skipped: --no-publish)\n",
+  );
+  process.stdout.write(
     args.release
-      ? `  13. GitHub Release ${tag} ← npm pack ${npmPackageDirs.map((d) => `./${d}`).join(", ")}\n\n`
-      : "  13. GitHub Release (skipped: --no-release)\n\n",
+      ? `  14. GitHub Release ${tag} ← npm pack ${npmPackageDirs.map((d) => `./${d}`).join(", ")}\n\n`
+      : "  14. GitHub Release (skipped: --no-release)\n\n",
   );
 
   if (!args.yes) {
@@ -395,9 +435,28 @@ async function main() {
   );
   if (pushResult.status !== 0) process.exit(pushResult.status ?? 1);
 
+  if (args.publish) {
+    for (const dir of npmPackageDirs) {
+      process.stdout.write(`\nPublishing ./${dir} to npm...\n`);
+      // stdio inherit — 2FA OTP 입력이 필요하면 npm이 직접 묻는다
+      const r = spawnSync(
+        "npm",
+        ["publish", `./${dir}`, "--access", "public"],
+        {
+          stdio: "inherit",
+        },
+      );
+      if (r.status !== 0) {
+        process.stderr.write(
+          `Error: npm publish 실패. 태그 ${tag}는 이미 push되었으므로 원인 해결 후 'npm publish ./${dir} --access public'(남은 패키지 포함)과 'gh release create ${tag}'만 다시 실행하세요.\n`,
+        );
+        process.exit(r.status ?? 1);
+      }
+    }
+  }
+
   if (args.release) {
-    // 소비 프로젝트는 이 Release 자산(tarball URL)을 의존성으로 쓴다
-    // (scripts/common.mjs keloPackageSpec).
+    // 1.0.0 이전 소비 프로젝트가 쓰던 tarball 배포 방식과 같은 자산을 참고용으로 남긴다.
     const packDir = fs.mkdtempSync(path.join(os.tmpdir(), "kelo-release-"));
     const assets = [];
     for (const dir of npmPackageDirs) {

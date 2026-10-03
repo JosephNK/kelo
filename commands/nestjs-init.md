@@ -265,7 +265,7 @@ $KELO_DIR/scripts/gen-commitlint.mjs -p .
 
 - `eslint.config.mjs` — 패키지 factory 호출만 담은 짧은 생성물 (매 sync마다 덮어씀)
 - `kelo.lint.json` — 선택한 스택(`stacks`) + 프로젝트별 경계 확장(`boundaryElements`/`boundaryRules`/`boundaryIgnores`/`ignores`) + 추가 금지 패키지(`frameworkBannedPackages`: model·port·exception, `infraBannedPackages`: service — 스택 목록 뒤에 추가만)
-- `package.json` — `devDependencies`에 `"eslint-config-kelo-nestjs": "https://github.com/JosephNK/kelo/releases/download/v<current-version>/eslint-config-kelo-nestjs-<current-version>.tgz"` 추가 (GitHub Release tarball — npm 레지스트리 미사용) (레거시 `@jkit/code-plugin` git 의존성은 제거), lint-staged TS/JS glob은 `kelo-lint-nestjs --fix`, `scripts.lint`를 `kelo-lint-nestjs`로 통일 (eslint 기반 `lint:ci`/`lint:fix`도 교체 — 경로/`--ignore-pattern` 인자는 `kelo.lint.json` `ignores`로 이전)
+- `package.json` — `devDependencies`에 `"eslint-config-kelo-nestjs": "<current-version>"` 추가 (npm 레지스트리, 플러그인 버전과 같은 정확한 버전) (레거시 `@jkit/code-plugin` git 의존성은 제거), lint-staged TS/JS glob은 `kelo-lint-nestjs --fix`, `scripts.lint`를 `kelo-lint-nestjs`로 통일 (eslint 기반 `lint:ci`/`lint:fix`도 교체 — 경로/`--ignore-pattern` 인자는 `kelo.lint.json` `ignores`로 이전)
 
 의존성을 실제로 설치합니다. 명령은 Step 6에서 결정된 `PM` 변수에 따라 분기합니다.
 
@@ -277,13 +277,11 @@ case "$PM" in
   pnpm) pnpm install ;;
   bun)  bun install ;;
 esac
-# lockfile에 kelo Release tarball의 integrity가 빠졌으면 자산 sha512로 채우고, 있으면 자산과 대조 (pnpm·npm)
-$KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-dir .
 # kelo가 생성한 docs를 프로젝트 prettier 설정으로 맞춤 — lint:ci의 prettier --check가 생성물 때문에 실패하지 않도록 (prettier가 없으면 건너뜀)
 ls docs/GIT.md docs/ARCHITECTURE.md docs/STRUCTURE.md docs/CONVENTIONS.md docs/LINT.md 2>/dev/null | xargs npx --no-install prettier --write >/dev/null 2>&1 || true
 ```
 
-> 규칙 원본과 조립 로직은 `node_modules/eslint-config-kelo-nestjs/`에 있습니다. 규칙 변경은 kelo 저장소에서 수정·배포(GitHub Release)하고, 프로젝트는 `/kelo:update-plugin-ref code-plugin` 또는 sync로 URL 버전을 올려 반영합니다. `kelo-check-i18n` CLI도 이 패키지가 제공합니다.
+> 규칙 원본과 조립 로직은 `node_modules/eslint-config-kelo-nestjs/`에 있습니다. 규칙 변경은 kelo 저장소에서 수정·배포(npm 레지스트리)하고, 프로젝트는 `/kelo:update-plugin-ref code-plugin` 또는 sync로 버전을 올려 반영합니다. `kelo-check-i18n` CLI도 이 패키지가 제공합니다.
 
 > **peerDependencies**: `eslint-config-kelo-nestjs`는 다음을 peer로 요구합니다 (rules가 직접 import):
 > - `eslint` (9.22+) — `eslint/config`의 `defineConfig`/`globalIgnores` 사용

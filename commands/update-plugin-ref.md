@@ -10,7 +10,7 @@ Kelo이 관리하는 의존성의 버전(npm 패키지) 또는 git ref(Dart 패�
 
 | Target | 매니페스트 | 의존성 | Auto 지원 |
 |--------|-----------|--------|----------|
-| `code-plugin` | `package.json` | `eslint-config-kelo-nextjs`, `eslint-config-kelo-nestjs` (GitHub Release tarball URL `v<version>`) | ✓ plugin.json version |
+| `code-plugin` | `package.json` | `eslint-config-kelo-nextjs`, `eslint-config-kelo-nestjs` (npm 레지스트리 버전 `<version>`) | ✓ plugin.json version |
 | `architecture-lint` | `pubspec.yaml` | `kelo_analysis` (git ref) — lint 플러그인(`architecture_lint` 등)은 `.kelo/plugins/`에 vendoring되어 ref가 없으므로 점검만 | ✓ plugin.json version (동일 repo) |
 | `leaf-kit` | `pubspec.yaml` | `flutter_leaf_kit` | ✗ 외부 repo — 명시적 ref 필수 |
 
@@ -88,4 +88,4 @@ $KELO_DIR/scripts/flutter/dependencies/update-leaf-kit-ref.mjs <ref> --project-d
 - `--dry-run`이었다면 변경될 파일 목록을 보여주고 "실제로 적용할까요?"를 묻습니다.
 - 스크립트가 실패하면 가능한 원인을 안내합니다 (예: 대상 manifest 미발견, 해당 의존성 없음, plugin.json 파싱 실패).
 - `architecture-lint`를 실제로 적용했다면 엔트리에서 `dart pub get`을 실행하고, `pubspec.lock` 변경이 `kelo_analysis`에만 그쳤는지 확인하도록 안내합니다. 관련 없는 패키지가 대량으로 바뀌었으면 lock을 커밋된 상태로 되돌린 뒤 다시 받습니다 (상세: `/kelo:flutter-sync`의 "lock 변경 범위 확인").
-- `code-plugin`을 실제로 적용했다면 install 후 `$KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-dir <user-project-dir>`를 실행하도록 안내합니다. pnpm은 tarball URL 의존성의 lockfile `integrity`를 빠뜨리는 경우가 있어, 이 스크립트가 Release 자산 sha512로 채우고 기존 값은 자산과 대조합니다 (`pnpm install --fix-lockfile`은 integrity를 채우지 못하고 deprecated 메타데이터만 지우므로 쓰지 않습니다).
+- `code-plugin`을 실제로 적용했다면 패키지 매니저로 install해 lockfile을 갱신하도록 안내합니다. 1.0.0 이전의 GitHub Release tarball URL 의존성은 npm 레지스트리 버전으로 바뀝니다.

@@ -235,7 +235,7 @@ export default nestjs({ root: import.meta.dirname, project: projectConfig });
 - inline `eslint-disable` 주석은 무시됩니다 (`noInlineConfig`)
 - `kelo-lint-<framework>` — 프로젝트 `eslint.config.mjs`를 무시하고 패키지 규칙으로 검사. `scripts.lint`(eslint 기반 `lint:ci`/`lint:fix` 포함)와 lint-staged가 모두 이 CLI로 통일됩니다. 경로/`--ignore-pattern` 인자는 `kelo.lint.json`의 `ignores`로 옮깁니다. 에디터 실시간 표시는 `eslint.config.mjs`가 담당합니다
 
-배포는 npm 레지스트리가 아니라 **GitHub Release**입니다: `./deploy.mjs`(버전 범프 + 태그 + `npm pack` tarball을 Release에 첨부) → 소비 프로젝트는 `package.json`에 Release tarball URL(`…/releases/download/v<ver>/eslint-config-kelo-<fw>-<ver>.tgz`)을 쓰고, `/kelo:update-plugin-ref code-plugin` 또는 sync로 버전을 올립니다.
+배포는 **npm 레지스트리**입니다: `./deploy.mjs`(버전 범프 + 태그 + `npm publish` + GitHub Release) → 소비 프로젝트는 `package.json`에 플러그인과 같은 정확한 버전(`"eslint-config-kelo-<fw>": "<ver>"`)을 쓰고, `/kelo:update-plugin-ref code-plugin` 또는 sync로 버전을 올립니다. 1.0.0 이전의 Release tarball URL 의존성은 다음 sync 때 레지스트리 버전으로 바뀝니다.
 레거시 `@jkit/code-plugin` git 의존성 프로젝트는 `/kelo:<framework>-sync` 한 번으로 전환됩니다.
 
 ## Project Preferences (NestJS)

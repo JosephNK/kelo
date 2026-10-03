@@ -33,8 +33,9 @@ const SKIP_DIR_NAMES = new Set([
 
 const HELP = `Usage: update-code-plugin-ref.mjs [<ref>] --project-dir <dir> [--dry-run]
 
-Updates eslint-config-kelo-{nextjs,nestjs} to the GitHub Release tarball
-URL of <version> across all package.json files. Legacy @jkit/code-plugin git deps are reported only.
+Updates eslint-config-kelo-{nextjs,nestjs} to the npm registry version
+<version> across all package.json files (GitHub Release tarball URLs from
+before 1.0.0 are rewritten too). Legacy @jkit/code-plugin git deps are reported only.
 
 Arguments:
   <ref>                  Optional version (e.g. 0.3.80, v0.3.80).
@@ -253,9 +254,7 @@ function main() {
   const projectRoot = path.resolve(args.projectDir);
 
   process.stdout.write(`프로젝트 루트: ${projectRoot}\n`);
-  process.stdout.write(
-    `새 버전: v${ref} — GitHub Release tarball (${refSource})\n`,
-  );
+  process.stdout.write(`새 버전: ${ref} — npm 레지스트리 (${refSource})\n`);
   if (args.dryRun) {
     process.stdout.write("(dry-run 모드)\n");
   }

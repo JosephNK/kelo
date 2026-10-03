@@ -4,7 +4,7 @@
   "description": "Kelo NestJS ESLint shareable config — hexagonal architecture boundaries, layer import restrictions, and quality rules",
   "type": "module",
   "license": "MIT",
-  "author": "JosephNK <nkw0608@gmail.com>",
+  "author": "JosephNK",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JosephNK/kelo.git",

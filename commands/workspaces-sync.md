@@ -211,8 +211,6 @@ case "$PM" in
   pnpm) pnpm install ;;
   bun)  bun install ;;
 esac
-# lockfile에 kelo Release tarball의 integrity가 빠졌으면 자산 sha512로 채우고, 있으면 자산과 대조 (pnpm·npm)
-$KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-dir .
 # kelo가 생성한 워크스페이스 docs를 각 워크스페이스 prettier 설정으로 맞춤 — lint:ci의 prettier --check 대비 (prettier가 없으면 건너뜀)
 for i in $(seq 0 $((WS_COUNT - 1))); do
   WS_PATH=$(jq -r ".workspaces[$i].path" "$MANIFEST_PATH")

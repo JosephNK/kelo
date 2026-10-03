@@ -194,8 +194,6 @@ case "$PM" in
   pnpm) pnpm install ;;
   bun)  bun install ;;
 esac
-# lockfile에 kelo Release tarball의 integrity가 빠졌으면 자산 sha512로 채우고, 있으면 자산과 대조 (pnpm·npm)
-$KELO_DIR/scripts/typescript/dependencies/fill-tarball-integrity.mjs --project-dir .
 # kelo가 생성한 docs를 프로젝트 prettier 설정으로 맞춤 — lint:ci의 prettier --check가 생성물 때문에 실패하지 않도록 (prettier가 없으면 건너뜀)
 ls docs/GIT.md docs/ARCHITECTURE.md docs/STRUCTURE.md docs/CONVENTIONS.md docs/LINT.md 2>/dev/null | xargs npx --no-install prettier --write >/dev/null 2>&1 || true
 ```

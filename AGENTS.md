@@ -137,7 +137,6 @@ export const baseDomainBannedPackages = [...];
 - `scripts/typescript/gen-stylelint.mjs` — 출력(소비 프로젝트): `stylelint.config.mjs`(`eslint-config-kelo-nextjs/stylelint` re-export) + stylelint devDeps.
 - `scripts/flutter/gen-analysis-options.mjs` — 출력(소비 프로젝트): include 한 줄짜리 `analysis_options.yaml` + 엔트리 `pubspec.yaml`의 `kelo_analysis` git 의존성(`ref: v<plugin-version>`). 미배포 체크아웃 검증은 `-analysis-path <dir>`로 path 의존성 사용.
 - `scripts/flutter/custom_lint/inject-custom-lint.mjs` (gen-custom-lint가 호출) — Flutter lint 플러그인 소스를 소비 프로젝트의 `.kelo/plugins/<package>/`로 vendoring(+ `.kelo-vendor.json` sha256)하고 `plugins:`에 상대 `path:`로 등록. `git:`/절대 경로는 이식성·동작 문제로 쓰지 않는다.
-- `scripts/typescript/dependencies/fill-tarball-integrity.mjs` — 소비 프로젝트 lockfile(pnpm-lock.yaml·package-lock.json)의 kelo Release tarball 항목 integrity를 점검: 빠지면 자산 sha512로 채우고, 있으면 자산과 대조해 불일치 시 에러(덮어쓰지 않음). init/sync의 install 직후와 update-plugin-ref 후에 실행.
 - `hooks/block-lint-config-edits.sh` — 소비 프로젝트에서 kelo 관리 헤더(`Managed by kelo` 등)가 있는 `eslint.config.mjs`/`stylelint.config.mjs`/`analysis_options.yaml`과 `.kelo/plugins/**`를 에이전트가 수정하지 못하게 차단. `kelo.lint.json`은 대상이 아니며(ignores·boundary*·프레임워크별 추가 금지 목록은 프로젝트 소유 — `index.mjs`의 `*_LINT_CONFIG_KEYS`), 너무 넓은 제외 패턴은 `lib/factory-helpers.mjs`가 로드 단계에서 거부 (이 저장소 내부 경로와 `KELO_ALLOW_LINT_CONFIG_EDIT=1`은 예외).
 
 - `scripts/gen-agents.mjs` — 입력: `rules/<framework>/base/agents.template.md` → 출력: `AGENTS.md`, `CLAUDE.md→AGENTS.md`. 템플릿을 렌더링해 프로젝트 루트의 에이전트 문서 생성.
@@ -159,7 +158,7 @@ node scripts/typescript/gen-eslint-reference.mjs <path-to-eslint.rules.mjs>
 node scripts/typescript/gen-stylelint-reference.mjs <path-to-stylelint.rules.mjs>
 ```
 
-스택을 추가/변경했다면 `rules/<framework>/index.mjs` 스택 등록표도 함께 수정하고, `cd rules/<framework> && npm pack --dry-run`으로 새 파일이 패키지에 포함되는지 확인한다. 배포는 `./deploy.mjs`(버전 범프 + 태그 + `npm pack` tarball을 GitHub Release에 첨부 — npm 레지스트리 미사용).
+스택을 추가/변경했다면 `rules/<framework>/index.mjs` 스택 등록표도 함께 수정하고, `cd rules/<framework> && npm pack --dry-run`으로 새 파일이 패키지에 포함되는지 확인한다. 배포는 `./deploy.mjs`(버전 범프 + 태그 + `npm publish`로 npm 레지스트리에 배포 + GitHub Release). npm 로그인(`npm whoami`)이 필요하다.
 
 ### Flutter
 

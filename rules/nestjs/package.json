@@ -26,8 +26,8 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "kelo-lint-nestjs": "./bin/kelo-lint.mjs",
-    "kelo-check-i18n": "./bin/check-i18n.mjs"
+    "kelo-lint-nestjs": "bin/kelo-lint.mjs",
+    "kelo-check-i18n": "bin/check-i18n.mjs"
   },
   "files": [
     "index.mjs",

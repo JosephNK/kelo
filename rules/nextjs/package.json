@@ -27,7 +27,7 @@
     "./package.json": "./package.json"
   },
   "bin": {
-    "kelo-lint-nextjs": "./bin/kelo-lint.mjs"
+    "kelo-lint-nextjs": "bin/kelo-lint.mjs"
   },
   "files": [
     "index.mjs",

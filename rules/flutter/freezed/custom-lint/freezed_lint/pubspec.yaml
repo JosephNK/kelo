@@ -1,5 +1,5 @@
 name: freezed_lint
-version: 1.0.0
+version: 1.0.1
 description: Flutter freezed convention linter (analysis_server_plugin).
 
 publish_to: "none"

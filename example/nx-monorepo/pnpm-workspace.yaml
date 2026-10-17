@@ -12,3 +12,7 @@ onlyBuiltDependencies:
 overrides:
   "eslint-config-kelo-nestjs": "file:.local-packages/eslint-config-kelo-nestjs-0.4.1.tgz"
   "eslint-config-kelo-nextjs": "file:.local-packages/eslint-config-kelo-nextjs-0.4.1.tgz"
+  # 보안 패치 — 상위 패키지가 취약 버전을 고정 (@boundaries/elements → handlebars 4.7.9, eslint-plugin-sonarjs 3 → minimatch 10.1, nx 23.3 → undici 7.29.0)
+  "handlebars": "^4.7.10"
+  "eslint-plugin-sonarjs>minimatch": "^10.2.6"
+  "nx>undici": "^7.29.1"

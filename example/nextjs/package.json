@@ -35,5 +35,14 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs}": "kelo-lint-nextjs --fix",
     "*.{css,scss}": "stylelint --fix"
+  },
+  "overrides": {
+    "handlebars": "^4.7.10",
+    "eslint-plugin-sonarjs": {
+      "minimatch": "^10.2.6"
+    },
+    "next": {
+      "postcss": "^8.5.30"
+    }
   }
 }

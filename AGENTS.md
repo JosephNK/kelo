@@ -13,7 +13,7 @@
     - `settings/` : resolver/restricted-patterns/restricted-syntax/domain-banned-packages 등 raw 데이터
     - `boundaries/` : eslint-plugin-boundaries 데이터 (elements/rules/ignores)
     - `quality/` : base-config/server-component/custom-rules/ignores
-    - `builders/` : build-restricted-imports/build-domain-purity/build-architecture-boundaries, to-boundaries-policies(boundary 데이터 v6 형태 → eslint-plugin-boundaries v7 설정 변환: `mode: "full"` element → 파일 카테고리, `rules` → `policies`, 내부 의존 처리. nestjs와 동일 내용 유지)
+    - `builders/` : build-restricted-imports/build-domain-purity/build-architecture-boundaries, to-boundaries-policies(boundary 데이터 v6 형태 → eslint-plugin-boundaries v7 설정 변환: `mode: "full"` element → 파일 카테고리, `rules` → `policies`, 내부 의존 처리. nestjs와 동일 내용 유지), order-boundary-elements(`fallback: true` catch-all element를 스택·`kelo.lint.json` element 뒤로 정렬 — first-match라 앞에 두면 가려진다)
     - `docs/` : ESLint 미참조 — generator 전용 메타 (structure-annotations, layer-semantics)
   - `rules/nextjs/base/eslint.rules.mjs`는 re-export 전용 barrel이라 직접 편집 X.
   - 스택: `rules/nextjs/<stack>/eslint.rules.mjs`

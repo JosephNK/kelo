@@ -26,6 +26,7 @@ import {
   buildArchitectureBoundaries,
   buildDomainPurity,
   buildRestrictedImports,
+  orderBoundaryElements,
 } from "./base/eslint.rules.mjs";
 import {
   antdDomainBannedPackages,
@@ -171,12 +172,13 @@ function buildKeloBlocks(root, lintConfig) {
     ...baseServerComponentRules,
 
     // [7] 아키텍처 경계 — base + 스택 + kelo.lint.json 확장
+    // catch-all(`fallback: true`)은 스택·프로젝트 element 뒤로 — first-match라 앞에 두면 가려진다
     ...buildArchitectureBoundaries(
-      [
+      orderBoundaryElements([
         ...baseBoundaryElements,
         ...pick("boundaryElements"),
         ...(lintConfig.boundaryElements ?? []),
-      ],
+      ]),
       patchBoundaryRules(
         [
           ...baseBoundaryRules,

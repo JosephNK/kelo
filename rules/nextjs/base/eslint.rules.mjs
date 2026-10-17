@@ -40,6 +40,7 @@ export { baseIgnores } from "./eslint-rules/quality/ignores.mjs";
 export { buildRestrictedImports } from "./eslint-rules/builders/build-restricted-imports.mjs";
 export { buildDomainPurity } from "./eslint-rules/builders/build-domain-purity.mjs";
 export { buildArchitectureBoundaries } from "./eslint-rules/builders/build-architecture-boundaries.mjs";
+export { orderBoundaryElements } from "./eslint-rules/builders/order-boundary-elements.mjs";
 
 // ─── Docs (ESLint 미참조, generator 전용) ─────────────────────────────────────
 export { baseStructureAnnotations } from "./eslint-rules/docs/structure-annotations.mjs";

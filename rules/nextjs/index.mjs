@@ -192,6 +192,7 @@ function buildKeloBlocks(root, lintConfig) {
         ...pick("boundaryIgnores"),
         ...(lintConfig.boundaryIgnores ?? []),
       ],
+      root,
     ),
 
     // [8] 프로젝트 공용 custom 룰 (conventions.md 강제)

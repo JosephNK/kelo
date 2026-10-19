@@ -127,6 +127,7 @@ function buildKeloBlocks(root, lintConfig) {
         ...pick("boundaryIgnores"),
         ...(lintConfig.boundaryIgnores ?? []),
       ],
+      root,
     ),
 
     // [6] 파일 크기 제한 (800 라인)

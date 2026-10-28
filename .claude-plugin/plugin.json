@@ -1,6 +1,6 @@
 {
   "name": "kelo",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Personal development toolkit for Claude Code — scaffolding, conventions, and config generation",
   "author": {
     "name": "josephnk"

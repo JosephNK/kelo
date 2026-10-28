@@ -1,6 +1,6 @@
 {
   "name": "eslint-config-kelo-nestjs",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Kelo NestJS ESLint shareable config — hexagonal architecture boundaries, layer import restrictions, and quality rules",
   "type": "module",
   "license": "MIT",

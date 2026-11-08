@@ -11,3 +11,6 @@ fi
 if git diff --cached --name-only | grep -q '^apps/app/.*\.dart$'; then
   (cd apps/app/app && dart run kelo_analysis:verify -p ..)
 fi
+
+# kelo: apps/app Flutter 검사 (gen-husky가 추가 — 해당 경로에 staged 파일이 없으면 바로 끝남)
+bash apps/app/scripts/kelo-pre-commit.sh

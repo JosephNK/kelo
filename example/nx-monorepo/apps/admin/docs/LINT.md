@@ -400,7 +400,7 @@ import '@/styles/globals.css';
 
 ### `theme`
 
-**Role** — 디자인 시스템 테마 설정 파일 (`src/theme.ts` + generator 산출물 `src/theme.generated.ts`). Mantine `createTheme()`, Ant Design `ConfigProvider.theme` 객체, shadcn 토큰 등 디자인 시스템 라이브러리에 주입할 테마 객체를 export. layout/Provider 레이어가 import해 ThemeProvider에 전달.
+**Role** — 디자인 시스템 테마 설정 파일 (`src/theme.ts` + generator 산출물 `src/theme.generated.ts`). UI 라이브러리·ThemeProvider에 주입할 테마 객체를 export. layout/Provider 레이어가 import해 ThemeProvider에 전달.
 
 **Contains**
 
@@ -416,16 +416,15 @@ import '@/styles/globals.css';
 - 복수 파일로 분리 (`src/theme/` 디렉토리 X — 위 두 파일만 유지)
 
 ```ts
-// src/theme.ts (Mantine 예시)
-import { createTheme } from '@mantine/core';
-export const theme = createTheme({
+// src/theme.ts
+export const theme = {
   primaryColor: 'blue',
   fontFamily: 'Inter, sans-serif',
-});
+} as const;
 
 // src/app/[locale]/layout.tsx
 import { theme } from '@/theme';
-// <MantineProvider theme={theme}>...</MantineProvider>
+// <ThemeProvider theme={theme}>...</ThemeProvider>
 ```
 
 ### `shared-ui`
@@ -589,13 +588,13 @@ export async function GET(
 
 AST selector 기반 금지 구문.
 - `React.FC` / `React.FunctionComponent`: children 암묵 포함·generic 불편 — 명시적 props 타입 사용.
-- polymorphic `component="a"` (Mantine·MUI·Chakra 등): Next.js client-side 라우팅 우회로 전체 페이지 reload 유발. 내부 링크는 `next/link`의 `Link`, 외부 링크는 일반 `<a>` 또는 디자인 시스템 전용 anchor(Mantine `Anchor`, antd `Typography.Link` 등) 사용.
+- polymorphic `component="a"` (UI 라이브러리의 polymorphic prop): Next.js client-side 라우팅 우회로 전체 페이지 reload 유발. 내부 링크는 `next/link`의 `Link`, 외부 링크는 일반 `<a>` 또는 UI 라이브러리 전용 anchor 컴포넌트 사용.
 
 | Selector | 메시지 |
 | --- | --- |
 | `TSTypeReference[typeName.object.name='React'][typeName.property.name='FC']` | Use explicit props typing instead of React.FC. |
 | `TSTypeReference[typeName.object.name='React'][typeName.property.name='FunctionComponent']` | Use explicit props typing instead of React.FunctionComponent. |
-| `JSXAttribute[name.name='component'][value.value='a']` | Do not use component="a" — bypasses Next.js client-side routing and causes a full page reload. Internal links: component={Link} from next/link. External links: a plain <a target="_blank" rel="noopener noreferrer"> element or the design system's dedicated anchor component (Mantine Anchor, antd Typography.Link, etc.). |
+| `JSXAttribute[name.name='component'][value.value='a']` | Do not use component="a" — bypasses Next.js client-side routing and causes a full page reload. Internal links: component={Link} from next/link. External links: a plain <a target="_blank" rel="noopener noreferrer"> element or the UI library's dedicated anchor component. |
 
 ## Domain Purity (도메인 순수성)
 
@@ -784,13 +783,13 @@ Theme provider 하이드레이션 이전 경로(SSR 초기 페인트, error.tsx,
 **Bad**
 
 ```css
-outline: 2px solid var(--mantine-primary-color-filled);
+outline: 2px solid var(--color-primary);
 ```
 
 **Good**
 
 ```css
-outline: 2px solid var(--mantine-primary-color-filled, #005da7);
+outline: 2px solid var(--color-primary, #005da7);
 ```
 
 ## Rule 2: `scale-unlimited/declaration-strict-value`
@@ -826,6 +825,6 @@ border-radius: 12px;
 **Good**
 
 ```css
-color: var(--mantine-color-text, #1a1a1a);
-border-radius: var(--mantine-radius-md, 8px);
+color: var(--color-text, #1a1a1a);
+border-radius: var(--radius-md, 8px);
 ```

@@ -1,5 +1,5 @@
 // GENERATED FILE - DO NOT MODIFY BY HAND
-// Managed by kelo (overwritten by /kelo:nextjs-init and -sync).
+// Managed by kelo (overwritten by /kelo:setup).
 // Rules: eslint-config-kelo-nextjs | Project extensions: kelo.lint.json | Project rules: eslint.project.config.mjs
 
 import { nextjs } from "eslint-config-kelo-nextjs";

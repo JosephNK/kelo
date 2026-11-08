@@ -3,7 +3,7 @@ set -e
 
 # 모노레포에서는 gen-husky가 git 루트 기준 프로젝트 경로(예: apps/app/)를 넣는다. 단독 프로젝트는 빈 값.
 ROOT="$(git rev-parse --show-toplevel)"
-PROJECT_PREFIX="example/nx-monorepo/apps/app/"
+PROJECT_PREFIX="apps/app/"
 ENTRY="app"
 if [ "$ENTRY" = "." ]; then ENTRY_PREFIX="$PROJECT_PREFIX"; else ENTRY_PREFIX="${PROJECT_PREFIX}${ENTRY}/"; fi
 cd "$ROOT"

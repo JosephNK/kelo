@@ -1,5 +1,5 @@
 {
-  "$comment": "Vendored by kelo — do not edit. Regenerate with /kelo:flutter-sync.",
+  "$comment": "Vendored by kelo — do not edit. Regenerate with /kelo:setup.",
   "package": "architecture_lint",
   "source": "kelo@1.1.0/rules/flutter/base/custom-lint/architecture_lint",
   "files": {

@@ -57,8 +57,8 @@ fi
 {
   "framework": "nextjs",
   "projectName": "web",
-  "conventionStacks": ["design-system/mantine"],
-  "eslintStacks": ["design-system/mantine", "tanstack-query"],
+  "conventionStacks": ["tanstack-query"],
+  "eslintStacks": ["tanstack-query"],
   "tsconfigStacks": [],
   "generateAgents": true
 }
@@ -109,29 +109,18 @@ fi
 ### 2. 컨벤션 스택 선택
 
 아래 **컨벤션** 스택을 보여주고 사용자에게 선택을 받습니다 (쉼표 구분, 전부 선택은 `all`, 비우면 base만 적용).
-**중요: 이전 대화·세션 컨텍스트와 무관하게, 매 실행마다 아래 5개 항목을 모두 그대로 노출해야 합니다. 항목을 임의로 생략하거나 이전 응답에서 사용한 축약 목록을 재사용하지 마세요.**
+**중요: 이전 대화·세션 컨텍스트와 무관하게, 매 실행마다 아래 2개 항목을 모두 그대로 노출해야 합니다. 항목을 임의로 생략하거나 이전 응답에서 사용한 축약 목록을 재사용하지 마세요.**
 
-1. `design-system/mantine`
-2. `design-system/antd`
-3. `design-system/shadcn`
-4. `tanstack-query`
-5. `next-proxy`
-
-> 참고: `design-system/*` 스택(`mantine`, `antd`, `shadcn`)은 실무상 상호 배타적입니다 — 프로젝트가 실제로 쓰는 UI 라이브러리 스택 하나만 활성화하세요.
+1. `tanstack-query`
+2. `next-proxy`
 
 ### 3. ESLint 스택 선택
 
 아래 **ESLint** 스택을 보여주고 사용자에게 선택을 받습니다 (쉼표 구분, 전부 선택은 `all`, 비우면 base만 적용).
-**중요: ESLint 스택은 컨벤션 스택과 동일하지 않습니다. 이전 대화·세션 컨텍스트와 무관하게, 매 실행마다 아래 6개 항목을 모두 그대로 노출해야 합니다 — 항목을 임의로 생략하거나 이전 응답에서 사용한 축약 목록을 재사용하지 마세요.**
+**중요: ESLint 스택은 컨벤션 스택과 동일하지 않습니다. 이전 대화·세션 컨텍스트와 무관하게, 매 실행마다 아래 2개 항목을 모두 그대로 노출해야 합니다 — 항목을 임의로 생략하거나 이전 응답에서 사용한 축약 목록을 재사용하지 마세요.**
 
-1. `design-system/mantine`
-2. `design-system/antd`
-3. `design-system/shadcn`
-4. `nextauth`
-5. `tanstack-query`
-6. `next-proxy`
-
-> 참고: `design-system/*` 스택(`mantine`, `antd`, `shadcn`)은 실무상 상호 배타적입니다 — 프로젝트가 실제로 쓰는 UI 라이브러리 스택 하나만 선택하세요.
+1. `tanstack-query`
+2. `next-proxy`
 
 ### 4. tsconfig 스택 선택
 

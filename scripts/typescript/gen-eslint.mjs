@@ -44,11 +44,11 @@ Arguments:
 
 Options:
   -p <dir>       Output directory (required)
-  --with <list>  Comma-separated stacks (e.g. design-system/mantine,nextauth,tanstack-query)
+  --with <list>  Comma-separated stacks (e.g. tanstack-query,next-proxy)
   -h, --help     Show this help
 
 Examples:
-  ./scripts/typescript/gen-eslint.mjs nextjs -p ./my-project --with design-system/mantine,nextauth,tanstack-query
+  ./scripts/typescript/gen-eslint.mjs nextjs -p ./my-project --with tanstack-query,next-proxy
   ./scripts/typescript/gen-eslint.mjs nestjs -p ./my-project --with typeorm
 `;
 

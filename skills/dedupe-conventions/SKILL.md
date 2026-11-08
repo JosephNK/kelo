@@ -71,7 +71,7 @@ find rules/<framework> -maxdepth 3 -name conventions.md \
 
 ### 약한 중복 (사용자 판단)
 
-- 같은 framework의 **다른 scope**에 있는 룰을 base/conventions.md가 prose로 재진술 (예: `nextjs/base/conventions.md`의 `component="a"` 차단은 `nextjs/design-system/mantine/lint-rules-reference.md`에만 lint으로 enforce됨).
+- 같은 framework의 **다른 scope**에 있는 룰을 base/conventions.md가 prose로 재진술 (예: base/conventions.md가 `tanstack-query` 스택의 `@tanstack/**` 도메인 import 금지를 재진술 — 실제 lint은 `nextjs/tanstack-query/lint-rules-reference.md`에서만 enforce).
 - 사용자가 그 stack을 안 쓰면 lint이 미적용이라 conventions가 유일한 가이드 역할 → 보존 가치.
 - 보고 시 "약한 중복: <stack>에 의존" 라벨로 분리 표시.
 
@@ -82,7 +82,7 @@ find rules/<framework> -maxdepth 3 -name conventions.md \
 - **운영 절차**: i18n 등록, codegen 명령, jscpd 임계치
 - **도구 사용 가이드**: optimizePackageImports, ConfigProvider 위치, theme.ts 구조
 - **테스트 전략**: mock 대상·tearDown 패턴
-- **외부 라이브러리 사용법**: leaf_kit API 호출, Mantine `createTheme` 등
+- **외부 라이브러리 사용법**: leaf_kit API 호출, TanStack Query `queryOptions` 등
 
 ## Workflow
 
@@ -184,7 +184,7 @@ git diff 요약(파일별 +/- 라인)을 출력. 커밋은 사용자가 명시�
 
 ## Edge Cases
 
-- **conventions.md가 헤더만 있는 경우** (예: `nestjs/gcp`, `nextjs/nextauth`): skip하고 보고서에 "내용 없음" 마킹.
+- **conventions.md가 헤더만 있는 경우**: skip하고 보고서에 "내용 없음" 마킹.
 - **lint-rules-reference.md가 빈 섹션만 있는 경우**: 비교 의미 없음. skip.
 - **stack에 lint-rules-reference.md가 없는 경우** (예: `flutter/easy-localization`): skip.
 - **base의 룰을 stack/conventions가 자기 참조하는 경우** (예: `flutter/leaf-kit/conventions.md`가 `AL_E7`을 인용): base lint-ref와 비교해 같은 휴리스틱 적용.

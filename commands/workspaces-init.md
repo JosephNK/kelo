@@ -27,8 +27,8 @@ argument-hint: '[manifest-path]'
       "path": "apps/web",
       "framework": "nextjs",
       "projectName": "web",
-      "conventionStacks": ["design-system/mantine"],
-      "eslintStacks": ["design-system/mantine"],
+      "conventionStacks": ["tanstack-query"],
+      "eslintStacks": ["tanstack-query"],
       "tsconfigStacks": [],
       "generateAgents": true
     }
@@ -147,11 +147,11 @@ detect_framework() {
 
 1. **프로젝트 이름** (기본값: 디렉터리 이름)
 2. **컨벤션 스택** — framework에 따라 다른 선택지:
-   - nextjs: `design-system/mantine`, `design-system/antd`, `design-system/shadcn`, `tanstack-query`, `next-proxy`
+   - nextjs: `tanstack-query`, `next-proxy`
    - nestjs: `typeorm`
 3. **ESLint 스택** — framework에 따라:
-   - nextjs: `design-system/mantine`, `design-system/antd`, `design-system/shadcn`, `nextauth`, `tanstack-query`, `next-proxy`
-   - nestjs: `typeorm`, `gcp`, `anthropic-ai`
+   - nextjs: `tanstack-query`, `next-proxy`
+   - nestjs: `typeorm`
 4. **tsconfig 스택** — framework에 따라:
    - nextjs: (없음 — skip)
    - nestjs: `typeorm`

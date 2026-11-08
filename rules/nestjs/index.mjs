@@ -13,10 +13,6 @@
 // =============================================================================
 
 import {
-  anthropicFrameworkBannedPackages,
-  anthropicInfraBannedPackages,
-} from "./anthropic-ai/eslint.rules.mjs";
-import {
   baseBoundaryElements,
   baseBoundaryIgnores,
   baseBoundaryRules,
@@ -31,10 +27,6 @@ import {
   buildLayerRestrictions,
   resolvePathAliasPattern,
 } from "./base/eslint.rules.mjs";
-import {
-  gcpFrameworkBannedPackages,
-  gcpInfraBannedPackages,
-} from "./gcp/eslint.rules.mjs";
 import {
   assertProjectConfig,
   loadLintConfig,
@@ -51,14 +43,6 @@ import { typeormFrameworkBannedPackages } from "./typeorm/eslint.rules.mjs";
  *     boundaryRules, boundaryIgnores, customConfig
  */
 export const nestjsStacks = {
-  "anthropic-ai": {
-    frameworkBannedPackages: anthropicFrameworkBannedPackages,
-    infraBannedPackages: anthropicInfraBannedPackages,
-  },
-  gcp: {
-    frameworkBannedPackages: gcpFrameworkBannedPackages,
-    infraBannedPackages: gcpInfraBannedPackages,
-  },
   typeorm: {
     frameworkBannedPackages: typeormFrameworkBannedPackages,
   },

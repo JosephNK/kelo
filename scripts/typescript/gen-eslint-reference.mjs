@@ -1311,7 +1311,7 @@ function tryValue(declarator, localConsts) {
 /**
  * suffix(PascalCase)로 끝나는 top-level export를 찾는다.
  * - `base<Suffix>` 를 우선 (base 파일 legacy 호환), 없으면 `<prefix><Suffix>` 중 첫 매치.
- * - 매칭 대상 export 이름 규칙: 첫 글자 소문자 + 이후 PascalCase (e.g. `gcpFrameworkBannedPackages`).
+ * - 매칭 대상 export 이름 규칙: 첫 글자 소문자 + 이후 PascalCase (e.g. `typeormFrameworkBannedPackages`).
  */
 function findExportBySuffix(exportsMap, suffix) {
   const baseKey = `base${suffix}`;
@@ -1326,7 +1326,7 @@ function findExportBySuffix(exportsMap, suffix) {
 
 /**
  * export 이름에서 suffix를 제외한 prefix를 추출 후, suffix 기준 key로 JSDoc 재매핑.
- * 예: { baseBoundaryRules: '...' } / { gcpFrameworkBannedPackages: '...' }
+ * 예: { baseBoundaryRules: '...' } / { typeormFrameworkBannedPackages: '...' }
  *  → { boundaryRules: '...', frameworkBannedPackages: '...' }
  */
 function normalizeJsdocBySuffix(rawJsdocMap, resolved) {

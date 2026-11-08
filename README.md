@@ -63,9 +63,9 @@ Add to your project's `.claude/settings.json` so teammates get the plugin automa
 
 | Framework | Init Command | Convention Stacks |
 |-----------|-------------|-------------------|
-| **Flutter** | `/kelo:flutter-init` | bloc, freezed, go-router, leaf-kit, easy-localization |
-| **Next.js** | `/kelo:nextjs-init` | design-system/mantine, design-system/antd, design-system/shadcn, tanstack-query, next-proxy |
-| **NestJS** | `/kelo:nestjs-init` | typeorm, gcp, anthropic-ai |
+| **Flutter** | `/kelo:flutter-init` | freezed, go-router, leaf-kit, easy-localization |
+| **Next.js** | `/kelo:nextjs-init` | tanstack-query, next-proxy |
+| **NestJS** | `/kelo:nestjs-init` | typeorm |
 
 Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등 프로젝트 설정 파일을 자동 생성합니다.
 
@@ -143,8 +143,8 @@ Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등
 {
   "framework": "nextjs",
   "projectName": "web",
-  "conventionStacks": ["design-system/mantine"],
-  "eslintStacks": ["design-system/mantine", "tanstack-query"],
+  "conventionStacks": ["tanstack-query"],
+  "eslintStacks": ["tanstack-query"],
   "tsconfigStacks": [],
   "generateAgents": true
 }

@@ -24,8 +24,8 @@ argument-hint: '[manifest-path]'
       "path": "apps/web",
       "framework": "nextjs",
       "projectName": "web",
-      "conventionStacks": ["design-system/mantine", "tanstack-query"],
-      "eslintStacks": ["design-system/mantine", "tanstack-query"],
+      "conventionStacks": ["tanstack-query"],
+      "eslintStacks": ["tanstack-query"],
       "tsconfigStacks": [],
       "generateAgents": true
     },

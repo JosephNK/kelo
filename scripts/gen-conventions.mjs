@@ -25,14 +25,14 @@ Arguments:
 
 Options:
   -p <dir>           Output directory (required)
-  --with <list>      Comma-separated stacks (e.g. design-system/mantine,tanstack-query)
+  --with <list>      Comma-separated stacks (e.g. tanstack-query,next-proxy)
   --no-project-init  Do not create CONVENTIONS.PROJECT.md when missing (sync mode)
   -h, --help         Show this help
 
 Examples:
-  ./scripts/gen-conventions.mjs nextjs -p ./my-project --with design-system/mantine,tanstack-query,next-proxy
+  ./scripts/gen-conventions.mjs nextjs -p ./my-project --with tanstack-query,next-proxy
   ./scripts/gen-conventions.mjs nestjs -p ./my-project --with typeorm
-  ./scripts/gen-conventions.mjs nextjs -p ./my-project --with design-system/mantine --no-project-init
+  ./scripts/gen-conventions.mjs nextjs -p ./my-project --with tanstack-query --no-project-init
 `;
 
 function usage(code = 1) {

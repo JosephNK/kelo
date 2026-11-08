@@ -29,21 +29,6 @@ import {
   orderBoundaryElements,
 } from "./base/eslint.rules.mjs";
 import {
-  antdDomainBannedPackages,
-  antdRestrictedPatterns,
-} from "./design-system/antd/eslint.rules.mjs";
-import {
-  mantineDomainBannedPackages,
-  mantineRestrictedPatterns,
-} from "./design-system/mantine/eslint.rules.mjs";
-import {
-  shadcnAllowSetStateInEffect,
-  shadcnBoundaryAllowPatches,
-  shadcnDisableSonarjsForUi,
-  shadcnDomainBannedPackages,
-  shadcnRestrictedPatterns,
-} from "./design-system/shadcn/eslint.rules.mjs";
-import {
   assertProjectConfig,
   loadLintConfig,
   lockInlineConfigBlock,
@@ -52,12 +37,6 @@ import {
   resolveStacks,
 } from "./lib/factory-helpers.mjs";
 import { nextProxyBoundaryIgnores } from "./next-proxy/eslint.rules.mjs";
-import {
-  nextauthBoundaryAllowPatches,
-  nextauthBoundaryElements,
-  nextauthBoundaryRules,
-  nextauthDomainBannedPackages,
-} from "./nextauth/eslint.rules.mjs";
 import { tanstackQueryDomainBannedPackages } from "./tanstack-query/eslint.rules.mjs";
 
 /**
@@ -66,31 +45,8 @@ import { tanstackQueryDomainBannedPackages } from "./tanstack-query/eslint.rules
  *     boundaryElements, boundaryRules, boundaryPatches, boundaryIgnores, customConfig
  */
 export const nextjsStacks = {
-  "design-system/antd": {
-    restrictedPatterns: antdRestrictedPatterns,
-    domainBannedPackages: antdDomainBannedPackages,
-  },
-  "design-system/mantine": {
-    restrictedPatterns: mantineRestrictedPatterns,
-    domainBannedPackages: mantineDomainBannedPackages,
-  },
-  "design-system/shadcn": {
-    restrictedPatterns: shadcnRestrictedPatterns,
-    domainBannedPackages: shadcnDomainBannedPackages,
-    boundaryPatches: shadcnBoundaryAllowPatches,
-    customConfig: [
-      ...shadcnDisableSonarjsForUi,
-      ...shadcnAllowSetStateInEffect,
-    ],
-  },
   "next-proxy": {
     boundaryIgnores: nextProxyBoundaryIgnores,
-  },
-  nextauth: {
-    domainBannedPackages: nextauthDomainBannedPackages,
-    boundaryElements: nextauthBoundaryElements,
-    boundaryRules: nextauthBoundaryRules,
-    boundaryPatches: nextauthBoundaryAllowPatches,
   },
   "tanstack-query": {
     domainBannedPackages: tanstackQueryDomainBannedPackages,

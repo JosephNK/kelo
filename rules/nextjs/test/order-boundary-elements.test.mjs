@@ -7,7 +7,11 @@ import { test } from "node:test";
 import { baseBoundaryElements } from "../base/eslint-rules/boundaries/boundary-elements.mjs";
 import { orderBoundaryElements } from "../base/eslint-rules/builders/order-boundary-elements.mjs";
 import { splitBoundaryElements } from "../base/eslint-rules/builders/to-boundaries-policies.mjs";
-import { nextauthBoundaryElements } from "../nextauth/eslint.rules.mjs";
+
+// 스택이 기여하는 element (mode: "full" 단일 파일)
+const stackElements = [
+  { type: "auth", mode: "full", pattern: ["src/auth.ts"] },
+];
 
 // tanuki apps/web/kelo.lint.json 사례
 const projectElements = [
@@ -27,7 +31,7 @@ function classify(folderElements, file) {
 const ordered = () =>
   orderBoundaryElements([
     ...baseBoundaryElements,
-    ...nextauthBoundaryElements,
+    ...stackElements,
     ...projectElements,
   ]);
 
@@ -36,7 +40,7 @@ test("fallback element는 맨 뒤, 나머지는 입력 순서 유지", () => {
   assert.equal(out.at(-1).type, "page");
   const nonFallback = [
     ...baseBoundaryElements.filter((e) => !e.fallback),
-    ...nextauthBoundaryElements,
+    ...stackElements,
     ...projectElements,
   ].map((e) => e.type);
   assert.deepEqual(

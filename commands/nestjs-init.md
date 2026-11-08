@@ -58,7 +58,7 @@ fi
   "framework": "nestjs",
   "projectName": "api",
   "conventionStacks": ["typeorm"],
-  "eslintStacks": ["typeorm", "gcp"],
+  "eslintStacks": ["typeorm"],
   "tsconfigStacks": ["typeorm"],
   "generateAgents": true
 }
@@ -116,11 +116,9 @@ fi
 ### 3. ESLint 스택 선택
 
 아래 **ESLint** 스택을 보여주고 사용자에게 선택을 받습니다 (쉼표 구분, 전부 선택은 `all`, 비우면 base만 적용).
-**중요: ESLint 스택은 컨벤션 스택과 동일하지 않습니다. 이전 대화·세션 컨텍스트와 무관하게, 매 실행마다 아래 3개 항목을 모두 그대로 노출해야 합니다 — 항목을 임의로 생략하거나 이전 응답에서 사용한 축약 목록을 재사용하지 마세요.**
+**중요: ESLint 스택은 컨벤션 스택과 동일하지 않습니다. 이전 대화·세션 컨텍스트와 무관하게, 매 실행마다 아래 1개 항목을 모두 그대로 노출해야 합니다 — 항목을 임의로 생략하거나 이전 응답에서 사용한 축약 목록을 재사용하지 마세요.**
 
 1. `typeorm`
-2. `gcp`
-3. `anthropic-ai`
 
 ### 4. tsconfig 스택 선택
 

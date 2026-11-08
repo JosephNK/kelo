@@ -172,6 +172,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 **Forbids**
 
 - ORM 엔티티를 도메인 Entity로 재사용 (model과 분리, 매퍼로 변환)
+- 다른 모듈의 provider(ORM 엔티티) import — 모듈 간 관계는 ID 컬럼으로 참조하고 조인은 쿼리로
 
 **Scope** — `*.orm-entity.ts`의 Date 컬럼은 `timestamptz` 강제 (local/require-timestamptz). ORM/SDK 자유 사용.
 
@@ -239,6 +240,19 @@ export class CreateOrderRequestDto {
 }
 ```
 
+### `module-common`
+
+**Role** — 모듈 내부 공용 — 한 모듈의 여러 레이어가 함께 쓰는 헬퍼. 같은 모듈에서만 import 가능.
+
+**Contains**
+
+- 모듈 전용 유틸·상수·타입 — `common/*.ts` (suffix 강제 없음)
+
+**Forbids**
+
+- 같은 모듈의 service/controller/provider/dto/port import (model·전역 common만 허용)
+- 다른 모듈에서 import (필요하면 model로 옮기거나 전역 `src/common`으로 올린다)
+
 ### `common-pure`
 
 **Role** — framework-free 공용 데이터/유틸 — 모든 레이어가 import 가능한 최하위 순수 sink. 자기 자신만 참조.
@@ -299,7 +313,7 @@ export class CreateOrderRequestDto {
 
 ### `libs`
 
-**Role** — 독립 라이브러리성 모듈 — 앱 조립 수준에서 재사용할 수 있는 단위. 모든 레이어 참조 가능 (catch-all).
+**Role** — 독립 라이브러리성 모듈 — 모듈과 무관하게 재사용할 수 있는 단위. libs·common·common-pure·infrastructure만 참조.
 
 **Contains**
 
@@ -307,31 +321,35 @@ export class CreateOrderRequestDto {
 
 **Forbids**
 
+- 모듈 레이어(model/port/service/controller/provider 등) import — 조립은 `*.module.ts`가 담당
 - 모듈 도메인 로직 이관 (원래 속한 `src/modules/<domain>/`로 유지)
 
 ## 의존성 규칙 (Dependency Rules)
 
 레이어 간 import 관계 (allow-list). 기본 disallow 정책 위에 아래 조합만 허용.
-각 레이어의 역할·책임은 "레이어 글로서리" 섹션 참조.
+`scope: "module"`의 모듈 레이어 대상은 같은 모듈만, 다른 모듈로는 `scope: "cross-module"`의 공개 계약(model·port)만 허용한다 — 모듈 간 결합 차단.
 
 시각화된 의존성 그래프는 `lint-rules-diagram.md` 참조.
 
 ### Allow 매트릭스
 
-| From | Allow → To |
-| --- | --- |
-| `model` | `model`, `common-pure` |
-| `exception` | `exception`, `common`, `common-pure` |
-| `port` | `model`, `common`, `common-pure` |
-| `service` | `model`, `port`, `exception`, `common`, `common-pure`, `infrastructure` |
-| `controller` | `port`, `dto`, `model`, `exception`, `common`, `common-pure`, `libs` |
-| `strategy` | `port`, `dto`, `model`, `exception`, `common`, `common-pure`, `libs` |
-| `provider` | `port`, `model`, `common`, `common-pure`, `infrastructure`, `provider`, `libs` |
-| `dto` | `model`, `common`, `common-pure`, `dto` |
-| `common` | `common`, `common-pure` |
-| `common-pure` | `common-pure` |
-| `infrastructure` | `infrastructure`, `common`, `common-pure` |
-| `libs` | `model`, `port`, `service`, `controller`, `strategy`, `provider`, `exception`, `dto`, `common`, `common-pure`, `infrastructure`, `libs` |
+> 모듈 레이어 행(`다른 모듈 Allow`가 `모듈 무관`이 아닌 행)의 `Allow → To`는 모듈 레이어 대상을 **같은 모듈에서만** 허용한다. 다른 모듈로는 `다른 모듈 Allow`만 import할 수 있다.
+
+| From | Allow → To | 다른 모듈 Allow |
+| --- | --- | --- |
+| `model` | `model`, `common-pure` | `model` |
+| `exception` | `exception`, `module-common`, `common`, `common-pure` | 없음 |
+| `port` | `model`, `module-common`, `common`, `common-pure` | `model`, `port` |
+| `service` | `model`, `port`, `exception`, `module-common`, `common`, `common-pure`, `infrastructure` | `model`, `port` |
+| `controller` | `port`, `dto`, `model`, `exception`, `module-common`, `common`, `common-pure`, `libs` | `model`, `port` |
+| `strategy` | `port`, `dto`, `model`, `exception`, `module-common`, `common`, `common-pure`, `libs` | `model`, `port` |
+| `provider` | `port`, `model`, `module-common`, `common`, `common-pure`, `infrastructure`, `provider`, `libs` | `model`, `port` |
+| `dto` | `model`, `module-common`, `common`, `common-pure`, `dto` | `model` |
+| `module-common` | `module-common`, `model`, `common`, `common-pure` | 없음 |
+| `common` | `common`, `common-pure` | _(모듈 무관)_ |
+| `common-pure` | `common-pure` | _(모듈 무관)_ |
+| `infrastructure` | `infrastructure`, `common`, `common-pure` | _(모듈 무관)_ |
+| `libs` | `libs`, `common`, `common-pure`, `infrastructure` | _(모듈 무관)_ |
 
 ## Framework 금지 패키지 (순수 레이어 차단)
 
@@ -359,13 +377,12 @@ ESLint 오버라이드 중 **LLM이 코드 작성 시 명시적으로 따라야 
 ## Ignored Paths (무시 경로)
 
 Boundary 검사 제외 — 테스트, DI 조립(*.module.ts), 부트스트랩(main/app),
-헬스체크, 모듈 내부 common, 빌드/유틸 스크립트(scripts/), 모노레포 sibling
-workspace로 resolve된 import.
+헬스체크, 빌드/유틸 스크립트(scripts/), 모노레포 sibling workspace로 resolve된 import.
 
 ### 무시 패턴 목록
 
 - **테스트/설정 파일**: `**/*.spec.ts`, `**/*.test.ts`, `src/test/**`, `test/**`, `eslint.project.config.mjs`, `prettier.config.mjs`, `commitlint.config.mjs`
 - **NestJS DI 조립**: `**/*.module.ts`
 - **앱 부트스트랩**: `src/main.ts`, `src/app.*.ts`
-- **특수 경로**: `src/modules/health/**`, `src/modules/**/common/**`, `**/packages/**`
+- **특수 경로**: `src/modules/health/**`, `**/packages/**`
 - **빌드/툴 산출물 (코드 작성 무관)**: `scripts/**`, `.kelo/**`, `eslint.config.mjs`, `eslint-rules/**`, `dist/**`, `coverage/**`, `migrations/**`

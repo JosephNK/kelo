@@ -15,6 +15,7 @@ graph LR
   end
   model["model"]
   exception["exception"]
+  module_common["module-common"]
   port["port"]
   service["service"]
   infrastructure["infrastructure"]
@@ -24,14 +25,17 @@ graph LR
   strategy["strategy"]
   provider["provider"]
   model --> common_pure
+  exception --> module_common
   exception --> common
   exception --> common_pure
   port --> model
+  port --> module_common
   port --> common
   port --> common_pure
   service --> model
   service --> port
   service --> exception
+  service --> module_common
   service --> common
   service --> common_pure
   service --> infrastructure
@@ -39,6 +43,7 @@ graph LR
   controller --> dto
   controller --> model
   controller --> exception
+  controller --> module_common
   controller --> common
   controller --> common_pure
   controller --> libs
@@ -46,29 +51,27 @@ graph LR
   strategy --> dto
   strategy --> model
   strategy --> exception
+  strategy --> module_common
   strategy --> common
   strategy --> common_pure
   strategy --> libs
   provider --> port
   provider --> model
+  provider --> module_common
   provider --> common
   provider --> common_pure
   provider --> infrastructure
   provider --> libs
   dto --> model
+  dto --> module_common
   dto --> common
   dto --> common_pure
+  module_common --> model
+  module_common --> common
+  module_common --> common_pure
   common --> common_pure
   infrastructure --> common
   infrastructure --> common_pure
-  libs --> model
-  libs --> port
-  libs --> service
-  libs --> controller
-  libs --> strategy
-  libs --> provider
-  libs --> exception
-  libs --> dto
   libs --> common
   libs --> common_pure
   libs --> infrastructure

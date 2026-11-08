@@ -183,29 +183,41 @@ export const baseLayerSemantics = {
     ].join("\n"),
   },
 
-  "http-hook": {
-    role: "UI에 제공되는 데이터 페칭 훅 (TanStack Query 등). 데이터 호출은 domain-service만 사용 — http-repository는 Service 팩토리에서 Port 구현체 주입 용도로만 import.",
+  "http-factory": {
+    role: "Port 구현체(http-repository)를 끼워 domain-service를 만드는 조립 지점. hook·route-handler·page가 공유하는 유일한 DI 위치.",
     contains: [
-      "한 feature의 React Query 훅 (useQuery/useMutation) — `src/http/<feature>/hook.ts`",
-      "Service 팩토리 훅 (예: `useOrderService`)을 같은 파일에 동거. Port 구현체(`http-repository`)는 여기서만 주입.",
+      "한 feature의 service 팩토리 — `src/http/<feature>/factory.ts` (예: `createOrderService(client?)`)",
     ],
     forbids: [
-      "http-repository를 데이터 호출에 직접 사용 (→ Service 메서드를 거쳐야 함)",
+      "데이터 호출·캐싱 (조립만 — 호출은 hook·route-handler·page에서)",
+      "다른 feature의 repository·service import (다른 feature는 domain-model만)",
+    ],
+    example: [
+      "// src/http/order/factory.ts",
+      "import { OrderService } from '@/domain/order/service';",
+      "import { OrderRepository } from '@/http/order/repository';",
+      "",
+      "export const createOrderService = () => new OrderService(new OrderRepository());",
+    ].join("\n"),
+  },
+
+  "http-hook": {
+    role: "UI에 제공되는 데이터 페칭 훅 (TanStack Query 등). service는 http-factory로 받아 호출 — repository 직접 import 금지.",
+    contains: [
+      "한 feature의 React Query 훅 (useQuery/useMutation) — `src/http/<feature>/hook.ts`",
+    ],
+    forbids: [
+      "http-repository import (→ http-factory가 조립)",
       "UI 컴포넌트 import (훅은 데이터 계약만)",
     ],
     example: [
       "// src/http/order/hook.ts",
       "import { useMemo } from 'react';",
       "import { useQuery } from '@tanstack/react-query';",
-      "import { OrderService } from '@/domain/order/service';",
-      "import { OrderRepository } from '@/http/order/repository';",
-      "",
-      "function useOrderService() {",
-      "  return useMemo(() => new OrderService(new OrderRepository()), []);",
-      "}",
+      "import { createOrderService } from '@/http/order/factory';",
       "",
       "export function useOrder(id: string) {",
-      "  const service = useOrderService();",
+      "  const service = useMemo(() => createOrderService(), []);",
       "  return useQuery({",
       "    queryKey: ['order', id],",
       "    queryFn: () => service.getOrder(id),",
@@ -425,7 +437,7 @@ export const baseLayerSemantics = {
     contains: ["HTTP 핸들러 export — `src/app/**/route.ts`"],
     forbids: [
       "UI 레이어 import (shared-ui/page-component 금지; 서버 경계 위반)",
-      "비즈니스 로직 포함 (→ domain-service 호출에 집중)",
+      "비즈니스 로직 포함 (→ http-factory로 만든 service 호출에 집중)",
     ],
     example: [
       "// src/app/api/orders/[id]/route.ts",
@@ -433,7 +445,7 @@ export const baseLayerSemantics = {
       "  req: Request,",
       "  { params }: { params: { id: string } },",
       ") {",
-      "  const order = await orderService.getOrder(params.id);",
+      "  const order = await createOrderService().getOrder(params.id);",
       "  return Response.json(order);",
       "}",
     ].join("\n"),
@@ -448,7 +460,8 @@ export const baseLayerSemantics = {
     ],
     forbids: [
       "Hook 호출 (Server Component는 `use*` 호출 금지; baseServerComponentRules)",
-      "domain-service/http-hook 직접 호출 (→ page-component를 거쳐야 함)",
+      "domain-service/http-repository 직접 import (→ 서버 데이터는 http-factory로 조립해 로드, props로 전달)",
+      "http-hook 호출 (Client Component 전용 → page-component에서)",
     ],
   },
 };

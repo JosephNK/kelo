@@ -21,7 +21,7 @@ OpenAPI 3.x specification files for code generation.
 
 `client.ts`·`index.ts`도 다른 generated 산출물과 동일하게 **`_generated/` 안에 있고 매 실행 덮어쓴다.** client.ts는 `createApiClient(config)` 팩토리만 담고 인증·hooks·prefix 같은 비즈니스 로직은 갖지 않는다 — 그건 앱이 호출부에서 `createApiClient({ hooks, apiUrl, ... })`로 주입하므로 client.ts는 결정적이고 재생성해도 안전하다. index.ts는 client 헬퍼·endpoints·types·모든 service를 re-export하며, 소비 측은 `@/http/_generated`로 한 번에 import한다.
 
-**Generated files are fully overwritten on every run.** Stale service files for renamed tags are also removed on each run. Feature-first 디렉토리 `src/http/<feature>/{mapper,repository,hook}.ts`만 user-authored — generator는 절대 손대지 않는다 (변환 규칙·Port 설계·캐시 정책 등 spec에서 도출 불가한 비즈니스 결정 영역). 따라서 인증/hooks/prefix는 client.ts가 아니라 이 feature 코드(또는 앱 부트스트랩)에서 `createApiClient`로 주입한다.
+**Generated files are fully overwritten on every run.** Stale service files for renamed tags are also removed on each run. Feature-first 디렉토리 `src/http/<feature>/{mapper,repository,factory,hook}.ts`만 user-authored — generator는 절대 손대지 않는다 (변환 규칙·Port 설계·캐시 정책 등 spec에서 도출 불가한 비즈니스 결정 영역). 따라서 인증/hooks/prefix는 client.ts가 아니라 이 feature 코드(또는 앱 부트스트랩)에서 `createApiClient`로 주입한다.
 
 ## Arguments
 
@@ -96,7 +96,8 @@ src/http/
 ├── <feature>/                     # user-authored — feature-first
 │   ├── mapper.ts                  #   DTO ↔ Domain conversion
 │   ├── repository.ts              #   Port implementation (uses generated service)
-│   └── hook.ts                    #   TanStack Query hooks
+│   ├── factory.ts                 #   service assembly (repository → domain service)
+│   └── hook.ts                    #   TanStack Query hooks (service from factory)
 └── ...
 ```
 

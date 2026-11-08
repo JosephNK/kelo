@@ -57,6 +57,7 @@
     │   │   │   └── *.ts          # http-service — (generated) tag별 API 서비스 클래스
     │   │   └── types.ts          # http-dto — (generated) DTO 타입
     │   ├── <feature>/            # feature module — 실제 이름 가변 (예: `users/`, `products/`, `dashboard/`)
+    │   │   ├── factory.ts        # http-factory — Port 구현체를 끼워 service를 만드는 조립 지점
     │   │   ├── hook.ts           # http-hook — TanStack Query 훅
     │   │   ├── mapper.ts         # http-mapper — DTO ↔ Domain 변환
     │   │   └── repository.ts     # http-repository — Port 구현체
@@ -96,6 +97,7 @@
 | `http-service` | `src/http/_generated/services/*.ts` | `full` | (generated) tag별 API 서비스 클래스 |
 | `http-mapper` | `src/http/*/mapper.ts` | `full` | DTO ↔ Domain 변환 |
 | `http-repository` | `src/http/*/repository.ts` | `full` | Port 구현체 |
+| `http-factory` | `src/http/*/factory.ts` | `full` | Port 구현체를 끼워 service를 만드는 조립 지점 |
 | `http-hook` | `src/http/*/hook.ts` | `full` | TanStack Query 훅 |
 | `lib-shared-barrel` | `src/lib/utils/index.ts` | `full` | 공용 유틸 barrel (re-export 전용) |
 | `lib-shared` | `src/lib/utils/*.ts` | `full` | 공용 유틸 함수 |

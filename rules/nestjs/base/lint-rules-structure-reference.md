@@ -44,7 +44,7 @@
         └── <group>/                    # (선택) Group prefix — 실제 이름 가변 (예: user, admin). 단층 구조면 생략 가능
             └── <domain>/               # Domain module — 실제 이름 가변 (예: profile, order)
                 ├── <domain>.module.ts  # NestJS module (DI assembly) — lint ignored via **/*.module.ts
-                ├── common/             # (선택) 도메인 내부 공용 — boundary 검사 제외 (escape hatch)
+                ├── common/             # (선택) 모듈 내부 공용 — 같은 모듈에서만 import
                 ├── controller/         # Driving Adapter (HTTP)
                 ├── dto/                # Input/output DTOs
                 ├── exception/          # Domain-specific exceptions
@@ -67,6 +67,7 @@
 | `provider` | `src/modules/**/provider/**` | — | Port 구현체 |
 | `exception` | `src/modules/**/exception/**` | — | 도메인 예외 |
 | `dto` | `src/modules/**/dto/**` | — | 요청/응답 DTO |
+| `module-common` | `src/modules/**/common/**` | — | 모듈 내부 공용 (같은 모듈에서만 import) |
 | `common-pure` | `src/common/constants/**` | — | — |
 | `common` | `src/common/authentication/**` / `src/common/guards/**` / `src/common/exceptions/**` / `src/common/interfaces/**` / `src/common/middlewares/**` / `src/common/pipes/**` / `src/common/interceptors/**` / `src/common/decorators/**` / `src/common/events/**` / `src/common/dtos/**` / `src/common/config/**` / `src/common/utils/**` | — | 전역 공용 (허용 하위 폴더만) |
 | `infrastructure` | `src/infrastructure/database/**` / `src/infrastructure/i18n/**` / `src/infrastructure/logger/**` / `src/infrastructure/metrics/**` / `src/infrastructure/cache/**` / `src/infrastructure/email/**` / `src/infrastructure/transaction/**` / `src/infrastructure/external/**` | — | 인프라 수평 관심사 (허용 하위 폴더만) |

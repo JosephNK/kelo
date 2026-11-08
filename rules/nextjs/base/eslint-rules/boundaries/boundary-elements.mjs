@@ -5,13 +5,30 @@
  */
 export const baseBoundaryElements = [
   // Domain layer — 프레임워크 비의존 순수 TS. feature-first (`src/domain/<feature>/...`)
-  { type: "domain-model", mode: "full", pattern: ["src/domain/*/model.ts"] }, // Entity·VO
-  { type: "domain-error", mode: "full", pattern: ["src/domain/*/errors.ts"] }, // 도메인 에러
-  { type: "domain-port", mode: "full", pattern: ["src/domain/*/port.ts"] }, // Repository 인터페이스
+  // `capture: ["module"]` — `<feature>` 이름이 모듈 키. domain과 http의 같은 feature 이름은 같은 모듈이다.
+  {
+    type: "domain-model",
+    mode: "full",
+    pattern: ["src/domain/*/model.ts"],
+    capture: ["module"],
+  }, // Entity·VO
+  {
+    type: "domain-error",
+    mode: "full",
+    pattern: ["src/domain/*/errors.ts"],
+    capture: ["module"],
+  }, // 도메인 에러
+  {
+    type: "domain-port",
+    mode: "full",
+    pattern: ["src/domain/*/port.ts"],
+    capture: ["module"],
+  }, // Repository 인터페이스
   {
     type: "domain-service",
     mode: "full",
     pattern: ["src/domain/*/service.ts"],
+    capture: ["module"],
   }, // UseCase/서비스
   // HTTP adapter layer — feature-first, transport 명시. `src/http/<feature>/...`
   {
@@ -30,13 +47,30 @@ export const baseBoundaryElements = [
     mode: "full",
     pattern: ["src/http/_generated/services/*.ts"],
   }, // (generated) tag별 API 서비스 클래스
-  { type: "http-mapper", mode: "full", pattern: ["src/http/*/mapper.ts"] }, // DTO ↔ Domain 변환
+  {
+    type: "http-mapper",
+    mode: "full",
+    pattern: ["src/http/*/mapper.ts"],
+    capture: ["module"],
+  }, // DTO ↔ Domain 변환
   {
     type: "http-repository",
     mode: "full",
     pattern: ["src/http/*/repository.ts"],
+    capture: ["module"],
   }, // Port 구현체
-  { type: "http-hook", mode: "full", pattern: ["src/http/*/hook.ts"] }, // TanStack Query 훅
+  {
+    type: "http-factory",
+    mode: "full",
+    pattern: ["src/http/*/factory.ts"],
+    capture: ["module"],
+  }, // Port 구현체를 끼워 service를 만드는 조립 지점
+  {
+    type: "http-hook",
+    mode: "full",
+    pattern: ["src/http/*/hook.ts"],
+    capture: ["module"],
+  }, // TanStack Query 훅
   // Shared lib — layered code(domain/http)는 더 이상 lib 아래 두지 않고, lib는 공용 리소스 전담.
   // barrel은 lib-shared보다 먼저 정의 — 더 구체적인 pattern이 우선 매칭되어야 한다.
   {

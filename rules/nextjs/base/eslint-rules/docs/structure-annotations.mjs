@@ -105,6 +105,7 @@ export const baseStructureAnnotations = {
         children: [
           { name: "mapper.ts" },
           { name: "repository.ts" },
+          { name: "factory.ts" },
           { name: "hook.ts" },
         ],
       },

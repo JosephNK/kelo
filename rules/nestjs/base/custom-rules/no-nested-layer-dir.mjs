@@ -3,8 +3,8 @@
 // -----------------------------------------------------------------------------
 // 헥사고날 레이어 폴더 직속 파일만 허용 (flat-only).
 //
-// 각 레이어(MODULE_LAYERS — model/port/service/controller/strategy/provider/
-// exception/dto) 안에 하위 디렉토리를 두면 enforce-file-suffix가 적용되지 않는
+// 각 레이어(MODULE_LAYER_DIRS — model/port/service/controller/strategy/provider/
+// exception/dto/common) 안에 하위 디렉토리를 두면 enforce-file-suffix가 적용되지 않는
 // 사각지대가 생기고(LAYER_PATTERN이 직속 파일만 매치), 잘못된 위치/명명을
 // 감지할 수 없게 된다.
 //
@@ -20,10 +20,10 @@
 //   - *.spec.ts / *.test.ts / *.module.ts (테스트·DI 조립)
 // =============================================================================
 
-import { MODULE_LAYERS } from "../eslint-rules/settings/boundary-module-layers.mjs";
+import { MODULE_LAYER_DIRS } from "../eslint-rules/settings/boundary-module-layers.mjs";
 
 const NESTED_PATTERN = new RegExp(
-  `/src/modules/[^/]+(?:/[^/]+)*/(${MODULE_LAYERS.map((l) => l.type).join("|")})/([^/]+)/[^/]+$`,
+  `/src/modules/[^/]+(?:/[^/]+)*/(${MODULE_LAYER_DIRS.join("|")})/([^/]+)/[^/]+$`,
 );
 
 /** @type {import('eslint').Rule.RuleModule} */
@@ -32,7 +32,7 @@ export default {
     type: "problem",
     docs: {
       description:
-        "Disallow subdirectories inside layer folders (model/port/service/controller/strategy/provider/exception/dto)",
+        "Disallow subdirectories inside layer folders (model/port/service/controller/strategy/provider/exception/dto/common)",
     },
     messages: {
       nestedDir:

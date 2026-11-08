@@ -1,12 +1,24 @@
 /**
  * 레이어 간 import 관계 (allow-list). 기본 disallow 정책 위에 아래 조합만 허용.
- * 각 레이어의 역할·책임은 "레이어 글로서리" 섹션 참조.
+ * `scope: "module"`의 domain·http 대상은 같은 feature만, 다른 feature로는 `scope: "cross-module"`의 공개 계약(domain-model·domain-port)만 허용한다 — feature 간 결합 차단.
  */
 export const baseBoundaryRules = [
   // Domain: 자기 자신 및 하위 순수 레이어만 참조
-  { from: { type: "domain-model" }, allow: [{ to: { type: "domain-model" } }] }, // 모델 간 참조만
-  { from: { type: "domain-error" }, allow: [{ to: { type: "domain-error" } }] }, // 에러 간 참조만
-  { from: { type: "domain-port" }, allow: [{ to: { type: "domain-model" } }] }, // Port 시그니처는 모델을 사용
+  {
+    from: { type: "domain-model" },
+    allow: [{ to: { type: "domain-model" } }],
+    scope: "module",
+  }, // 모델 간 참조만
+  {
+    from: { type: "domain-error" },
+    allow: [{ to: { type: "domain-error" } }],
+    scope: "module",
+  }, // 에러 간 참조만
+  {
+    from: { type: "domain-port" },
+    allow: [{ to: { type: "domain-model" } }],
+    scope: "module",
+  }, // Port 시그니처는 모델을 사용
   {
     from: { type: "domain-service" },
     allow: [
@@ -15,6 +27,7 @@ export const baseBoundaryRules = [
       { to: { type: "domain-error" } },
       { to: { type: "domain-service" } },
     ],
+    scope: "module",
   },
   // HTTP 원시 계층: 외부에서만 주입받아 쓰므로 import 0개 (순수 데이터/통신 경계)
   { from: { type: "http-client" }, allow: [] },
@@ -29,6 +42,7 @@ export const baseBoundaryRules = [
     // Mapper: DTO → Domain 변환 전용. 두 타입 모두 참조 필요
     from: { type: "http-mapper" },
     allow: [{ to: { type: "domain-model" } }, { to: { type: "http-dto" } }],
+    scope: "module",
   },
   {
     // Repository: Port 구현체. 모든 원시 통신 요소 + domain 사용.
@@ -46,15 +60,50 @@ export const baseBoundaryRules = [
       { to: { type: "domain-model" } },
       { to: { type: "db" } },
     ],
+    scope: "module",
   },
-  // Hook: UI에 제공되는 데이터 페칭 훅 + Service 팩토리. 데이터 호출은 domain-service만, http-repository는 Service 팩토리에서 Port 구현체 주입 용도로만, domain-model은 useMutation/useQuery 타입 시그니처용으로 허용.
+  // Factory: Port 구현체(repository)를 끼워 service를 만드는 유일한 조립 지점 — hook·route-handler·page가 공유.
+  {
+    from: { type: "http-factory" },
+    allow: [
+      { to: { type: "domain-service" } },
+      { to: { type: "domain-port" } },
+      { to: { type: "http-repository" } },
+      { to: { type: "http-client" } },
+      { to: { type: "db" } },
+    ],
+    scope: "module",
+  },
+  // Hook: UI에 제공되는 데이터 페칭 훅. service는 factory로 받고, repository 직접 import는 금지 (조립은 factory 담당).
   {
     from: { type: "http-hook" },
     allow: [
-      { to: { type: "domain-service" } },
-      { to: { type: "http-repository" } }, // Service 팩토리에서 Port 구현체 주입용 (데이터 호출 금지)
+      { to: { type: "http-factory" } },
+      { to: { type: "domain-service" } }, // service 타입 참조용
       { to: { type: "domain-model" } }, // useMutation/useQuery 타입 시그니처용
     ],
+    scope: "module",
+  },
+  // 다른 feature로는 공개 계약만 — domain-model은 어디서나, domain-port는 service에서
+  {
+    from: {
+      type: [
+        "domain-model",
+        "domain-port",
+        "domain-service",
+        "http-mapper",
+        "http-repository",
+        "http-factory",
+        "http-hook",
+      ],
+    },
+    allow: [{ to: { type: "domain-model" } }],
+    scope: "cross-module",
+  },
+  {
+    from: { type: "domain-service" },
+    allow: [{ to: { type: "domain-port" } }],
+    scope: "cross-module",
   },
   // lib-shared: src/lib 루트 공용 유틸. 내부 의존 0개 (순수 유틸만)
   { from: { type: "lib-shared" }, allow: [] },
@@ -157,11 +206,12 @@ export const baseBoundaryRules = [
     allow: [{ to: { type: "dictionary" } }, { to: { type: "shared-type" } }],
   },
   {
-    // Route Handler (HTTP 진입점): 얇은 어댑터 — 도메인 서비스 호출에 집중.
+    // Route Handler (HTTP 진입점): 얇은 어댑터 — factory로 service를 조립해 호출.
     // UI 레이어(shared-ui/page-component) import 금지 (서버 코드 경계 위반).
     // 프록시·핸들러에서 로케일 검증/협상을 위해 i18n-config 허용.
     from: { type: "route-handler" },
     allow: [
+      { to: { type: "http-factory" } },
       { to: { type: "domain-model" } },
       { to: { type: "domain-error" } },
       { to: { type: "domain-service" } },
@@ -171,12 +221,15 @@ export const baseBoundaryRules = [
   },
   {
     // Page (최상위 컨슈머): 페이지 조립에 필요한 거의 모든 레이어 사용 가능
-    // (단, domain-service/repository/http-hook 직접 호출 금지 — 컴포넌트를 거쳐야 함)
+    // Server Component 데이터 로드는 http-factory로 (domain-service/repository 직접 import 금지,
+    // http-hook은 Client Component 전용이라 금지)
     // layout/page에서 next-intl routing·navigation 사용을 위해 i18n-config 허용.
     // layout.tsx의 `import '@/styles/globals.css'` 같은 side-effect import 위해 style 허용.
     // layout.tsx에서 디자인 시스템 ThemeProvider에 주입하기 위해 theme 허용.
     from: { type: "page" },
     allow: [
+      { to: { type: "http-factory" } },
+      { to: { type: "domain-model" } },
       { to: { type: "page-component" } },
       { to: { type: "page-provider" } },
       { to: { type: "shared-ui" } },

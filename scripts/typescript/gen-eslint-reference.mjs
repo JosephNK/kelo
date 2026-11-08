@@ -779,15 +779,25 @@ function normalizeAllows(rule) {
 function renderMermaid(rules) {
   const nodes = new Set();
   const edges = [];
+  const seen = new Set();
+  // 같은 모듈/공유 허용은 실선, 다른 모듈 허용(`scope: "cross-module"`)만 있는 엣지는 점선
+  const crossOnly = new Map();
   for (const r of rules) {
-    const from = r.from?.type;
-    if (!from) continue;
-    nodes.add(from);
-    for (const a of normalizeAllows(r)) {
-      const to = a.to?.type;
-      if (!to) continue;
-      nodes.add(to);
-      if (from !== to) edges.push([from, to]);
+    const cross = r.scope === "cross-module";
+    for (const from of fromTypes(r)) {
+      nodes.add(from);
+      for (const a of normalizeAllows(r)) {
+        const to = a.to?.type;
+        if (!to) continue;
+        nodes.add(to);
+        if (from === to) continue;
+        const key = `${from}→${to}`;
+        crossOnly.set(key, (crossOnly.get(key) ?? true) && cross);
+        if (!seen.has(key)) {
+          seen.add(key);
+          edges.push([from, to]);
+        }
+      }
     }
   }
 
@@ -821,21 +831,65 @@ function renderMermaid(rules) {
     lines.push("  end");
   }
   for (const n of ungrouped) lines.push(`  ${sanitize(n)}["${n}"]`);
-  for (const [f, t] of edges) lines.push(`  ${sanitize(f)} --> ${sanitize(t)}`);
+  for (const [f, t] of edges) {
+    const arrow = crossOnly.get(`${f}→${t}`) ? "-.->" : "-->";
+    lines.push(`  ${sanitize(f)} ${arrow} ${sanitize(t)}`);
+  }
   lines.push("```");
   return lines.join("\n");
 }
 
+/** rule.from.type (문자열 또는 배열)을 배열로. */
+function fromTypes(rule) {
+  const t = rule.from?.type;
+  if (!t) return [];
+  return Array.isArray(t) ? t : [t];
+}
+
+/**
+ * Allow 매트릭스. `scope`를 쓰는 규칙이 있으면 from별로 모아
+ * "Allow → To"(같은 모듈 한정 + 공유)와 "다른 모듈 Allow"(`scope: "cross-module"`) 열로 나눈다.
+ */
 function renderMatrix(rules) {
   const lines = [];
-  lines.push("| From | Allow → To |");
-  lines.push("| --- | --- |");
+  const fmt = (types) =>
+    types.length
+      ? types.map((t) => `\`${t}\``).join(", ")
+      : "_(no layer imports)_";
+  if (!rules.some((r) => r.scope)) {
+    lines.push("| From | Allow → To |");
+    lines.push("| --- | --- |");
+    for (const r of rules) {
+      const from = fromTypes(r).join(", ") || "—";
+      lines.push(
+        `| \`${from}\` | ${fmt(normalizeAllows(r).map((a) => a.to.type))} |`,
+      );
+    }
+    return lines.join("\n");
+  }
+  const rows = new Map(); // from → { local: string[], cross: string[], scoped }
   for (const r of rules) {
-    const from = r.from?.type || "—";
-    const allows = normalizeAllows(r).map((a) => `\`${a.to.type}\``);
-    lines.push(
-      `| \`${from}\` | ${allows.length ? allows.join(", ") : "_(no layer imports)_"} |`,
-    );
+    const key = r.scope === "cross-module" ? "cross" : "local";
+    for (const from of fromTypes(r)) {
+      if (!rows.has(from))
+        rows.set(from, { local: [], cross: [], scoped: false });
+      const row = rows.get(from);
+      if (r.scope) row.scoped = true;
+      for (const a of normalizeAllows(r)) {
+        if (!row[key].includes(a.to.type)) row[key].push(a.to.type);
+      }
+    }
+  }
+  lines.push(
+    "> 모듈 레이어 행(`다른 모듈 Allow`가 `모듈 무관`이 아닌 행)의 `Allow → To`는 모듈 레이어 대상을 **같은 모듈에서만** 허용한다. 다른 모듈로는 `다른 모듈 Allow`만 import할 수 있다.",
+  );
+  lines.push("");
+  lines.push("| From | Allow → To | 다른 모듈 Allow |");
+  lines.push("| --- | --- | --- |");
+  for (const [from, row] of rows) {
+    let cross = "_(모듈 무관)_";
+    if (row.scoped) cross = row.cross.length ? fmt(row.cross) : "없음";
+    lines.push(`| \`${from}\` | ${fmt(row.local)} | ${cross} |`);
   }
   return lines.join("\n");
 }

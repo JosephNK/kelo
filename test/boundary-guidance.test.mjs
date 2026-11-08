@@ -19,11 +19,16 @@ const messageFor = (elements, rules, type) => {
   return policies[types.indexOf(type)].message;
 };
 
-test("Next.js: 배열 형태 allow에서 허용 목록 계산", () => {
+test("Next.js: 배열 형태 allow에서 같은/다른 모듈 허용 목록 계산", () => {
   const msg = messageFor(nextElements, nextRules, "domain-service");
   assert.match(
     msg,
-    /domain-service가 import할 수 있는 레이어: domain-error, domain-model, domain-port, domain-service\./,
+    /domain-service가 import할 수 있는 레이어 — 같은 모듈: domain-error, domain-model, domain-port, domain-service \/ 다른 모듈: domain-model, domain-port\./,
+  );
+  // 모듈 레이어가 아닌 from은 기존 형식 (모듈 레이어 대상은 어느 모듈이든)
+  assert.match(
+    messageFor(nextElements, nextRules, "route-handler"),
+    /route-handler가 import할 수 있는 레이어: domain-error, domain-model, domain-service, http-factory, i18n-config, shared-type\./,
   );
   assert.match(
     messageFor(nextElements, nextRules, "http-client"),
@@ -31,11 +36,19 @@ test("Next.js: 배열 형태 allow에서 허용 목록 계산", () => {
   );
 });
 
-test("NestJS: 객체 allow + type 배열에서 허용 목록 계산", () => {
+test("NestJS: 객체 allow + type 배열에서 같은 모듈 / 다른 모듈 / 공유 구분", () => {
   const msg = messageFor(nestElements, nestRules, "service");
   assert.match(
     msg,
-    /service가 import할 수 있는 레이어: common, common-pure, exception, infrastructure, model, port\./,
+    /service가 import할 수 있는 레이어 — 같은 모듈: exception, model, module-common, port \/ 다른 모듈: model, port \/ 공유: common, common-pure, infrastructure\./,
+  );
+  assert.match(
+    messageFor(nestElements, nestRules, "exception"),
+    /같은 모듈: exception, module-common \/ 다른 모듈: 없음 \/ 공유: common, common-pure\./,
+  );
+  assert.match(
+    messageFor(nestElements, nestRules, "libs"),
+    /libs가 import할 수 있는 레이어: common, common-pure, infrastructure, libs\./,
   );
 });
 

@@ -40,7 +40,7 @@ export const baseStructureAnnotations = {
               { name: "exception", note: "Domain-specific exceptions" },
               {
                 name: "common",
-                note: "(선택) 도메인 내부 공용 — boundary 검사 제외 (escape hatch)",
+                note: "(선택) 모듈 내부 공용 — 같은 모듈에서만 import",
               },
               {
                 name: "<domain>.module.ts",
@@ -55,18 +55,33 @@ export const baseStructureAnnotations = {
   },
   "src/common": {
     override: [
-      { name: "authentication", note: "Auth-related (Passport strategies, auth utils)" },
+      {
+        name: "authentication",
+        note: "Auth-related (Passport strategies, auth utils)",
+      },
       { name: "guards", note: "Route Guards (@UseGuards 대상)" },
       { name: "exceptions", note: "Exception Filters, domain exception base" },
       { name: "interfaces", note: "Shared interfaces" },
       { name: "middlewares", note: "Global middlewares" },
       { name: "pipes", note: "Validation Pipes" },
-      { name: "interceptors", note: "Global Interceptors (logging, transform, timeout)" },
-      { name: "decorators", note: "Custom decorators (@CurrentUser, @Public 등)" },
+      {
+        name: "interceptors",
+        note: "Global Interceptors (logging, transform, timeout)",
+      },
+      {
+        name: "decorators",
+        note: "Custom decorators (@CurrentUser, @Public 등)",
+      },
       { name: "events", note: "Domain/integration event payloads & listeners" },
       { name: "dtos", note: "Shared DTOs" },
-      { name: "config", note: "App-level configuration (env, ConfigModule schemas)" },
-      { name: "constants", note: "Shared constants (enums, magic numbers, tokens)" },
+      {
+        name: "config",
+        note: "App-level configuration (env, ConfigModule schemas)",
+      },
+      {
+        name: "constants",
+        note: "Shared constants (enums, magic numbers, tokens)",
+      },
       { name: "utils", note: "Pure utility functions (no framework deps)" },
     ],
   },
@@ -79,7 +94,10 @@ export const baseStructureAnnotations = {
       { name: "cache", note: "Cache configuration" },
       { name: "email", note: "Email delivery infrastructure" },
       { name: "transaction", note: "Transaction management" },
-      { name: "external", note: "External service clients (3rd-party SDK, HTTP client wrappers)" },
+      {
+        name: "external",
+        note: "External service clients (3rd-party SDK, HTTP client wrappers)",
+      },
     ],
   },
 };

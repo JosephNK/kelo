@@ -10,7 +10,7 @@
 //                   domain banned packages)
 //   - boundaries/ : eslint-plugin-boundaries 데이터 (elements/rules/ignores)
 //   - quality/    : 즉시 적용 가능한 defineConfig 룰 (base/server-component/
-//                   custom/ignores)
+//                   custom/file-size/cycle/ignores)
 //   - builders/   : 스택별 데이터를 받아 config를 생성하는 팩토리
 //   - docs/       : ESLint 미참조 — generator가 md 보강용으로만 읽음
 //                   (structure-annotations, layer-semantics)
@@ -35,6 +35,7 @@ export { baseConfig } from "./eslint-rules/quality/base-config.mjs";
 export { baseServerComponentRules } from "./eslint-rules/quality/server-component.mjs";
 export { baseCustomRules } from "./eslint-rules/quality/custom-rules.mjs";
 export { baseFileSizeRules } from "./eslint-rules/quality/file-size.mjs";
+export { baseImportCycleRules } from "./eslint-rules/quality/import-cycle.mjs";
 export { baseIgnores } from "./eslint-rules/quality/ignores.mjs";
 
 // ─── Builders ────────────────────────────────────────────────────────────────

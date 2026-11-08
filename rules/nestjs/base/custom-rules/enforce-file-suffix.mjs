@@ -18,6 +18,7 @@
 // 제외 대상:
 //   - model/   : 순수 도메인 함수는 suffix 없이 허용되므로 검사 제외
 //                (ex: spelling-grader.ts, cost-calculator.ts)
+//   - common/  : 모듈 내부 공용 — 파일 종류가 다양해 suffix 강제 없음
 //   - *.spec.ts / *.test.ts / *.module.ts (테스트·DI 조립)
 //   - index.ts (re-export 배럴)
 // =============================================================================

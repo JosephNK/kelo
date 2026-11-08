@@ -33,12 +33,10 @@
 
 import fs from "node:fs";
 
-import { MODULE_LAYERS } from "../eslint-rules/settings/boundary-module-layers.mjs";
+import { MODULE_LAYER_DIRS } from "../eslint-rules/settings/boundary-module-layers.mjs";
 
-// MODULE_LAYERS(8개 헥사고날 레이어) + `common` (일부 도메인이 자체 common 폴더를
-// 두는 패턴 허용). boundary-elements에는 `<domain>/common/` pattern이 없어 파일을
-// 두면 boundaries/no-unknown-files가 거부하지만, 빈 폴더는 이 룰이 통과시킨다.
-const LAYERS = [...MODULE_LAYERS.map((l) => l.type), "common"];
+// 레이어 폴더 이름 (헥사고날 8개 + 모듈 내부 `common`) — boundary element와 같은 SSOT.
+const LAYERS = MODULE_LAYER_DIRS;
 
 const PATH_PREFIX = "/src/modules/";
 

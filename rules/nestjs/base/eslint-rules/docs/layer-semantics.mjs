@@ -144,6 +144,7 @@ export const baseLayerSemantics = {
     ],
     forbids: [
       "ORM 엔티티를 도메인 Entity로 재사용 (model과 분리, 매퍼로 변환)",
+      "다른 모듈의 provider(ORM 엔티티) import — 모듈 간 관계는 ID 컬럼으로 참조하고 조인은 쿼리로",
     ],
     scope:
       "`*.orm-entity.ts`의 Date 컬럼은 `timestamptz` 강제 (local/require-timestamptz). ORM/SDK 자유 사용.",
@@ -204,6 +205,15 @@ export const baseLayerSemantics = {
     ].join("\n"),
   },
 
+  "module-common": {
+    role: "모듈 내부 공용 — 한 모듈의 여러 레이어가 함께 쓰는 헬퍼. 같은 모듈에서만 import 가능.",
+    contains: ["모듈 전용 유틸·상수·타입 — `common/*.ts` (suffix 강제 없음)"],
+    forbids: [
+      "같은 모듈의 service/controller/provider/dto/port import (model·전역 common만 허용)",
+      "다른 모듈에서 import (필요하면 model로 옮기거나 전역 `src/common`으로 올린다)",
+    ],
+  },
+
   common: {
     role: "전역 공용 — 모듈 로직 밖의 수평 관심사. 최하위 계층이라 상향 의존 금지.",
     contains: [
@@ -257,9 +267,10 @@ export const baseLayerSemantics = {
   },
 
   libs: {
-    role: "독립 라이브러리성 모듈 — 앱 조립 수준에서 재사용할 수 있는 단위. 모든 레이어 참조 가능 (catch-all).",
+    role: "독립 라이브러리성 모듈 — 모듈과 무관하게 재사용할 수 있는 단위. libs·common·common-pure·infrastructure만 참조.",
     contains: ["라이브러리성 모듈 (내부 구조 자유) — `src/libs/**`"],
     forbids: [
+      "모듈 레이어(model/port/service/controller/provider 등) import — 조립은 `*.module.ts`가 담당",
       "모듈 도메인 로직 이관 (원래 속한 `src/modules/<domain>/`로 유지)",
     ],
   },

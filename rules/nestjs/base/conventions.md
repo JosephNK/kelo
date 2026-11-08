@@ -4,6 +4,10 @@
 
 - 새 도메인 예외는 `exception/*.error.ts`. 에러 코드(snake_case, 예: `order_not_found`)를 `src/infrastructure/i18n/locales/<lang>/error.json` 모든 로케일에 key=코드, value=메시지로 등록하고 `npx kelo-check-i18n`으로 검증한다.
 
+## 모듈 간 참조
+
+- 다른 모듈의 ORM 엔티티와는 관계(`@ManyToOne` 등) 대신 ID 컬럼으로 참조하고, 조인이 필요하면 쿼리로 푼다.
+
 ## 응답 DTO
 
 - `ApiSuccessResponse`가 모든 응답을 `{ success, data }`로 감싼다 — `data` 직속은 `*DataResponseDto`, 배열 요소·중첩 객체는 `*ItemDto`.

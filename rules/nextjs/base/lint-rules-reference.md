@@ -218,33 +218,48 @@ export class OrderRepository implements OrderRepositoryPort {
 }
 ```
 
+### `http-factory`
+
+**Role** — Port 구현체(http-repository)를 끼워 domain-service를 만드는 조립 지점. hook·route-handler·page가 공유하는 유일한 DI 위치.
+
+**Contains**
+
+- 한 feature의 service 팩토리 — `src/http/<feature>/factory.ts` (예: `createOrderService(client?)`)
+
+**Forbids**
+
+- 데이터 호출·캐싱 (조립만 — 호출은 hook·route-handler·page에서)
+- 다른 feature의 repository·service import (다른 feature는 domain-model만)
+
+```ts
+// src/http/order/factory.ts
+import { OrderService } from '@/domain/order/service';
+import { OrderRepository } from '@/http/order/repository';
+
+export const createOrderService = () => new OrderService(new OrderRepository());
+```
+
 ### `http-hook`
 
-**Role** — UI에 제공되는 데이터 페칭 훅 (TanStack Query 등). 데이터 호출은 domain-service만 사용 — http-repository는 Service 팩토리에서 Port 구현체 주입 용도로만 import.
+**Role** — UI에 제공되는 데이터 페칭 훅 (TanStack Query 등). service는 http-factory로 받아 호출 — repository 직접 import 금지.
 
 **Contains**
 
 - 한 feature의 React Query 훅 (useQuery/useMutation) — `src/http/<feature>/hook.ts`
-- Service 팩토리 훅 (예: `useOrderService`)을 같은 파일에 동거. Port 구현체(`http-repository`)는 여기서만 주입.
 
 **Forbids**
 
-- http-repository를 데이터 호출에 직접 사용 (→ Service 메서드를 거쳐야 함)
+- http-repository import (→ http-factory가 조립)
 - UI 컴포넌트 import (훅은 데이터 계약만)
 
 ```ts
 // src/http/order/hook.ts
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { OrderService } from '@/domain/order/service';
-import { OrderRepository } from '@/http/order/repository';
-
-function useOrderService() {
-  return useMemo(() => new OrderService(new OrderRepository()), []);
-}
+import { createOrderService } from '@/http/order/factory';
 
 export function useOrder(id: string) {
-  const service = useOrderService();
+  const service = useMemo(() => createOrderService(), []);
   return useQuery({
     queryKey: ['order', id],
     queryFn: () => service.getOrder(id),
@@ -511,7 +526,7 @@ export function OrderList() {
 **Forbids**
 
 - UI 레이어 import (shared-ui/page-component 금지; 서버 경계 위반)
-- 비즈니스 로직 포함 (→ domain-service 호출에 집중)
+- 비즈니스 로직 포함 (→ http-factory로 만든 service 호출에 집중)
 
 ```ts
 // src/app/api/orders/[id]/route.ts
@@ -519,7 +534,7 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } },
 ) {
-  const order = await orderService.getOrder(params.id);
+  const order = await createOrderService().getOrder(params.id);
   return Response.json(order);
 }
 ```
@@ -537,45 +552,49 @@ export async function GET(
 **Forbids**
 
 - Hook 호출 (Server Component는 `use*` 호출 금지; baseServerComponentRules)
-- domain-service/http-hook 직접 호출 (→ page-component를 거쳐야 함)
+- domain-service/http-repository 직접 import (→ 서버 데이터는 http-factory로 조립해 로드, props로 전달)
+- http-hook 호출 (Client Component 전용 → page-component에서)
 
 ## 의존성 규칙 (Dependency Rules)
 
 레이어 간 import 관계 (allow-list). 기본 disallow 정책 위에 아래 조합만 허용.
-각 레이어의 역할·책임은 "레이어 글로서리" 섹션 참조.
+`scope: "module"`의 domain·http 대상은 같은 feature만, 다른 feature로는 `scope: "cross-module"`의 공개 계약(domain-model·domain-port)만 허용한다 — feature 간 결합 차단.
 
 시각화된 의존성 그래프는 `lint-rules-diagram.md` 참조.
 
 ### Allow 매트릭스
 
-| From | Allow → To |
-| --- | --- |
-| `domain-model` | `domain-model` |
-| `domain-error` | `domain-error` |
-| `domain-port` | `domain-model` |
-| `domain-service` | `domain-model`, `domain-port`, `domain-error`, `domain-service` |
-| `http-client` | _(no layer imports)_ |
-| `http-endpoint` | _(no layer imports)_ |
-| `http-dto` | _(no layer imports)_ |
-| `http-service` | `http-endpoint`, `http-dto` |
-| `http-mapper` | `domain-model`, `http-dto` |
-| `http-repository` | `http-client`, `http-endpoint`, `http-dto`, `http-service`, `http-mapper`, `domain-port`, `domain-error`, `domain-model`, `db` |
-| `http-hook` | `domain-service`, `http-repository`, `domain-model` |
-| `lib-shared` | _(no layer imports)_ |
-| `lib-shared-barrel` | `lib-shared` |
-| `db` | _(no layer imports)_ |
-| `shared-hook` | `lib-shared`, `lib-shared-barrel`, `shared-type`, `domain-model`, `shared-hook`, `style` |
-| `shared-ui` | `domain-model`, `shared-ui`, `shared-hook`, `shared-type`, `i18n-config`, `style`, `theme` |
-| `page-component` | `http-hook`, `shared-ui`, `shared-hook`, `domain-model`, `page-component`, `lib-shared`, `lib-shared-barrel`, `shared-type`, `i18n-config`, `style`, `theme` |
-| `page-provider` | `lib-shared`, `lib-shared-barrel`, `shared-hook`, `style`, `theme` |
-| `style` | `style` |
-| `theme` | `style`, `theme` |
-| `dictionary` | `shared-type`, `dictionary` |
-| `i18n-config` | `dictionary`, `i18n-config` |
-| `shared-type` | `dictionary` |
-| `email-template` | `dictionary`, `shared-type` |
-| `route-handler` | `domain-model`, `domain-error`, `domain-service`, `shared-type`, `i18n-config` |
-| `page` | `page-component`, `page-provider`, `shared-ui`, `dictionary`, `shared-type`, `i18n-config`, `style`, `theme`, `page` |
+> 모듈 레이어 행(`다른 모듈 Allow`가 `모듈 무관`이 아닌 행)의 `Allow → To`는 모듈 레이어 대상을 **같은 모듈에서만** 허용한다. 다른 모듈로는 `다른 모듈 Allow`만 import할 수 있다.
+
+| From | Allow → To | 다른 모듈 Allow |
+| --- | --- | --- |
+| `domain-model` | `domain-model` | `domain-model` |
+| `domain-error` | `domain-error` | 없음 |
+| `domain-port` | `domain-model` | `domain-model` |
+| `domain-service` | `domain-model`, `domain-port`, `domain-error`, `domain-service` | `domain-model`, `domain-port` |
+| `http-client` | _(no layer imports)_ | _(모듈 무관)_ |
+| `http-endpoint` | _(no layer imports)_ | _(모듈 무관)_ |
+| `http-dto` | _(no layer imports)_ | _(모듈 무관)_ |
+| `http-service` | `http-endpoint`, `http-dto` | _(모듈 무관)_ |
+| `http-mapper` | `domain-model`, `http-dto` | `domain-model` |
+| `http-repository` | `http-client`, `http-endpoint`, `http-dto`, `http-service`, `http-mapper`, `domain-port`, `domain-error`, `domain-model`, `db` | `domain-model` |
+| `http-factory` | `domain-service`, `domain-port`, `http-repository`, `http-client`, `db` | `domain-model` |
+| `http-hook` | `http-factory`, `domain-service`, `domain-model` | `domain-model` |
+| `lib-shared` | _(no layer imports)_ | _(모듈 무관)_ |
+| `lib-shared-barrel` | `lib-shared` | _(모듈 무관)_ |
+| `db` | _(no layer imports)_ | _(모듈 무관)_ |
+| `shared-hook` | `lib-shared`, `lib-shared-barrel`, `shared-type`, `domain-model`, `shared-hook`, `style` | _(모듈 무관)_ |
+| `shared-ui` | `domain-model`, `shared-ui`, `shared-hook`, `shared-type`, `i18n-config`, `style`, `theme` | _(모듈 무관)_ |
+| `page-component` | `http-hook`, `shared-ui`, `shared-hook`, `domain-model`, `page-component`, `lib-shared`, `lib-shared-barrel`, `shared-type`, `i18n-config`, `style`, `theme` | _(모듈 무관)_ |
+| `page-provider` | `lib-shared`, `lib-shared-barrel`, `shared-hook`, `style`, `theme` | _(모듈 무관)_ |
+| `style` | `style` | _(모듈 무관)_ |
+| `theme` | `style`, `theme` | _(모듈 무관)_ |
+| `dictionary` | `shared-type`, `dictionary` | _(모듈 무관)_ |
+| `i18n-config` | `dictionary`, `i18n-config` | _(모듈 무관)_ |
+| `shared-type` | `dictionary` | _(모듈 무관)_ |
+| `email-template` | `dictionary`, `shared-type` | _(모듈 무관)_ |
+| `route-handler` | `http-factory`, `domain-model`, `domain-error`, `domain-service`, `shared-type`, `i18n-config` | _(모듈 무관)_ |
+| `page` | `http-factory`, `domain-model`, `page-component`, `page-provider`, `shared-ui`, `dictionary`, `shared-type`, `i18n-config`, `style`, `theme`, `page` | _(모듈 무관)_ |
 
 ## Restricted Patterns (Import 금지 패턴)
 

@@ -9,7 +9,7 @@
 
 ## Page + Client Components
 
-- Page (Server Component) loads the dictionary and server data, then passes them as props to Client Components in `_components/`.
+- Page (Server Component) loads the dictionary and server data (service from `src/http/<feature>/factory.ts`), then passes them as props to Client Components in `_components/`.
 - Hooks run only in Client Components; push `'use client'` down to the leaf.
 - `src/domain/`, `src/http/_generated/types.ts`, `src/http/<feature>/mapper.ts` are pure TS — usable on both server and client.
 

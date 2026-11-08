@@ -22,6 +22,7 @@ graph LR
     http_service["http-service"]
     http_mapper["http-mapper"]
     http_repository["http-repository"]
+    http_factory["http-factory"]
     http_hook["http-hook"]
   end
   subgraph g_lib [lib]
@@ -62,9 +63,15 @@ graph LR
   http_repository --> domain_error
   http_repository --> domain_model
   http_repository --> db
+  http_factory --> domain_service
+  http_factory --> domain_port
+  http_factory --> http_repository
+  http_factory --> http_client
+  http_factory --> db
+  http_hook --> http_factory
   http_hook --> domain_service
-  http_hook --> http_repository
   http_hook --> domain_model
+  http_factory -.-> domain_model
   lib_shared_barrel --> lib_shared
   shared_hook --> lib_shared
   shared_hook --> lib_shared_barrel
@@ -98,11 +105,14 @@ graph LR
   shared_type --> dictionary
   email_template --> dictionary
   email_template --> shared_type
+  route_handler --> http_factory
   route_handler --> domain_model
   route_handler --> domain_error
   route_handler --> domain_service
   route_handler --> shared_type
   route_handler --> i18n_config
+  page --> http_factory
+  page --> domain_model
   page --> page_component
   page --> page_provider
   page --> shared_ui

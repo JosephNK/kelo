@@ -403,12 +403,54 @@ class Runner {
     this.spawn(this.pm, [...PM_COMMANDS[this.pm][kind], ...extra], cwd);
   }
 
+  // yarn classic은 패키지가 직접 의존성으로 선언한 범위(예: sonarjs의 `typescript: ">=5"`)를
+  // 프로젝트에 이미 있는 버전과 합치지 않고 최신으로 따로 설치한다. 그러면 typescript-eslint와
+  // TypeScript 버전이 어긋나 타입 규칙이 조용히 꺼지거나 로드가 실패한다. `<pkg>/<dep>` 항목을
+  // 프로젝트에 설치된 <dep> 버전으로 resolutions에 고정한다 (모노레포는 루트 package.json).
+  pinYarnResolutions(pins, cwd) {
+    if (this.pm !== "yarn") return;
+    const yarnVersion =
+      spawnSync("yarn", ["--version"], {
+        cwd,
+        encoding: "utf8",
+      }).stdout?.trim() ?? "";
+    if (!yarnVersion.startsWith("1.")) return; // berry(2+)는 중복 해소 방식이 달라 대상 아님
+    const target = this.monorepoRoot ?? cwd;
+    const pkgPath = path.join(target, "package.json");
+    const pkg = readJson(pkgPath);
+    if (!pkg) return;
+    const resolutions = { ...pkg.resolutions };
+    let changed = false;
+    for (const pin of pins) {
+      const dep = pin.split("/").at(-1);
+      const version =
+        readJson(path.join(cwd, "node_modules", dep, "package.json"))
+          ?.version ??
+        readJson(path.join(target, "node_modules", dep, "package.json"))
+          ?.version;
+      if (!version) continue;
+      if (resolutions[pin] !== version) {
+        resolutions[pin] = version;
+        changed = true;
+        process.stdout.write(`  resolutions["${pin}"] = ${version}\n`);
+      }
+    }
+    if (!changed) return process.stdout.write("  resolutions 변경 없음\n");
+    if (this.dryRun) return;
+    fs.writeFileSync(
+      pkgPath,
+      JSON.stringify({ ...pkg, resolutions }, null, 2) + "\n",
+    );
+    this.pmRun("install", [], target);
+  }
+
   runStep(step, project, label) {
     const cwd = project.dir;
     if (step.if && !project[step.if]) return;
     if (
       this.noInstall &&
-      (step.exec || step.builtin === "install" || step.builtin === "peers")
+      (step.exec ||
+        ["install", "peers", "yarn-resolutions"].includes(step.builtin))
     ) {
       process.stdout.write(
         `\n▶ [${label}] ${describeStep(step)} — --no-install, 건너뜀\n`,
@@ -500,6 +542,9 @@ class Runner {
         else process.stdout.write("  peer 모두 설치됨\n");
         return;
       }
+      case "yarn-resolutions":
+        this.pinYarnResolutions(step.pin ?? [], cwd);
+        return;
       case "format-docs": {
         const files = DOCS.filter((f) => fs.existsSync(path.join(cwd, f)));
         if (!files.length || this.dryRun) return;

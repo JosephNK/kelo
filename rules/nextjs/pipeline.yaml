@@ -3,7 +3,8 @@
 # 단계 종류
 #   run: <스크립트 경로(scripts/ 기준)> <인자...>   — node로 실행, cwd = 프로젝트 루트
 #   exec: <외부 명령>  (cwd: 프로젝트 기준 하위 경로)
-#   builtin: ensure-package-json | move-app-to-src | install | peers | format-docs
+#   builtin: ensure-package-json | move-app-to-src | install | peers | yarn-resolutions | format-docs
+#   yarn-resolutions: { pin: ["<pkg>/<dep>"] } — yarn classic에서만 <dep>를 프로젝트 설치 버전으로 resolutions 고정
 # 옵션
 #   if: agents                — kelo.yaml 값이 true일 때만 실행
 #   stacks: { flag, having }  — 선택 스택을 `<flag> a,b`로 덧붙임. having이 있으면
@@ -44,4 +45,7 @@ steps:
       - eslint-plugin-sonarjs
       - eslint-config-prettier
       - "eslint-config-next@>=16"
+  # sonarjs가 직접 의존성으로 선언한 TypeScript를 yarn classic이 따로 설치하면 타입 규칙이 깨진다
+  - builtin: yarn-resolutions
+    pin: [eslint-plugin-sonarjs/typescript]
   - builtin: format-docs

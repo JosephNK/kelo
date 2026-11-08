@@ -7,11 +7,11 @@ onlyBuiltDependencies:
   - nx
   - unrs-resolver
 
-# 배포 전 검증용 — 앱 package.json은 실제와 같은 `^0.3.80`을 쓰고,
-# 설치만 로컬 tarball(scripts/pack-kelo-local.sh 생성)로 대체한다.
+# 로컬 체크아웃 검증용 — 앱 package.json은 실제 사용자와 같은 레지스트리 버전을 쓰고,
+# 설치만 로컬 tarball(scripts/pack-kelo-local.sh 생성, 버전 없는 고정 파일명)로 대체한다.
 overrides:
-  "eslint-config-kelo-nestjs": "file:.local-packages/eslint-config-kelo-nestjs-0.4.1.tgz"
-  "eslint-config-kelo-nextjs": "file:.local-packages/eslint-config-kelo-nextjs-0.4.1.tgz"
+  "eslint-config-kelo-nestjs": "file:.local-packages/eslint-config-kelo-nestjs.tgz"
+  "eslint-config-kelo-nextjs": "file:.local-packages/eslint-config-kelo-nextjs.tgz"
   # 보안 패치 — 상위 패키지가 취약 버전을 고정 (@boundaries/elements → handlebars 4.7.9, eslint-plugin-sonarjs 3 → minimatch 10.1, nx 23.3 → undici 7.29.0)
   "handlebars": "^4.7.10"
   "eslint-plugin-sonarjs>minimatch": "^10.2.6"

@@ -209,7 +209,7 @@ export const baseLayerSemantics = {
     role: "모듈 내부 공용 — 한 모듈의 여러 레이어가 함께 쓰는 헬퍼. 같은 모듈에서만 import 가능.",
     contains: ["모듈 전용 유틸·상수·타입 — `common/*.ts` (suffix 강제 없음)"],
     forbids: [
-      "같은 모듈의 service/controller/provider/dto/port import (model·전역 common만 허용)",
+      "같은 모듈의 service/controller/strategy/provider import (계약인 model·port·dto와 전역 common만 허용)",
       "다른 모듈에서 import (필요하면 model로 옮기거나 전역 `src/common`으로 올린다)",
     ],
   },

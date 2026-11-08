@@ -250,7 +250,7 @@ export class CreateOrderRequestDto {
 
 **Forbids**
 
-- 같은 모듈의 service/controller/provider/dto/port import (model·전역 common만 허용)
+- 같은 모듈의 service/controller/strategy/provider import (계약인 model·port·dto와 전역 common만 허용)
 - 다른 모듈에서 import (필요하면 model로 옮기거나 전역 `src/common`으로 올린다)
 
 ### `common-pure`
@@ -360,7 +360,7 @@ export class CreateOrderRequestDto {
 | `strategy` | `port`, `dto`, `model`, `exception`, `module-common`, `common`, `common-pure`, `libs`, `infrastructure-shared` | `model`, `port` |
 | `provider` | `port`, `model`, `module-common`, `common`, `common-pure`, `infrastructure`, `infrastructure-shared`, `provider`, `libs` | `model`, `port` |
 | `dto` | `model`, `module-common`, `common`, `common-pure`, `dto` | `model` |
-| `module-common` | `module-common`, `model`, `common`, `common-pure` | 없음 |
+| `module-common` | `module-common`, `model`, `port`, `dto`, `common`, `common-pure` | 없음 |
 | `common` | `common`, `common-pure` | _(모듈 무관)_ |
 | `common-pure` | `common-pure` | _(모듈 무관)_ |
 | `infrastructure` | `infrastructure`, `infrastructure-shared`, `common`, `common-pure` | _(모듈 무관)_ |

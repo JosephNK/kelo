@@ -73,6 +73,8 @@ graph LR
   dto --> common
   dto --> common_pure
   module_common --> model
+  module_common --> port
+  module_common --> dto
   module_common --> common
   module_common --> common_pure
   common --> common_pure

@@ -115,11 +115,21 @@ export const baseBoundaryRules = [
     },
     scope: "module",
   },
-  // module-common — 모듈 내부 공용. 같은 모듈의 model + 전역 공용만 (모듈 레이어 우회 통로 차단)
+  // module-common — 모듈 내부 공용 헬퍼. 같은 모듈의 계약(model·port·dto) + 전역 공용만
+  // (Swagger 데코레이터가 응답 dto를, 콜백 헬퍼가 port 타입을 쓰는 경우). service·provider·controller는 금지
   {
     from: { type: "module-common" },
     allow: {
-      to: { type: ["module-common", "model", "common", "common-pure"] },
+      to: {
+        type: [
+          "module-common",
+          "model",
+          "port",
+          "dto",
+          "common",
+          "common-pure",
+        ],
+      },
     },
     scope: "module",
   },

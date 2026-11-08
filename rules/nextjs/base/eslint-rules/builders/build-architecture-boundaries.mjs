@@ -4,6 +4,7 @@ import boundaries from "eslint-plugin-boundaries";
 import { baseBoundaryIgnores } from "../boundaries/boundary-ignores.mjs";
 import { baseImportResolverSettings } from "../settings/import-resolver-settings.mjs";
 import {
+  guidancePolicies,
   internalDependencyOptions,
   splitBoundaryElements,
   toBoundariesPolicies,
@@ -52,6 +53,7 @@ export function buildArchitectureBoundaries(
             default: "disallow",
             checkInternals: internal.checkInternals,
             policies: [
+              ...guidancePolicies(rules, elements, classification),
               ...toBoundariesPolicies(rules, classification),
               ...internal.policies,
             ],

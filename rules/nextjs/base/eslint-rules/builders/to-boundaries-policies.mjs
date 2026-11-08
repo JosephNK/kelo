@@ -128,6 +128,44 @@ export function toBoundariesPolicies(
   });
 }
 
+const typesOf = (side) =>
+  (Array.isArray(side) ? side : [side])
+    .map((s) => (typeof s === "string" ? s : s?.type))
+    .flat()
+    .filter((t) => typeof t === "string");
+
+/**
+ * 레이어마다 "전부 금지 + 안내 메시지" 정책을 만든다. 정책은 뒤에서 매칭된 것이
+ * 이기므로 이 정책들을 허용 정책보다 앞에 두면, 허용되지 않은 import만 이 정책에
+ * 걸려 레이어별 메시지(허용 레이어 목록 포함)가 나온다.
+ */
+export function guidancePolicies(rules, elements, classification) {
+  const allowed = new Map();
+  for (const rule of rules) {
+    const targets = (Array.isArray(rule.allow) ? rule.allow : [rule.allow])
+      .filter(Boolean)
+      .flatMap((a) => typesOf(a.to));
+    for (const from of typesOf(rule.from)) {
+      allowed.set(from, new Set([...(allowed.get(from) ?? []), ...targets]));
+    }
+  }
+  const types = [...new Set(elements.map((e) => e.type))];
+  return types.map((type) => {
+    const targets = [...(allowed.get(type) ?? [])].sort();
+    const allowText = targets.length
+      ? `${type}가 import할 수 있는 레이어: ${targets.join(", ")}.`
+      : `${type}는 다른 레이어를 import할 수 없습니다.`;
+    return {
+      from: convertSide({ type }, classification),
+      disallow: [
+        { to: { element: { type: "*" } } },
+        { to: { file: { categories: "*" } } },
+      ],
+      message: `[경계 위반] ${type} 레이어에서 '{{dependency.source}}'를 import할 수 없습니다. ${allowText} 레이어별 폴더 위치는 docs/ARCHITECTURE.md 참고.`,
+    };
+  });
+}
+
 /**
  * 파일 레이어가 있으면 같은 폴더 element 안의 파일이 서로 다른 레이어일 수 있다
  * (예: `page` 폴더 안의 `route.ts`). v7은 같은 element 내부 의존을 기본으로

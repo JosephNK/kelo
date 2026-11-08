@@ -29,7 +29,9 @@ Page는 dictionary 로딩과 서버 데이터 fetch를 맡고, `_components/`의
 
 ```tsx
 // Page (SC): src/app/[locale]/products/page.tsx
-export default async function ProductsPage({ params }: PageProps<'/[locale]/products'>) {
+export default async function ProductsPage({
+  params,
+}: PageProps<"/[locale]/products">) {
   const { locale } = await params;
   const dict = await getDictionary(locale);
 
@@ -37,9 +39,9 @@ export default async function ProductsPage({ params }: PageProps<'/[locale]/prod
 }
 
 // Client Component: src/app/[locale]/products/_components/ProductsContent.tsx
-('use client');
+("use client");
 
-export function ProductsContent({ dict }: { dict: Dictionary['Products'] }) {
+export function ProductsContent({ dict }: { dict: Dictionary["Products"] }) {
   const { data, isLoading, error, refetch } = useProducts();
 
   if (isLoading) return <LoadingSkeleton />;
@@ -139,7 +141,6 @@ Use `proxy.ts` instead of `middleware.ts` (Next.js 16+).
 - Proxy runtime is nodejs (edge not supported)
 - Config flag: `skipMiddlewareUrlNormalize` → `skipProxyUrlNormalize`
 - Codemod: `npx @next/codemod@latest middleware-to-proxy .`
-
 
 ---
 

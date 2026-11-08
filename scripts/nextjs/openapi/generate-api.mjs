@@ -45,7 +45,6 @@ import YAML from "yaml";
 
 // Default manifest auto-detected (relative to cwd) when no <spec>/--config given.
 const DEFAULT_CONFIG = "kelo.openapi.json";
-const LEGACY_DEFAULT_CONFIG = "jkit.openapi.json";
 
 // ─── CLI ────────────────────────────────────────────────────────────────────
 
@@ -121,10 +120,6 @@ function parseArgs(argv) {
     // No <spec> and no --config: auto-use ./kelo.openapi.json if present.
     if (fs.existsSync(path.resolve(process.cwd(), DEFAULT_CONFIG))) {
       args.config = DEFAULT_CONFIG;
-    } else if (
-      fs.existsSync(path.resolve(process.cwd(), LEGACY_DEFAULT_CONFIG))
-    ) {
-      args.config = LEGACY_DEFAULT_CONFIG;
     } else {
       printHelp();
       process.exit(1);

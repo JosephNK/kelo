@@ -16,7 +16,6 @@
     - `builders/` : build-restricted-imports/build-domain-purity/build-architecture-boundaries, to-boundaries-policies(boundary 데이터 v6 형태 → eslint-plugin-boundaries v7 설정 변환: `mode: "full"` element → 파일 카테고리, `rules` → `policies`, 내부 의존 처리. nestjs와 동일 내용 유지), order-boundary-elements(`fallback: true` catch-all element를 스택·`kelo.lint.json` element 뒤로 정렬 — first-match라 앞에 두면 가려진다)
     - `docs/` : ESLint 미참조 — generator 전용 메타 (structure-annotations, layer-semantics)
   - `rules/nextjs/base/eslint.rules.mjs`는 re-export 전용 barrel이라 직접 편집 X.
-  - 스택: `rules/nextjs/<stack>/eslint.rules.mjs`
   - Stylelint: `rules/nextjs/base/stylelint.rules.mjs` (규칙), `rules/nextjs/base/stylelint.preset.mjs` (Tailwind 호환 + ignore를 더한 최종 preset)
 - NestJS:
   - 베이스: `rules/nestjs/base/eslint-rules/{settings,boundaries,quality,builders,docs}/*.mjs` — 역할별 폴더로 분리된 관심사별 단일 파일.
@@ -26,9 +25,8 @@
     - `builders/` : build-layer-restrictions/build-architecture-boundaries, to-boundaries-policies(v7 설정 변환, nextjs와 동일 내용 유지)
     - `docs/` : ESLint 미참조 — generator 전용 메타 (structure-annotations, layer-semantics)
   - `rules/nestjs/base/eslint.rules.mjs`는 re-export 전용 barrel이라 직접 편집 X.
-  - 스택: `rules/nestjs/<stack>/eslint.rules.mjs`
 - npm 패키지 (`rules/nextjs/` → `eslint-config-kelo-nextjs`, `rules/nestjs/` → `eslint-config-kelo-nestjs`):
-  - `index.mjs` — factory(`nextjs()`/`nestjs()`)와 스택 등록표(`nextjsStacks`/`nestjsStacks`). 블록 조립 순서와 스택 → 데이터 매핑의 원본. 새 스택은 여기 등록해야 적용된다.
+  - `index.mjs` — factory(`nextjs()`/`nestjs()`). 블록 조립 순서의 원본. ESLint 규칙에는 스택이 없다 — 특정 라이브러리 전용 규칙(예: `@tanstack/**` 도메인 금지)도 base에 둔다 (미사용 패키지 import 금지·없는 파일 ignore는 무해).
   - `lib/factory-helpers.mjs`, `lib/run-lint-cli.mjs` — 두 패키지가 **동일 내용**을 유지 (분리 배포라 서로 import 불가). 한쪽을 고치면 다른 쪽에 복사.
   - `bin/` — `kelo-lint-<framework>` CLI (+ nestjs `kelo-check-i18n`)
   - `package.json` — `exports`/`files`/`peerDependencies`. 버전은 `deploy.mjs`가 플러그인 버전과 함께 올린다.
@@ -101,9 +99,7 @@ class AlN1PortNamingLint extends DartLint { ... }
 
 대상 파일:
 - Next.js 베이스: `rules/nextjs/base/eslint-rules/{settings,boundaries,quality,builders,docs}/*.mjs`
-- Next.js 스택: `rules/nextjs/<stack>/eslint.rules.mjs`
 - NestJS 베이스: `rules/nestjs/base/eslint-rules/{settings,boundaries,quality,builders,docs}/*.mjs`
-- NestJS 스택: `rules/nestjs/<stack>/eslint.rules.mjs`
 
 각 `export const` 직전의 JSDoc은 해당 데이터를 렌더하는 md 섹션의 preface로 surface된다. 룰 데이터(boundary elements 등)에 라인 끝 `//` 코멘트를 적으면 boundary element 표의 "설명" 컬럼으로 surface된다. base 폴더는 barrel(`eslint.rules.mjs`)이 sub-파일을 re-export하며, generator(`gen-eslint-reference.mjs`)가 re-export를 따라가 sub-파일의 JSDoc과 inline 코멘트를 그대로 surface한다.
 
@@ -115,14 +111,14 @@ class AlN1PortNamingLint extends DartLint { ... }
 surface되는 export
 
 - `baseBoundaryElements` (인라인 `//` → 구조 reference 설명 컬럼)
-- `baseLayerSemantics`, `baseBoundaryRules`, `baseBoundaryAllowPatches`, `baseRestrictedPatterns`, `baseRestrictedSyntax`, `baseDomainBannedPackages`, `baseFrameworkBannedPackages`, `baseBoundaryIgnores` (또는 `baseIgnores`) → 각 섹션 preface (스택 파일은 `<stack>FrameworkBannedPackages` / `<stack>InfraBannedPackages` 형태)
+- `baseLayerSemantics`, `baseBoundaryRules`, `baseBoundaryAllowPatches`, `baseRestrictedPatterns`, `baseRestrictedSyntax`, `baseDomainBannedPackages`, `baseFrameworkBannedPackages`, `baseBoundaryIgnores` (또는 `baseIgnores`) → 각 섹션 preface
 
 예시
 
 ```js
 /**
  * 도메인 레이어(`src/lib/domain/**`)에서 import 금지 패키지.
- * 프레임워크 비의존 유지. 스택별로 UI 라이브러리 추가 차단.
+ * 프레임워크 비의존 유지. 프로젝트별 추가 차단은 `kelo.lint.json`의 `domainBannedPackages`.
  */
 export const baseDomainBannedPackages = [...];
 ```
@@ -133,7 +129,7 @@ export const baseDomainBannedPackages = [...];
 
 ## 스크립트 역할 구분
 
-- `scripts/typescript/gen-eslint.mjs` — 입력: `rules/<framework>/package.json` + `--with` 스택 → 출력(소비 프로젝트): `eslint.config.mjs`(factory 호출, 매번 덮어씀), `kelo.lint.json`(`stacks`만 갱신, 나머지 키 보존), `eslint.project.config.mjs`(없을 때만 스텁), `package.json`(패키지 버전, lint-staged와 `scripts.lint`/eslint 기반 `lint:ci`·`lint:fix`를 `kelo-lint-<framework>`로 통일, 레거시 `@jkit/code-plugin`·`lint:jkit` 제거).
+- `scripts/typescript/gen-eslint.mjs` — 입력: `rules/<framework>/package.json` → 출력(소비 프로젝트): `eslint.config.mjs`(factory 호출, 매번 덮어씀), `kelo.lint.json`(없을 때만 `{}` 생성), `eslint.project.config.mjs`(없을 때만 스텁), `package.json`(패키지 버전, lint-staged와 `scripts.lint`/eslint 기반 `lint:ci`·`lint:fix`를 `kelo-lint-<framework>`로 통일).
 - `scripts/typescript/gen-stylelint.mjs` — 출력(소비 프로젝트): `stylelint.config.mjs`(`eslint-config-kelo-nextjs/stylelint` re-export) + stylelint devDeps.
 - `scripts/flutter/gen-analysis-options.mjs` — 출력(소비 프로젝트): include 한 줄짜리 `analysis_options.yaml` + 엔트리 `pubspec.yaml`의 `kelo_analysis` git 의존성(`ref: v<plugin-version>`). 미배포 체크아웃 검증은 `-analysis-path <dir>`로 path 의존성 사용.
 - `scripts/flutter/custom_lint/inject-custom-lint.mjs` (gen-custom-lint가 호출) — Flutter lint 플러그인 소스를 소비 프로젝트의 `.kelo/plugins/<package>/`로 vendoring(+ `.kelo-vendor.json` sha256)하고 `plugins:`에 상대 `path:`로 등록. `git:`/절대 경로는 이식성·동작 문제로 쓰지 않는다.
@@ -158,7 +154,7 @@ node scripts/typescript/gen-eslint-reference.mjs <path-to-eslint.rules.mjs>
 node scripts/typescript/gen-stylelint-reference.mjs <path-to-stylelint.rules.mjs>
 ```
 
-스택을 추가/변경했다면 `rules/<framework>/index.mjs` 스택 등록표도 함께 수정하고, `cd rules/<framework> && npm pack --dry-run`으로 새 파일이 패키지에 포함되는지 확인한다. 배포는 `./deploy.mjs`(버전 범프 + 태그 + `npm publish`로 npm 레지스트리에 배포 + GitHub Release). npm 로그인(`npm whoami`)이 필요하다.
+새 파일을 추가했다면 `cd rules/<framework> && npm pack --dry-run`으로 패키지에 포함되는지 확인한다 (`package.json` `files`). 배포는 `./deploy.mjs`(버전 범프 + 태그 + `npm publish`로 npm 레지스트리에 배포 + GitHub Release). npm 로그인(`npm whoami`)이 필요하다.
 
 ### Flutter
 

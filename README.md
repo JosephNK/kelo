@@ -121,7 +121,7 @@ Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등
 |---------|-------------|
 | `/kelo:commit` | 변경 분석 → 한국어 커밋 메시지 자동 생성 (3개 후보) |
 | `/kelo:typeorm-migration` | TypeORM 마이그레이션 SQL 생성 (dev/prod 분리) |
-| `/kelo:update-plugin-ref` | Kelo 의존성 git ref 일괄 업데이트 (`code-plugin` / `architecture-lint` / `leaf-kit`) |
+| `/kelo:update-plugin-ref` | Kelo Dart 의존성 git ref 일괄 업데이트 (`architecture-lint` / `leaf-kit`) |
 
 ### Monorepo (Next.js / NestJS)
 
@@ -144,7 +144,6 @@ Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등
   "framework": "nextjs",
   "projectName": "web",
   "conventionStacks": ["tanstack-query"],
-  "eslintStacks": ["tanstack-query"],
   "tsconfigStacks": [],
   "generateAgents": true
 }
@@ -187,7 +186,7 @@ Init 커맨드 외에 개별 스크립트로도 실행 가능합니다.
 ./scripts/gen-commitlint.mjs -p /path/to/project
 
 # TypeScript (Next.js / NestJS)
-./scripts/typescript/gen-eslint.mjs <framework> -p /path/to/project --with stack1,stack2
+./scripts/typescript/gen-eslint.mjs <framework> -p /path/to/project
 ./scripts/typescript/gen-tsconfig.mjs <framework> -p /path/to/project --with stack1
 ```
 
@@ -204,13 +203,11 @@ Init 커맨드 외에 개별 스크립트로도 실행 가능합니다.
 ```
 rules/<framework>/<stack-name>/
 ├── conventions.md          # 컨벤션 규칙
-├── eslint.rules.mjs        # ESLint rule export (TypeScript만)
 └── tsconfig.patch.json     # TSConfig 패치 (필요 시)
 ```
 
-TypeScript 스택은 `rules/<framework>/index.mjs`의 스택 등록표(`nextjsStacks` / `nestjsStacks`)에
-`eslint.rules.mjs` export를 연결해야 factory가 적용합니다. 새 파일이 패키지에 포함되는지
-`rules/<framework>/package.json`의 `files`도 확인합니다.
+ESLint 규칙에는 스택이 없습니다. 특정 라이브러리 전용 규칙도 `rules/<framework>/base/eslint-rules/`에 둡니다
+(미사용 패키지의 import 금지·없는 파일의 ignore는 무해).
 
 ## ESLint 설정 패키지 (Next.js / NestJS)
 
@@ -230,13 +227,12 @@ import projectConfig from "./eslint.project.config.mjs";
 export default nestjs({ root: import.meta.dirname, project: projectConfig });
 ```
 
-- `kelo.lint.json` — kelo 관리. `stacks`(sync가 갱신) + 프로젝트별 확장 `boundaryElements` / `boundaryRules` / `boundaryIgnores` / `ignores`(sync가 보존)
+- `kelo.lint.json` — 프로젝트 소유. 프로젝트별 확장 `boundaryElements` / `boundaryRules` / `boundaryIgnores` / `ignores` + 추가 금지 목록 (sync가 보존)
 - `eslint.project.config.mjs` — 사용자 소유. 새 규칙·플러그인 **추가만** 허용. kelo 규칙/settings 재정의, `linterOptions`, 전역 ignores는 로드 시 에러
 - inline `eslint-disable` 주석은 무시됩니다 (`noInlineConfig`)
 - `kelo-lint-<framework>` — 프로젝트 `eslint.config.mjs`를 무시하고 패키지 규칙으로 검사. `scripts.lint`(eslint 기반 `lint:ci`/`lint:fix` 포함)와 lint-staged가 모두 이 CLI로 통일됩니다. 경로/`--ignore-pattern` 인자는 `kelo.lint.json`의 `ignores`로 옮깁니다. 에디터 실시간 표시는 `eslint.config.mjs`가 담당합니다
 
-배포는 **npm 레지스트리**입니다: `./deploy.mjs`(버전 범프 + 태그 + `npm publish` + GitHub Release) → 소비 프로젝트는 `package.json`에 플러그인과 같은 정확한 버전(`"eslint-config-kelo-<fw>": "<ver>"`)을 쓰고, `/kelo:update-plugin-ref code-plugin` 또는 sync로 버전을 올립니다. 1.0.0 이전의 Release tarball URL 의존성은 다음 sync 때 레지스트리 버전으로 바뀝니다.
-레거시 `@jkit/code-plugin` git 의존성 프로젝트는 `/kelo:<framework>-sync` 한 번으로 전환됩니다.
+배포는 **npm 레지스트리**입니다: `./deploy.mjs`(버전 범프 + 태그 + `npm publish` + GitHub Release) → 소비 프로젝트는 `package.json`에 플러그인과 같은 정확한 버전(`"eslint-config-kelo-<fw>": "<ver>"`)을 쓰고, sync로 버전을 올립니다. 1.0.0 이전의 Release tarball URL 의존성은 다음 sync 때 레지스트리 버전으로 바뀝니다.
 
 ## Project Preferences (NestJS)
 
@@ -254,7 +250,7 @@ NestJS 소비 프로젝트의 `package.json`에 `kelo-rules` 객체를 두면 �
 |---|---|---|
 | `pathAliasCheck` | `true` | 모든 레이어에서 상대 parent import(`../**`) 차단 룰 OFF — `@/*` path alias 강제 해제 |
 
-> 옵션을 추가하지 않거나 객체 자체를 두지 않으면 모든 검사가 활성된 기본값으로 동작합니다. 레거시 `jkit-rules` 키도 계속 인식되지만 `kelo-rules`로 옮기는 것을 권장합니다. 옛 `jkit.pathAliasCheck` 키는 더 이상 인식되지 않으니 `kelo-rules.pathAliasCheck`로 옮겨주세요.
+> 옵션을 추가하지 않거나 객체 자체를 두지 않으면 모든 검사가 활성된 기본값으로 동작합니다.
 
 ## ESLint 메시지 포매터 (Next.js / NestJS)
 

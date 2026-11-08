@@ -13,7 +13,6 @@ import { globalIgnores } from "eslint/config";
 export const LINT_CONFIG_FILE = "kelo.lint.json";
 
 const LINT_CONFIG_KEYS = new Set([
-  "stacks",
   "boundaryElements",
   "boundaryRules",
   "boundaryIgnores",
@@ -62,7 +61,7 @@ function assertNarrowIgnores(file, data) {
   }
 }
 
-// 프레임워크별 추가 금지 목록 키의 값 검증 — 스택 데이터와 같은 형태만 받는다.
+// 프레임워크별 추가 금지 목록 키의 값 검증 — base 데이터와 같은 형태만 받는다.
 function assertExtraListShapes(file, data, frameworkKeys) {
   for (const key of frameworkKeys) {
     if (data[key] === undefined) continue;
@@ -89,9 +88,9 @@ function assertExtraListShapes(file, data, frameworkKeys) {
 }
 
 /**
- * `<root>/kelo.lint.json`을 읽는다. 파일이 없으면 빈 설정(스택 없음)으로 동작한다.
+ * `<root>/kelo.lint.json`을 읽는다. 파일이 없으면 빈 설정으로 동작한다.
  * 알 수 없는 키는 오타일 가능성이 높으므로 에러로 처리하고, 너무 넓은 제외 패턴은 거부한다.
- * `frameworkKeys`는 프레임워크가 추가로 받는 금지 목록 키 (base·스택 목록 뒤에 추가만 된다).
+ * `frameworkKeys`는 프레임워크가 추가로 받는 금지 목록 키 (base 목록 뒤에 추가만 된다).
  */
 export function loadLintConfig(root, frameworkKeys = []) {
   const file = path.join(root, LINT_CONFIG_FILE);
@@ -114,26 +113,6 @@ export function loadLintConfig(root, frameworkKeys = []) {
   assertNarrowIgnores(file, data);
   assertExtraListShapes(file, data, frameworkKeys);
   return data;
-}
-
-/**
- * 스택 이름 목록을 등록표 항목으로 변환한다. 이름은 정렬해 적용 순서를 고정한다.
- */
-export function resolveStacks(registry, names, framework) {
-  return [...new Set(names)].sort().map((name) => {
-    const stack = registry[name];
-    if (!stack) {
-      throw new Error(
-        `[kelo] 알 수 없는 ${framework} 스택: '${name}' (사용 가능: ${Object.keys(registry).join(", ")})`,
-      );
-    }
-    return stack;
-  });
-}
-
-/** 선택된 스택들의 같은 키 배열을 이어 붙인다. */
-export function pickFromStacks(stacks, key) {
-  return stacks.flatMap((s) => s[key] ?? []);
 }
 
 /** 프로젝트 설정의 global ignore 목록을 flat config 블록으로 변환한다. */

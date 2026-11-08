@@ -56,11 +56,6 @@ fi
 ```bash
 cd "$PROJECT_ROOT"
 MANIFEST_PATH="$PROJECT_ROOT/kelo.project.json"
-# 레거시 이름(jkit.project.json)은 kelo 이름으로 옮긴다
-if [ ! -f "$MANIFEST_PATH" ] && [ -f "$PROJECT_ROOT/jkit.project.json" ]; then
-  if git ls-files --error-unmatch "$PROJECT_ROOT/jkit.project.json" >/dev/null 2>&1; then git mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; else mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; fi
-  echo "[manifest] jkit.project.json → kelo.project.json 이름 변경"
-fi
 
 if [ -f "$MANIFEST_PATH" ]; then
   MF_FRAMEWORK=$(jq -r '.framework // ""' "$MANIFEST_PATH")
@@ -69,21 +64,20 @@ if [ -f "$MANIFEST_PATH" ]; then
     exit 1
   fi
   USER_CONV_STACKS=$(jq -r '(.conventionStacks // []) | join(",")' "$MANIFEST_PATH")
-  USER_ESLINT_STACKS=$(jq -r '(.eslintStacks // []) | join(",")' "$MANIFEST_PATH")
   MANIFEST_MODE="apply"
-  echo "[manifest] apply mode — conv=[$USER_CONV_STACKS] eslint=[$USER_ESLINT_STACKS]"
+  echo "[manifest] apply mode — conv=[$USER_CONV_STACKS]"
 else
   MANIFEST_MODE="prompt"
   echo "[manifest] prompt mode — kelo.project.json 없음. 대화형 진행."
 fi
 ```
 
-- **`MANIFEST_MODE=apply`** → 아래 Step 1~2(스택 선택)를 건너뛰고 로드된 변수를 사용합니다. PM 감지(Step 3)의 확인 프롬프트도 생략하고 감지값을 그대로 씁니다.
+- **`MANIFEST_MODE=apply`** → 아래 Step 1(스택 선택)를 건너뛰고 로드된 변수를 사용합니다. PM 감지(Step 2)의 확인 프롬프트도 생략하고 감지값을 그대로 씁니다.
 - **`MANIFEST_MODE=prompt`** → 기존대로 프롬프트하고, 마지막에 매니페스트 작성을 제안합니다.
 
 ## 단계
 
-> **`MANIFEST_MODE=apply`인 경우** 아래 Step 1~2를 건너뛰고 로드된 `USER_CONV_STACKS`, `USER_ESLINT_STACKS`를 사용하세요.
+> **`MANIFEST_MODE=apply`인 경우** 아래 Step 1을 건너뛰고 로드된 `USER_CONV_STACKS`를 사용하세요.
 
 ### 1. 컨벤션 스택 선택
 
@@ -93,17 +87,9 @@ fi
 1. `tanstack-query`
 2. `next-proxy`
 
-### 2. ESLint 스택 선택
+### 2. 패키지 매니저 감지
 
-아래 **ESLint** 스택을 보여주고 사용자에게 선택을 받습니다 (쉼표 구분, 전부 선택은 `all`, 비우면 base만 적용).
-**중요: ESLint 스택은 컨벤션 스택과 동일하지 않습니다. 이전 대화·세션 컨텍스트와 무관하게, 매 실행마다 아래 2개 항목을 모두 그대로 노출해야 합니다 — 항목을 임의로 생략하거나 이전 응답에서 사용한 축약 목록을 재사용하지 마세요.**
-
-1. `tanstack-query`
-2. `next-proxy`
-
-### 3. 패키지 매니저 감지
-
-Step 5의 install 명령을 프로젝트가 이미 쓰는 패키지 매니저에 맞추기 위해 감지합니다.
+Step 4의 install 명령을 프로젝트가 이미 쓰는 패키지 매니저에 맞추기 위해 감지합니다.
 
 ```bash
 cd "$PROJECT_ROOT"
@@ -128,7 +114,7 @@ PM=$(detect_pm)
 
 사용자에게 감지 결과를 보여주고 확인을 받습니다: **"감지된 매니저: {PM}. 사용할까요? 다른 매니저를 원하면 npm / yarn / pnpm / bun 중 선택."**
 
-### 4. Docs / Lint 재생성
+### 3. Docs / Lint 재생성
 
 ```bash
 cd "$PROJECT_ROOT"
@@ -139,10 +125,7 @@ $KELO_DIR/scripts/gen-git.mjs -p docs
 # 2. ARCHITECTURE.md
 $KELO_DIR/scripts/gen-architecture.mjs nextjs -p docs
 
-# 3. STRUCTURE.md (lint-rules-structure-reference 복사)
-$KELO_DIR/scripts/gen-structure.mjs nextjs -p docs
-
-# 4. CONVENTIONS.md (PROJECT는 절대 건드리지 않음 — 없어도 새로 만들지 않음)
+# 3. CONVENTIONS.md (PROJECT는 절대 건드리지 않음 — 없어도 새로 만들지 않음)
 # prompt 모드: Step 1 선택값을 대입. apply 모드: 매니페스트 분기에서 이미 설정됨.
 [ "$MANIFEST_MODE" = "prompt" ] && USER_CONV_STACKS="<conventions-stacks>"
 if [ -n "$USER_CONV_STACKS" ]; then
@@ -151,35 +134,24 @@ else
   $KELO_DIR/scripts/gen-conventions.mjs nextjs -p docs --no-project-init
 fi
 
-# prompt 모드: Step 2 선택값을 대입. apply 모드: 이미 설정됨.
-[ "$MANIFEST_MODE" = "prompt" ] && USER_ESLINT_STACKS="<eslint-stacks>"
+# 4. LINT.md (lint-rules + structure-reference + stylelint-rules)
+$KELO_DIR/scripts/gen-lint.mjs nextjs -p docs
 
-# 5. LINT.md (lint-rules + structure-reference + stylelint-rules + 선택 stack lint-rules)
-if [ -n "$USER_ESLINT_STACKS" ]; then
-  $KELO_DIR/scripts/gen-lint.mjs nextjs -p docs --with "$USER_ESLINT_STACKS"
-else
-  $KELO_DIR/scripts/gen-lint.mjs nextjs -p docs
-fi
+# 5. ESLint config (eslint.config.mjs + kelo.lint.json(없으면 생성), package.json의 eslint-config-kelo-nextjs 버전 + lint-staged + scripts.lint(→ kelo-lint CLI 통일) 갱신)
+$KELO_DIR/scripts/typescript/gen-eslint.mjs nextjs -p .
 
-# 6. ESLint config (eslint.config.mjs + kelo.lint.json(stacks) 재생성, package.json의 eslint-config-kelo-nextjs 버전 + lint-staged + scripts.lint(→ kelo-lint CLI 통일) 갱신 — 레거시 @jkit/code-plugin은 제거)
-if [ -n "$USER_ESLINT_STACKS" ]; then
-  $KELO_DIR/scripts/typescript/gen-eslint.mjs nextjs -p . --with "$USER_ESLINT_STACKS"
-else
-  $KELO_DIR/scripts/typescript/gen-eslint.mjs nextjs -p .
-fi
-
-# 7. Stylelint config (항상 실행, 스택 선택 없음)
+# 6. Stylelint config (항상 실행, 스택 선택 없음)
 $KELO_DIR/scripts/typescript/gen-stylelint.mjs nextjs -p .
 
-# 8. Prettier config (항상 실행, 스택 선택 없음)
+# 7. Prettier config (항상 실행, 스택 선택 없음)
 #    - prettier.config.mjs 덮어쓰기
 #    - package.json: prettier(+plugin-tailwindcss) devDeps + scripts.format + lint-staged 글로브 갱신
 $KELO_DIR/scripts/typescript/gen-prettier.mjs nextjs -p .
 
-# 9. Husky hooks (.husky/* 덮어쓰기 + package.json husky/@commitlint/lint-staged devDeps와 scripts.prepare 패치)
+# 8. Husky hooks (.husky/* 덮어쓰기 + package.json husky/@commitlint/lint-staged devDeps와 scripts.prepare 패치)
 $KELO_DIR/scripts/gen-husky.mjs nextjs -p .
 
-# 10. commitlint.config.mjs 부트스트랩 (이미 있으면 보존)
+# 9. commitlint.config.mjs 부트스트랩 (이미 있으면 보존)
 #     init을 거치지 않은 프로젝트에서 commit-msg 훅이 commitlint config 부재로 실패하는 것을 방지.
 [ -f commitlint.config.mjs ] || $KELO_DIR/scripts/gen-commitlint.mjs -p .
 ```
@@ -188,9 +160,9 @@ $KELO_DIR/scripts/gen-husky.mjs nextjs -p .
 
 > husky 훅 sync는 `.husky/` 파일과 `package.json` devDeps/`scripts.prepare`를 모두 덮어씁니다. 사용자 수정 훅은 보존되지 않으므로 프로젝트별 커스터마이즈는 kelo 체크아웃의 `rules/nextjs/base/husky/` 템플릿을 fork해야 합니다.
 
-### 5. 의존성 재설치
+### 4. 의존성 재설치
 
-`eslint-config-kelo-nextjs` 버전이 갱신되었으므로(레거시 `@jkit/code-plugin` git 의존성에서 전환된 경우 포함) install로 동기화합니다.
+`eslint-config-kelo-nextjs` 버전이 갱신되었으므로 install로 동기화합니다.
 
 ```bash
 cd "$PROJECT_ROOT"
@@ -201,12 +173,12 @@ case "$PM" in
   bun)  bun install ;;
 esac
 # kelo가 생성한 docs를 프로젝트 prettier 설정으로 맞춤 — lint:ci의 prettier --check가 생성물 때문에 실패하지 않도록 (prettier가 없으면 건너뜀)
-ls docs/GIT.md docs/ARCHITECTURE.md docs/STRUCTURE.md docs/CONVENTIONS.md docs/LINT.md 2>/dev/null | xargs npx --no-install prettier --write >/dev/null 2>&1 || true
+ls docs/GIT.md docs/ARCHITECTURE.md docs/CONVENTIONS.md docs/LINT.md 2>/dev/null | xargs npx --no-install prettier --write >/dev/null 2>&1 || true
 ```
 
 #### peer 누락 보강
 
-기존 프로젝트가 레거시 `@jkit/code-plugin` 또는 구버전 `eslint-config-kelo-nextjs`로 설치되어 신규 peer가 누락된 경우 보강합니다. 이미 범위를 만족하는 peer는 `missing-peers.mjs`가 걸러 기존 범위(예: `^16.3.6`)를 덮어쓰지 않습니다. `eslint-plugin-boundaries@^7`(규칙이 v7 `policies` 문법 사용)과 `eslint-config-next@^16`(`core-web-vitals` flat subpath — v16+)은 메이저를 명시해, 구버전이 설치된 기존 프로젝트도 함께 올립니다.
+기존 프로젝트가 구버전 `eslint-config-kelo-nextjs`로 설치되어 신규 peer가 누락된 경우 보강합니다. 이미 범위를 만족하는 peer는 `missing-peers.mjs`가 걸러 기존 범위(예: `^16.3.6`)를 덮어쓰지 않습니다. `eslint-plugin-boundaries@^7`(규칙이 v7 `policies` 문법 사용)과 `eslint-config-next@^16`(`core-web-vitals` flat subpath — v16+)은 메이저를 명시해, 구버전이 설치된 기존 프로젝트도 함께 올립니다.
 
 `typescript-eslint`는 `eslint-config-next@16+`가 transitive로 가져오므로 top-level에 명시하지 않는다. 명시 설치 시 `@typescript-eslint` 플러그인이 두 인스턴스로 등록되어 flat config가 거부한다. `gen-eslint.mjs`가 user `package.json`에 항목이 남아 있으면 자동으로 제거한다.
 
@@ -224,7 +196,7 @@ NEXTJS_PEERS=$($KELO_DIR/scripts/typescript/missing-peers.mjs -p . $NEXTJS_PEERS
 esac
 ```
 
-### 6. 매니페스트 작성 제안 (`MANIFEST_MODE=prompt`인 경우만)
+### 5. 매니페스트 작성 제안 (`MANIFEST_MODE=prompt`인 경우만)
 
 prompt 모드로 진행했다면, 다음 sync부터 무인 재현되도록 `kelo.project.json` 작성을 **제안**합니다. sync는 강제하지 않으므로 사용자가 동의할 때만 작성합니다. `projectName`은 디렉토리명, `generateAgents`는 `true`를 기본값으로 넣고 사용자가 나중에 조정할 수 있다고 안내합니다.
 
@@ -235,26 +207,24 @@ to_arr() { [ -z "$1" ] && echo "[]" || jq -cn --arg s "$1" '$s | split(",")'; }
 jq -n \
   --arg name "$(basename "$PROJECT_ROOT")" \
   --argjson conv "$(to_arr "$USER_CONV_STACKS")" \
-  --argjson eslint "$(to_arr "$USER_ESLINT_STACKS")" \
-  '{framework:"nextjs", projectName:$name, conventionStacks:$conv, eslintStacks:$eslint, tsconfigStacks:[], generateAgents:true}' \
+  '{framework:"nextjs", projectName:$name, conventionStacks:$conv, tsconfigStacks:[], generateAgents:true}' \
   > "$MANIFEST_PATH"
 echo "[manifest] 작성: $MANIFEST_PATH"
 ```
 
-### 7. 보고
+### 6. 보고
 
 사용자에게 갱신된 항목을 보고합니다:
 
 - `docs/GIT.md` — Git & GitHub 가이드 (덮어쓰기)
 - `docs/ARCHITECTURE.md` — 아키텍처 상세 (덮어쓰기)
-- `docs/STRUCTURE.md` — lint 룰이 가정하는 디렉토리 구조 참조 (덮어쓰기)
 - `docs/CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (덮어쓰기, 하단 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `docs/LINT.md` — Lint 규칙 참조 (덮어쓰기)
 - `eslint.config.mjs` — `eslint-config-kelo-nextjs` factory 호출 (덮어쓰기)
-- `kelo.lint.json` — `stacks` 갱신, 그 외 키(경계 확장·ignores)는 보존
+- `kelo.lint.json` — 프로젝트 소유 (없을 때만 생성, 있으면 보존)
 - `eslint.project.config.mjs` — 사용자 소유 프로젝트 전용 규칙 추가 파일 (있으면 보존, 없을 때만 스텁 생성)
 - `stylelint.config.mjs` — `eslint-config-kelo-nextjs/stylelint` preset re-export (덮어쓰기)
 - `.husky/pre-commit`, `.husky/commit-msg` — husky 훅 (덮어쓰기)
-- `package.json` — `eslint-config-kelo-nextjs` 버전(레거시 `@jkit/code-plugin` 제거) + lint-staged(`kelo-lint-nextjs --fix`) + `scripts.lint`(→ `kelo-lint-nextjs`) + `devDependencies`(`husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional`) + `scripts.prepare` 갱신 (그 외 필드는 보존)
+- `package.json` — `eslint-config-kelo-nextjs` 버전 + lint-staged(`kelo-lint-nextjs --fix`) + `scripts.lint`(→ `kelo-lint-nextjs`) + `devDependencies`(`husky`, `lint-staged`, `@commitlint/cli`, `@commitlint/config-conventional`) + `scripts.prepare` 갱신 (그 외 필드는 보존)
 
 > 보존된 사용자 소유 파일: `AGENTS.md`, `AGENTS.PROJECT.md`, `CONVENTIONS.PROJECT.md`, `eslint.project.config.mjs`, `tsconfig.json`, `commitlint.config.mjs`, `kelo.project.json`.

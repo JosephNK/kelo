@@ -7,7 +7,7 @@
 //   import projectConfig from "./eslint.project.config.mjs";
 //   export default nextjs({ root: import.meta.dirname, project: projectConfig });
 //
-// 스택과 프로젝트별 확장(boundary element/rule/ignore, 전역 ignore)은
+// 프로젝트별 확장(boundary element/rule/ignore, 전역 ignore, 추가 금지 목록)은
 // `<root>/kelo.lint.json`에서 읽는다. 블록 순서는 뒤가 앞을 override하므로
 // 아래 조립 순서를 바꾸지 않는다.
 // =============================================================================
@@ -32,41 +32,8 @@ import {
   assertProjectConfig,
   loadLintConfig,
   lockInlineConfigBlock,
-  pickFromStacks,
   projectIgnoresBlock,
-  resolveStacks,
 } from "./lib/factory-helpers.mjs";
-import { nextProxyBoundaryIgnores } from "./next-proxy/eslint.rules.mjs";
-import { tanstackQueryDomainBannedPackages } from "./tanstack-query/eslint.rules.mjs";
-
-/**
- * 스택 등록표 — `kelo.lint.json`의 `stacks` 이름 → 스택이 기여하는 데이터.
- * 키: restrictedPatterns, domainBannedPackages, restrictedSyntax,
- *     boundaryElements, boundaryRules, boundaryPatches, boundaryIgnores, customConfig
- */
-export const nextjsStacks = {
-  "next-proxy": {
-    boundaryIgnores: nextProxyBoundaryIgnores,
-  },
-  "tanstack-query": {
-    domainBannedPackages: tanstackQueryDomainBannedPackages,
-  },
-};
-
-/**
- * base 규칙의 `allow` 배열에 스택별 추가 허용 항목을 덧붙인다.
- * patches 예시: [{ from: 'http-repository', allow: { to: { type: 'db' } } }]
- */
-function patchBoundaryRules(rules, patches) {
-  return rules.map((rule) => {
-    const matching = patches.filter((p) => p.from === rule.from?.type);
-    if (matching.length === 0) return rule;
-    return {
-      ...rule,
-      allow: [...(rule.allow || []), ...matching.map((p) => p.allow)],
-    };
-  });
-}
 
 /** kelo.lint.json에서 nextjs가 추가로 받는 금지 목록 키 (추가만, 기존 목록 제거 불가). */
 const NEXTJS_LINT_CONFIG_KEYS = ["domainBannedPackages", "restrictedPatterns"];
@@ -76,13 +43,9 @@ const NEXTJS_LINT_CONFIG_KEYS = ["domainBannedPackages", "restrictedPatterns"];
  * `nextjs()`와 CLI(`kelo-lint-nextjs`)가 공유한다.
  */
 function buildKeloBlocks(root, lintConfig) {
-  const stacks = resolveStacks(nextjsStacks, lintConfig.stacks ?? [], "nextjs");
-  const pick = (key) => pickFromStacks(stacks, key);
-
   // 전역 + 도메인 순수성 양쪽에서 공통으로 사용되는 import 금지 패턴
   const allRestrictedPatterns = [
     ...baseRestrictedPatterns,
-    ...pick("restrictedPatterns"),
     ...(lintConfig.restrictedPatterns ?? []),
   ];
 
@@ -100,62 +63,39 @@ function buildKeloBlocks(root, lintConfig) {
       },
     },
 
-    // [3] 전역 import 제한 (base + 스택)
+    // [3] 전역 import 제한 (base + kelo.lint.json)
     ...buildRestrictedImports(allRestrictedPatterns),
 
     // [4] 도메인 순수성 — 프레임워크/브라우저 글로벌 차단
     ...buildDomainPurity(
-      [
-        ...baseDomainBannedPackages,
-        ...pick("domainBannedPackages"),
-        ...(lintConfig.domainBannedPackages ?? []),
-      ],
+      [...baseDomainBannedPackages, ...(lintConfig.domainBannedPackages ?? [])],
       allRestrictedPatterns,
     ),
 
     // [5] AST selector 기반 금지 구문 — Server Component 룰보다 먼저 (warn)
     {
       rules: {
-        "no-restricted-syntax": [
-          "warn",
-          ...baseRestrictedSyntax,
-          ...pick("restrictedSyntax"),
-        ],
+        "no-restricted-syntax": ["warn", ...baseRestrictedSyntax],
       },
     },
 
     // [6] Server Component 전용 — src/app/** 에서 Hook 호출 금지 (error)
     ...baseServerComponentRules,
 
-    // [7] 아키텍처 경계 — base + 스택 + kelo.lint.json 확장
-    // catch-all(`fallback: true`)은 스택·프로젝트 element 뒤로 — first-match라 앞에 두면 가려진다
+    // [7] 아키텍처 경계 — base + kelo.lint.json 확장
+    // catch-all(`fallback: true`)은 프로젝트 element 뒤로 — first-match라 앞에 두면 가려진다
     ...buildArchitectureBoundaries(
       orderBoundaryElements([
         ...baseBoundaryElements,
-        ...pick("boundaryElements"),
         ...(lintConfig.boundaryElements ?? []),
       ]),
-      patchBoundaryRules(
-        [
-          ...baseBoundaryRules,
-          ...pick("boundaryRules"),
-          ...(lintConfig.boundaryRules ?? []),
-        ],
-        pick("boundaryPatches"),
-      ),
-      [
-        ...baseBoundaryIgnores,
-        ...pick("boundaryIgnores"),
-        ...(lintConfig.boundaryIgnores ?? []),
-      ],
+      [...baseBoundaryRules, ...(lintConfig.boundaryRules ?? [])],
+      [...baseBoundaryIgnores, ...(lintConfig.boundaryIgnores ?? [])],
       root,
     ),
 
     // [8] 프로젝트 공용 custom 룰 (conventions.md 강제)
     ...baseCustomRules,
-
-    // [8-1] 스택별 custom config (per-path rule override 등)
-    ...pick("customConfig"),
   ];
 }
 

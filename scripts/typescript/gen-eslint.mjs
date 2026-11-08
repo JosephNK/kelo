@@ -6,28 +6,25 @@
 // Writes into <output-dir>:
 //   - eslint.config.mjs          (kelo-managed, always overwritten) — a few lines
 //                                that call the package factory
-//   - kelo.lint.json             (kelo-managed) — `stacks` is rewritten from
-//                                --with; other keys (boundaryElements,
-//                                boundaryRules, boundaryIgnores, ignores) are
-//                                preserved
+//   - kelo.lint.json             (project-owned) — created as `{}` only when
+//                                absent
 //   - eslint.project.config.mjs  (user-owned) — stub created only when absent;
 //                                may ADD rules, may not change kelo rules (the
 //                                factory throws)
 //
 // Also patches the user's package.json:
 //   - devDependencies: `eslint-config-kelo-<framework>` → GitHub Release
-//     tarball URL of v<version> (rules/<framework>/package.json); removes the legacy
-//     `@jkit/code-plugin` git dependency
+//     tarball URL of v<version> (rules/<framework>/package.json)
 //   - lint-staged: `*.{ts,tsx,js,jsx,mjs}` runs `kelo-lint-<framework> --fix`
 //     (legacy `eslint --fix` entries are replaced)
 //   - scripts.lint: `kelo-lint-<framework>` — the single lint entry point
 //     (ignores eslint.config.mjs edits). Existing `eslint …` values of
 //     `lint` / `lint:ci` / `lint:fix` are replaced (`lint:fix` gets `--fix`);
 //     move path arguments such as `--ignore-pattern` to kelo.lint.json
-//     `ignores`. A legacy `lint:jkit` script is removed.
+//     `ignores`.
 //
 // Usage:
-//   gen-eslint.mjs <framework> -p <output-dir> [--with stack1,stack2,...]
+//   gen-eslint.mjs <framework> -p <output-dir>
 // =============================================================================
 
 import fs from "node:fs";
@@ -37,22 +34,20 @@ import { fileURLToPath } from "node:url";
 
 import { keloPackageSpec, patchLintStaged, pyReprStr } from "../common.mjs";
 
-const HELP = `Usage: gen-eslint.mjs <framework> -p <output-dir> [--with stack1,stack2,...]
+const HELP = `Usage: gen-eslint.mjs <framework> -p <output-dir>
 
 Arguments:
   <framework>    Framework name (nextjs, nestjs)
 
 Options:
   -p <dir>       Output directory (required)
-  --with <list>  Comma-separated stacks (e.g. tanstack-query,next-proxy)
   -h, --help     Show this help
 
 Examples:
-  ./scripts/typescript/gen-eslint.mjs nextjs -p ./my-project --with tanstack-query,next-proxy
-  ./scripts/typescript/gen-eslint.mjs nestjs -p ./my-project --with typeorm
+  ./scripts/typescript/gen-eslint.mjs nextjs -p ./my-project
+  ./scripts/typescript/gen-eslint.mjs nestjs -p ./my-project
 `;
 
-const LEGACY_PACKAGE = "@jkit/code-plugin";
 const LINT_CONFIG_FILE = "kelo.lint.json";
 
 function usage(code = 1) {
@@ -64,7 +59,7 @@ function usage(code = 1) {
 function renderEslintConfig(pkgName, factory) {
   return `// GENERATED FILE - DO NOT MODIFY BY HAND
 // Managed by kelo (overwritten by /kelo:${factory}-init and -sync).
-// Rules: ${pkgName} | Stacks: kelo.lint.json | Project rules: eslint.project.config.mjs
+// Rules: ${pkgName} | Project extensions: kelo.lint.json | Project rules: eslint.project.config.mjs
 
 import { ${factory} } from "${pkgName}";
 
@@ -107,7 +102,7 @@ export default projectConfig;
 `;
 
 function parseArgs(argv) {
-  const args = { framework: "", outputDir: "", stacks: "" };
+  const args = { framework: "", outputDir: "" };
   const rest = argv.slice(2);
 
   if (rest.length >= 1 && !rest[0].startsWith("-")) {
@@ -123,13 +118,6 @@ function parseArgs(argv) {
           usage();
         }
         args.outputDir = rest.shift();
-        break;
-      case "--with":
-        if (!rest.length) {
-          process.stderr.write("--with requires a stack list\n");
-          usage();
-        }
-        args.stacks = rest.shift();
         break;
       case "-h":
       case "--help":
@@ -153,56 +141,14 @@ function parseArgs(argv) {
   return args;
 }
 
-function splitStacks(raw) {
-  if (!raw) return [];
-  return raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-}
-
-// 스택은 rules/<framework>/<stack>/eslint.rules.mjs가 있어야 유효하다
-// (패키지 factory의 스택 등록표와 1:1). 없으면 경고 후 제외 — factory가
-// 알 수 없는 스택에 에러를 내므로 kelo.lint.json에 남기지 않는다.
-function validateStacks(rulesDir, stacks) {
-  const valid = [];
-  for (const stack of stacks) {
-    const rulesFile = path.join(rulesDir, stack, "eslint.rules.mjs");
-    if (fs.existsSync(rulesFile)) {
-      valid.push(stack);
-    } else {
-      process.stderr.write(
-        `Warning: Unknown stack '${stack}' (no ${rulesFile}) — skipped\n`,
-      );
-    }
-  }
-  return [...new Set(valid)].sort();
-}
-
-function writeLintConfig(outputDir, stacks) {
+function writeLintConfig(outputDir) {
   const file = path.join(outputDir, LINT_CONFIG_FILE);
-  const existed = fs.existsSync(file);
-  let current = {};
-  if (existed) {
-    try {
-      current = JSON.parse(fs.readFileSync(file, "utf8"));
-    } catch {
-      process.stderr.write(`Error: ${file} is not valid JSON — fix it first\n`);
-      process.exit(1);
-    }
+  if (fs.existsSync(file)) {
+    process.stdout.write(`  Preserved: ${file} (project-owned)\n`);
+    return;
   }
-  const next = { ...current, stacks };
-  let verb = "Created:";
-  if (existed) {
-    verb =
-      JSON.stringify(current) === JSON.stringify(next)
-        ? "Unchanged:"
-        : "Updated:";
-  }
-  fs.writeFileSync(file, JSON.stringify(next, null, 2) + "\n");
-  process.stdout.write(
-    `  ${verb.padEnd(10)} ${file} (stacks: ${stacks.join(", ") || "none"})\n`,
-  );
+  fs.writeFileSync(file, "{}\n");
+  process.stdout.write(`  Created:   ${file} (project-owned)\n`);
 }
 
 // lint-staged의 레거시 `eslint --fix`를 모든 glob에서 CLI로 교체하고,
@@ -254,16 +200,14 @@ function main() {
     process.exit(1);
   }
 
-  const stacks = validateStacks(rulesDir, splitStacks(args.stacks));
-
   // ── eslint.config.mjs (kelo-managed) ──────────────────────────────────────
   fs.mkdirSync(args.outputDir, { recursive: true });
   const outputFile = path.join(args.outputDir, "eslint.config.mjs");
   fs.writeFileSync(outputFile, renderEslintConfig(configPkg.name, factory));
   process.stdout.write(`Generated: ${outputFile}\n`);
 
-  // ── kelo.lint.json (stacks rewritten, other keys preserved) ──────────────
-  writeLintConfig(args.outputDir, stacks);
+  // ── kelo.lint.json (project-owned; created when absent) ─────────────────
+  writeLintConfig(args.outputDir);
 
   // ── eslint.project.config.mjs (user-owned, preserved on sync) ────────────
   const projectConfigFile = path.join(
@@ -291,13 +235,6 @@ function main() {
     notes.push(`  Updated:   ${configPkg.name} ${old} → ${depSpec}`);
   } else {
     notes.push(`  Added:     ${configPkg.name} → ${depSpec}`);
-  }
-
-  if (LEGACY_PACKAGE in dev) {
-    notes.push(
-      `  Removed:   ${LEGACY_PACKAGE} (${dev[LEGACY_PACKAGE]}) — replaced by ${configPkg.name}`,
-    );
-    delete dev[LEGACY_PACKAGE];
   }
 
   // Next.js 16+ baseline: eslint-config-next가 typescript-eslint(unified meta)를
@@ -365,10 +302,6 @@ function main() {
       );
     }
   }
-  if ("lint:jkit" in scripts) {
-    delete scripts["lint:jkit"];
-    notes.push("  Removed:   scripts.lint:jkit (scripts.lint로 통일)");
-  }
   pkg.scripts = scripts;
 
   fs.writeFileSync(userPkgPath, JSON.stringify(pkg, null, 2) + "\n");
@@ -376,9 +309,6 @@ function main() {
 
   process.stdout.write("\n");
   process.stdout.write(`Next step: run 'npm install' in ${args.outputDir}\n`);
-  if (stacks.length > 0) {
-    process.stdout.write(`Stacks: ${stacks.join(",")}\n`);
-  }
 }
 
 main();

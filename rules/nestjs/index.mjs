@@ -7,7 +7,7 @@
 //   import projectConfig from "./eslint.project.config.mjs";
 //   export default nestjs({ root: import.meta.dirname, project: projectConfig });
 //
-// 스택과 프로젝트별 확장(boundary element/rule/ignore, 전역 ignore)은
+// 프로젝트별 확장(boundary element/rule/ignore, 전역 ignore, 추가 금지 목록)은
 // `<root>/kelo.lint.json`에서 읽는다. 블록 순서는 뒤가 앞을 override하므로
 // 아래 조립 순서를 바꾸지 않는다.
 // =============================================================================
@@ -31,22 +31,8 @@ import {
   assertProjectConfig,
   loadLintConfig,
   lockInlineConfigBlock,
-  pickFromStacks,
   projectIgnoresBlock,
-  resolveStacks,
 } from "./lib/factory-helpers.mjs";
-import { typeormFrameworkBannedPackages } from "./typeorm/eslint.rules.mjs";
-
-/**
- * 스택 등록표 — `kelo.lint.json`의 `stacks` 이름 → 스택이 기여하는 데이터.
- * 키: frameworkBannedPackages, infraBannedPackages, boundaryElements,
- *     boundaryRules, boundaryIgnores, customConfig
- */
-export const nestjsStacks = {
-  typeorm: {
-    frameworkBannedPackages: typeormFrameworkBannedPackages,
-  },
-};
 
 /** kelo.lint.json에서 nestjs가 추가로 받는 금지 목록 키 (추가만, 기존 목록 제거 불가). */
 const NESTJS_LINT_CONFIG_KEYS = [
@@ -59,9 +45,6 @@ const NESTJS_LINT_CONFIG_KEYS = [
  * `nestjs()`와 CLI(`kelo-lint-nestjs`)가 공유한다.
  */
 function buildKeloBlocks(root, lintConfig) {
-  const stacks = resolveStacks(nestjsStacks, lintConfig.stacks ?? [], "nestjs");
-  const pick = (key) => pickFromStacks(stacks, key);
-
   return [
     // [1] 베이스 (ESLint + TS + Prettier + 공통 스타일 + 테스트 완화)
     ...baseConfig,
@@ -81,36 +64,20 @@ function buildKeloBlocks(root, lintConfig) {
     ...buildLayerRestrictions(
       [
         ...baseFrameworkBannedPackages,
-        ...pick("frameworkBannedPackages"),
         ...(lintConfig.frameworkBannedPackages ?? []),
       ],
-      [
-        ...pick("infraBannedPackages"),
-        ...(lintConfig.infraBannedPackages ?? []),
-      ],
+      lintConfig.infraBannedPackages ?? [],
       resolvePathAliasPattern(root),
     ),
 
     // [4] 불변성 — Entity와 DTO 필드에 readonly 강제
     ...baseImmutabilityRules,
 
-    // [5] 아키텍처 경계 — base + 스택 + kelo.lint.json 확장
+    // [5] 아키텍처 경계 — base + kelo.lint.json 확장
     ...buildArchitectureBoundaries(
-      [
-        ...baseBoundaryElements,
-        ...pick("boundaryElements"),
-        ...(lintConfig.boundaryElements ?? []),
-      ],
-      [
-        ...baseBoundaryRules,
-        ...pick("boundaryRules"),
-        ...(lintConfig.boundaryRules ?? []),
-      ],
-      [
-        ...baseBoundaryIgnores,
-        ...pick("boundaryIgnores"),
-        ...(lintConfig.boundaryIgnores ?? []),
-      ],
+      [...baseBoundaryElements, ...(lintConfig.boundaryElements ?? [])],
+      [...baseBoundaryRules, ...(lintConfig.boundaryRules ?? [])],
+      [...baseBoundaryIgnores, ...(lintConfig.boundaryIgnores ?? [])],
       root,
     ),
 
@@ -122,9 +89,6 @@ function buildKeloBlocks(root, lintConfig) {
 
     // [7-1] 순환 의존성 감지
     ...baseImportCycleRules,
-
-    // [7-2] 스택별 custom config
-    ...pick("customConfig"),
   ];
 }
 

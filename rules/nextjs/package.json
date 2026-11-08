@@ -38,8 +38,7 @@
     "base/eslint-rules/",
     "base/custom-rules/",
     "base/stylelint.rules.mjs",
-    "base/stylelint.preset.mjs",
-    "*/eslint.rules.mjs"
+    "base/stylelint.preset.mjs"
   ],
   "peerDependencies": {
     "eslint": "^9.22.0",

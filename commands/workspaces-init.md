@@ -28,7 +28,6 @@ argument-hint: '[manifest-path]'
       "framework": "nextjs",
       "projectName": "web",
       "conventionStacks": ["tanstack-query"],
-      "eslintStacks": ["tanstack-query"],
       "tsconfigStacks": [],
       "generateAgents": true
     }
@@ -57,11 +56,6 @@ if [ -n "$MANIFEST_ARG" ]; then
   esac
 else
   MANIFEST_PATH="$MONOREPO_ROOT/kelo.workspaces.json"
-  # 레거시 이름(jkit.workspaces.json)은 kelo 이름으로 옮긴다
-  if [ ! -f "$MANIFEST_PATH" ] && [ -f "$MONOREPO_ROOT/jkit.workspaces.json" ]; then
-    if git ls-files --error-unmatch "$MONOREPO_ROOT/jkit.workspaces.json" >/dev/null 2>&1; then git mv "$MONOREPO_ROOT/jkit.workspaces.json" "$MANIFEST_PATH"; else mv "$MONOREPO_ROOT/jkit.workspaces.json" "$MANIFEST_PATH"; fi
-    echo "[manifest] jkit.workspaces.json → kelo.workspaces.json 이름 변경"
-  fi
 fi
 ```
 
@@ -149,13 +143,10 @@ detect_framework() {
 2. **컨벤션 스택** — framework에 따라 다른 선택지:
    - nextjs: `tanstack-query`, `next-proxy`
    - nestjs: `typeorm`
-3. **ESLint 스택** — framework에 따라:
-   - nextjs: `tanstack-query`, `next-proxy`
-   - nestjs: `typeorm`
-4. **tsconfig 스택** — framework에 따라:
+3. **tsconfig 스택** — framework에 따라:
    - nextjs: (없음 — skip)
    - nestjs: `typeorm`
-5. **AGENTS.md 생성 여부** (기본값: yes)
+4. **AGENTS.md 생성 여부** (기본값: yes)
 
 > 매 실행마다 위 항목을 모두 그대로 노출해야 합니다. 이전 응답 컨텍스트의 축약 목록을 재사용하지 마세요.
 
@@ -210,7 +201,6 @@ for i in $(seq 0 $((WS_COUNT - 1))); do
   WS_FRAMEWORK=$(jq -r ".workspaces[$i].framework" "$MANIFEST_PATH")
   WS_NAME=$(jq -r ".workspaces[$i].projectName // \"\"" "$MANIFEST_PATH")
   WS_CONV_STACKS=$(jq -r ".workspaces[$i].conventionStacks // [] | join(\",\")" "$MANIFEST_PATH")
-  WS_ESLINT_STACKS=$(jq -r ".workspaces[$i].eslintStacks // [] | join(\",\")" "$MANIFEST_PATH")
   WS_TSCONFIG_STACKS=$(jq -r ".workspaces[$i].tsconfigStacks // [] | join(\",\")" "$MANIFEST_PATH")
   WS_GEN_AGENTS=$(jq -r ".workspaces[$i].generateAgents // true" "$MANIFEST_PATH")
   PROJECT_ROOT="$MONOREPO_ROOT/$WS_PATH"
@@ -227,11 +217,6 @@ for i in $(seq 0 $((WS_COUNT - 1))); do
   echo ""
   echo "=== Initializing $WS_PATH ($WS_FRAMEWORK) ==="
   cd "$PROJECT_ROOT"
-  # 워크스페이스의 레거시 매니페스트(jkit.project.json)도 kelo 이름으로 옮긴다 (git 추적 파일이면 git mv로 이력 유지)
-  if [ -f jkit.project.json ] && [ ! -f kelo.project.json ]; then
-    if git ls-files --error-unmatch jkit.project.json >/dev/null 2>&1; then git mv jkit.project.json kelo.project.json; else mv jkit.project.json kelo.project.json; fi
-    echo "[manifest] $WS_PATH/jkit.project.json → kelo.project.json 이름 변경"
-  fi
 
   # package.json 보장
   if [ ! -f package.json ]; then
@@ -257,19 +242,13 @@ for i in $(seq 0 $((WS_COUNT - 1))); do
 
       $KELO_DIR/scripts/gen-git.mjs -p docs                                                                   && \
       $KELO_DIR/scripts/gen-architecture.mjs nextjs -p docs                                                   && \
-      $KELO_DIR/scripts/gen-structure.mjs nextjs -p docs                                                      && \
       if [ -n "$WS_CONV_STACKS" ]; then
         $KELO_DIR/scripts/gen-conventions.mjs nextjs -p docs --with "$WS_CONV_STACKS"
       else
         $KELO_DIR/scripts/gen-conventions.mjs nextjs -p docs
       fi                                                                                                      && \
-      if [ -n "$WS_ESLINT_STACKS" ]; then
-        $KELO_DIR/scripts/gen-lint.mjs nextjs -p docs --with "$WS_ESLINT_STACKS"                              && \
-        $KELO_DIR/scripts/typescript/gen-eslint.mjs nextjs -p . --with "$WS_ESLINT_STACKS"
-      else
-        $KELO_DIR/scripts/gen-lint.mjs nextjs -p docs                                                         && \
-        $KELO_DIR/scripts/typescript/gen-eslint.mjs nextjs -p .
-      fi                                                                                                      && \
+      $KELO_DIR/scripts/gen-lint.mjs nextjs -p docs && \
+      $KELO_DIR/scripts/typescript/gen-eslint.mjs nextjs -p .                                                                                                      && \
       $KELO_DIR/scripts/typescript/gen-stylelint.mjs nextjs -p .                                               && \
       $KELO_DIR/scripts/typescript/gen-prettier.mjs nextjs -p .                                                && \
       $KELO_DIR/scripts/typescript/gen-tsconfig.mjs nextjs -p .
@@ -280,19 +259,13 @@ for i in $(seq 0 $((WS_COUNT - 1))); do
 
       $KELO_DIR/scripts/gen-git.mjs -p docs                                                                   && \
       $KELO_DIR/scripts/gen-architecture.mjs nestjs -p docs                                                   && \
-      $KELO_DIR/scripts/gen-structure.mjs nestjs -p docs                                                      && \
       if [ -n "$WS_CONV_STACKS" ]; then
         $KELO_DIR/scripts/gen-conventions.mjs nestjs -p docs --with "$WS_CONV_STACKS"
       else
         $KELO_DIR/scripts/gen-conventions.mjs nestjs -p docs
       fi                                                                                                      && \
-      if [ -n "$WS_ESLINT_STACKS" ]; then
-        $KELO_DIR/scripts/gen-lint.mjs nestjs -p docs --with "$WS_ESLINT_STACKS"                              && \
-        $KELO_DIR/scripts/typescript/gen-eslint.mjs nestjs -p . --with "$WS_ESLINT_STACKS"
-      else
-        $KELO_DIR/scripts/gen-lint.mjs nestjs -p docs                                                         && \
-        $KELO_DIR/scripts/typescript/gen-eslint.mjs nestjs -p .
-      fi                                                                                                      && \
+      $KELO_DIR/scripts/gen-lint.mjs nestjs -p docs && \
+      $KELO_DIR/scripts/typescript/gen-eslint.mjs nestjs -p .                                                                                                      && \
       $KELO_DIR/scripts/typescript/gen-prettier.mjs nestjs -p .                                                && \
       if [ -n "$WS_TSCONFIG_STACKS" ]; then
         $KELO_DIR/scripts/typescript/gen-tsconfig.mjs nestjs -p . --with "$WS_TSCONFIG_STACKS"
@@ -331,7 +304,7 @@ esac
 # kelo가 생성한 워크스페이스 docs를 각 워크스페이스 prettier 설정으로 맞춤 — lint:ci의 prettier --check 대비 (prettier가 없으면 건너뜀)
 for i in $(seq 0 $((WS_COUNT - 1))); do
   WS_PATH=$(jq -r ".workspaces[$i].path" "$MANIFEST_PATH")
-  ( cd "$MONOREPO_ROOT/$WS_PATH" 2>/dev/null && ls docs/GIT.md docs/ARCHITECTURE.md docs/STRUCTURE.md docs/CONVENTIONS.md docs/LINT.md 2>/dev/null | xargs npx --no-install prettier --write >/dev/null 2>&1 ) || true
+  ( cd "$MONOREPO_ROOT/$WS_PATH" 2>/dev/null && ls docs/GIT.md docs/ARCHITECTURE.md docs/CONVENTIONS.md docs/LINT.md 2>/dev/null | xargs npx --no-install prettier --write >/dev/null 2>&1 ) || true
 done
 
 # framework별 peer 보강

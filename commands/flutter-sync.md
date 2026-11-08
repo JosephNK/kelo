@@ -45,11 +45,6 @@ PROJECT_ROOT="$(pwd)"   # 의도한 프로젝트 루트에서 실행
 ```bash
 cd "$PROJECT_ROOT"
 MANIFEST_PATH="$PROJECT_ROOT/kelo.project.json"
-# 레거시 이름(jkit.project.json)은 kelo 이름으로 옮긴다
-if [ ! -f "$MANIFEST_PATH" ] && [ -f "$PROJECT_ROOT/jkit.project.json" ]; then
-  if git ls-files --error-unmatch "$PROJECT_ROOT/jkit.project.json" >/dev/null 2>&1; then git mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; else mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; fi
-  echo "[manifest] jkit.project.json → kelo.project.json 이름 변경"
-fi
 
 if [ -f "$MANIFEST_PATH" ]; then
   MF_FRAMEWORK=$(jq -r '.framework // ""' "$MANIFEST_PATH")
@@ -99,21 +94,18 @@ $KELO_DIR/scripts/gen-git.mjs -p docs
 # 2. ARCHITECTURE.md
 $KELO_DIR/scripts/gen-architecture.mjs flutter -p docs
 
-# 3. STRUCTURE.md (lint-rules-structure-reference 복사)
-$KELO_DIR/scripts/gen-structure.mjs flutter -p docs
-
 # prompt 모드: Step 1/2 선택값을 변수에 대입. apply 모드: 매니페스트 분기에서 이미 설정됨.
 [ "$MANIFEST_MODE" = "prompt" ] && USER_CONV_STACKS="<conventions-stacks>"
 [ "$MANIFEST_MODE" = "prompt" ] && ENTRY_DIR="<entry-dir>"
 
-# 4. CONVENTIONS.md (PROJECT는 절대 건드리지 않음 — 없어도 새로 만들지 않음)
+# 3. CONVENTIONS.md (PROJECT는 절대 건드리지 않음 — 없어도 새로 만들지 않음)
 if [ -n "$USER_CONV_STACKS" ]; then
   $KELO_DIR/scripts/gen-conventions.mjs flutter -p docs --with "$USER_CONV_STACKS" --no-project-init
 else
   $KELO_DIR/scripts/gen-conventions.mjs flutter -p docs --no-project-init
 fi
 
-# 5. LINT.md (base + 선택 stack lint-rules)
+# 4. LINT.md (base + 선택 stack lint-rules)
 if [ -n "$USER_CONV_STACKS" ]; then
   $KELO_DIR/scripts/gen-lint.mjs flutter -p docs --with "$USER_CONV_STACKS"
 else
@@ -237,7 +229,6 @@ echo "[manifest] 작성: $MANIFEST_PATH"
 
 - `docs/GIT.md` — Git & GitHub 가이드 (덮어쓰기)
 - `docs/ARCHITECTURE.md` — 아키텍처 상세 (덮어쓰기)
-- `docs/STRUCTURE.md` — lint 룰이 가정하는 디렉토리 구조 참조 (덮어쓰기)
 - `docs/CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (덮어쓰기, 하단 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `docs/LINT.md` — Lint 규칙 참조 (덮어쓰기)
 - `analysis_options.yaml` — `include: package:kelo_analysis/analysis_options.yaml` 템플릿 (덮어쓰기) + `plugins:`에 `architecture_lint`(base) + 선택한 stack lint 패키지(예: `leaf_kit_lint`) (변경/추가 시에만 갱신)

@@ -36,8 +36,7 @@
     "base/eslint.rules.mjs",
     "base/eslint.formatter.mjs",
     "base/eslint-rules/",
-    "base/custom-rules/",
-    "*/eslint.rules.mjs"
+    "base/custom-rules/"
   ],
   "peerDependencies": {
     "@eslint/js": "^9.0.0 || ^10.0.0",

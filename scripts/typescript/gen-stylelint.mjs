@@ -144,12 +144,6 @@ export { default } from "${configPkg.name}/stylelint";
       keloPackageSpec(configPkg.name, configPkg.version),
     ),
   );
-  if ("@jkit/code-plugin" in dev) {
-    devChanges.push(
-      `  Removed:   @jkit/code-plugin (${dev["@jkit/code-plugin"]}) — replaced by ${configPkg.name}`,
-    );
-    delete dev["@jkit/code-plugin"];
-  }
 
   const sortedDev = {};
   for (const k of Object.keys(dev).sort()) sortedDev[k] = dev[k];

@@ -29,12 +29,12 @@ Arguments:
 
 Options:
   -p <dir>       Output directory (required)
-  --with <list>  Comma-separated stack names (e.g. typeorm)
+  --with <list>  Comma-separated stack names with lint-rules-reference.md (Flutter: leaf-kit, freezed)
   -h, --help     Show this help
 
 Examples:
   ./scripts/gen-lint.mjs nextjs -p ./my-project/docs
-  ./scripts/gen-lint.mjs nestjs -p ./my-project/docs --with typeorm
+  ./scripts/gen-lint.mjs nestjs -p ./my-project/docs
   ./scripts/gen-lint.mjs flutter -p ./my-project/docs --with leaf-kit,freezed
 `;
 

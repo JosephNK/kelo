@@ -57,11 +57,6 @@ PROJECT_ROOT="$(pwd)"   # 의도한 프로젝트 루트에서 실행
 ```bash
 cd "$PROJECT_ROOT"
 MANIFEST_PATH="$PROJECT_ROOT/kelo.project.json"
-# 레거시 이름(jkit.project.json)은 kelo 이름으로 옮긴다
-if [ ! -f "$MANIFEST_PATH" ] && [ -f "$PROJECT_ROOT/jkit.project.json" ]; then
-  if git ls-files --error-unmatch "$PROJECT_ROOT/jkit.project.json" >/dev/null 2>&1; then git mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; else mv "$PROJECT_ROOT/jkit.project.json" "$MANIFEST_PATH"; fi
-  echo "[manifest] jkit.project.json → kelo.project.json 이름 변경"
-fi
 
 if [ -f "$MANIFEST_PATH" ]; then
   MF_FRAMEWORK=$(jq -r '.framework // ""' "$MANIFEST_PATH")
@@ -188,29 +183,26 @@ $KELO_DIR/scripts/gen-git.mjs -p docs
 # 2. ARCHITECTURE.md
 $KELO_DIR/scripts/gen-architecture.mjs flutter -p docs
 
-# 3. STRUCTURE.md (lint-rules-structure-reference 복사)
-$KELO_DIR/scripts/gen-structure.mjs flutter -p docs
-
-# 4. CONVENTIONS.md
+# 3. CONVENTIONS.md
 if [ -n "$USER_CONV_STACKS" ]; then
   $KELO_DIR/scripts/gen-conventions.mjs flutter -p docs --with "$USER_CONV_STACKS"
 else
   $KELO_DIR/scripts/gen-conventions.mjs flutter -p docs
 fi
 
-# 5. LINT.md (base + 선택 stack lint-rules)
+# 4. LINT.md (base + 선택 stack lint-rules)
 if [ -n "$USER_CONV_STACKS" ]; then
   $KELO_DIR/scripts/gen-lint.mjs flutter -p docs --with "$USER_CONV_STACKS"
 else
   $KELO_DIR/scripts/gen-lint.mjs flutter -p docs
 fi
 
-# 6. Husky hooks (.husky/pre-commit에 $ENTRY_DIR이 인라인 치환됨, .husky/commit-msg)
+# 5. Husky hooks (.husky/pre-commit에 $ENTRY_DIR이 인라인 치환됨, .husky/commit-msg)
 #    + package.json에 husky/@commitlint devDeps와 scripts.prepare 주입
 #    모노레포(git 루트 ≠ 프로젝트)면 scripts/kelo-pre-commit.sh를 만들고 루트 .husky/pre-commit에 호출 한 줄만 추가
 $KELO_DIR/scripts/gen-husky.mjs flutter -p . -entry "$ENTRY_DIR"
 
-# 7. commitlint.config.mjs (Conventional Commits + 프로젝트 허용 타입 강제)
+# 6. commitlint.config.mjs (Conventional Commits + 프로젝트 허용 타입 강제)
 $KELO_DIR/scripts/gen-commitlint.mjs -p .
 ```
 
@@ -305,7 +297,6 @@ fi
 - `AGENTS.PROJECT.md` — 사용자 소유 프로젝트 고유 가이드 (최초 1회만 생성, 이후 보존)
 - `GIT.md` — Git & GitHub 가이드
 - `ARCHITECTURE.md` — 아키텍처 상세
-- `STRUCTURE.md` — lint 룰이 가정하는 디렉토리 구조 참조
 - `CONVENTIONS.md` — 선택한 스택이 반영된 컨벤션 (하단에 `CONVENTIONS.PROJECT.md` 링크 포함)
 - `CONVENTIONS.PROJECT.md` — 사용자 소유 프로젝트 고유 컨벤션 (최초 1회만 생성, 이후 보존)
 - `package.json` — `devDependencies`(`husky`, `@commitlint/cli`, `@commitlint/config-conventional`) + `scripts.prepare: "husky"`

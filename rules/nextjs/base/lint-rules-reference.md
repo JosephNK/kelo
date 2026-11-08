@@ -604,13 +604,14 @@ AST selector 기반 금지 구문.
 ## Domain Purity (도메인 순수성)
 
 도메인 레이어(`src/domain/**`)에서 import 금지 패키지.
-프레임워크 비의존 유지. 스택별로 UI 라이브러리 추가 차단.
+프레임워크 비의존 유지. 프로젝트별 추가 차단은 `kelo.lint.json`의 `domainBannedPackages`.
 
 ### 도메인 레이어 금지 패키지
 
 - `react` (+ 서브경로)
 - `react-dom` (+ 서브경로)
 - `next` (+ 서브경로)
+- `@tanstack/**`
 - `mongodb` (+ 서브경로)
 - `pg` (+ 서브경로)
 - `redis` (+ 서브경로)
@@ -632,12 +633,12 @@ ESLint 오버라이드 중 **LLM이 코드 작성 시 명시적으로 따라야 
 ## Ignored Paths (무시 경로)
 
 Boundary 검사 제외 (boundaries/no-unknown-files 오탐 방지).
-테스트/스펙/설정, 루트 메타 파일, scripts/e2e 빌드 유틸, 전역 타입,
+테스트/스펙/설정, 루트 메타 파일, 프레임워크 진입점(`src/proxy.ts`), scripts/e2e 빌드 유틸, 전역 타입,
 모노레포 sibling workspace로 resolve된 import 등.
 
 ### 무시 패턴 목록
 
 - **테스트/설정 파일**: `**/*.test.ts`, `**/*.test.tsx`, `**/*.spec.ts`, `**/*.spec.tsx`, `*.config.*`, `eslint.project.config.mjs`, `prettier.config.mjs`, `commitlint.config.mjs`
 - **타입/메타 파일**: `*.ts`, `*.d.ts`, `types/**`, `src/lib/types/**`
-- **특수 경로**: `specs/**`, `**/packages/**`, `src/http/_generated/**`, `src/theme.generated.ts`
+- **특수 경로**: `src/proxy.ts`, `specs/**`, `**/packages/**`, `src/http/_generated/**`, `src/theme.generated.ts`
 - **빌드/툴 산출물 (코드 작성 무관)**: `.kelo/**`, `scripts/**`, `e2e/**`, `eslint.config.mjs`, `.next/**`, `out/**`, `build/**`, `coverage/**`, `next-env.d.ts`

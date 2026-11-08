@@ -25,7 +25,7 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 [ "$KELO_ALLOW_LINT_CONFIG_EDIT" = "1" ] && exit 0
 
 PROTECTED_WORD_RE='(eslint\.config\.mjs|stylelint\.config\.mjs|analysis_options\.yaml|\.kelo/plugins)'
-MANAGED_HEADER_RE='Managed by (kelo|jkit)|GENERATED FILE - DO NOT MODIFY'
+MANAGED_HEADER_RE='Managed by kelo|GENERATED FILE - DO NOT MODIFY'
 
 # 경로가 kelo 저장소 내부인지 (example/ 검증 프로젝트 포함)
 is_kelo_repo_path() {

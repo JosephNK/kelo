@@ -84,8 +84,6 @@ Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등
 
 | Command | Description |
 |---------|-------------|
-| `/kelo:flutter-plan` | 요구사항 분석 → 리스크 평가 → 구현 계획 생성 |
-| `/kelo:flutter-tdd` | RED→GREEN→REFACTOR TDD 워크플로우 |
 | `/kelo:flutter-create-bloc-screen` | Screen + BLoC + View + DI + Route 보일러플레이트 생성 |
 | `/kelo:flutter-design` | 프로덕션급 UI 디자인 (LeafTheme + Atomic Design) |
 | `/kelo:flutter-openapi-gen` | OpenAPI 3.x → BuiltValue 모델 + Dio 서비스 코드 생성 |
@@ -95,9 +93,7 @@ Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등
 
 | Command | Description |
 |---------|-------------|
-| `/kelo:flutter-code-review` | 보안/품질/베스트프랙티스 코드 리뷰 |
 | `/kelo:flutter-build-fix` | 빌드/분석 에러 점진적 수정 |
-| `/kelo:flutter-test-coverage` | 커버리지 분석 + 누락 테스트 자동 생성 (80%+ 목표) |
 | `/kelo:check-conventions` | CONVENTIONS.md 기반 변경 파일 규칙 검증 |
 
 ### Flutter — Build & Deploy

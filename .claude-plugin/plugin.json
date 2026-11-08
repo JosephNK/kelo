@@ -9,12 +9,7 @@
   "keywords": [
     "claude-code",
     "kelo",
-    "skills",
-    "agents"
-  ],
-  "agents": [
-    "./agents/code-evaluator.md",
-    "./agents/code-generator.md"
+    "skills"
   ],
   "skills": [
     "./skills/"

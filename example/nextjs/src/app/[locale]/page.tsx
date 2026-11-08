@@ -1,5 +1,6 @@
-import { getUser } from "@/domain/user/service";
+import { createUserService } from "@/http/user/factory";
+
 export default async function Page() {
-  const user = await getUser("1");
-  return <div>{user.email}</div>;
+  const user = await createUserService().getUser("1");
+  return <div>{user?.email}</div>;
 }

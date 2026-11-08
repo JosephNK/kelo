@@ -37,7 +37,7 @@
         └── <group>/                    # (선택) Group prefix — 실제 이름 가변 (예: user, admin). 단층 구조면 생략 가능
             └── <domain>/               # Domain module — 실제 이름 가변 (예: profile, order)
                 ├── <domain>.module.ts  # NestJS module (DI assembly) — lint ignored via **/*.module.ts
-                ├── common/             # (선택) 도메인 내부 공용 — boundary 검사 제외 (escape hatch)
+                ├── common/             # (선택) 모듈 내부 공용 — 같은 모듈에서만 import
                 ├── controller/         # Driving Adapter (HTTP)
                 ├── dto/                # Input/output DTOs
                 ├── exception/          # Domain-specific exceptions

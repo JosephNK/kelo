@@ -1,5 +1,5 @@
 import type { UserPort } from "./port";
-import type { User } from "./model";
+import type { User, UserStatus } from "./model";
 
 export async function getUser(_id: string): Promise<User> {
   return {
@@ -9,5 +9,10 @@ export async function getUser(_id: string): Promise<User> {
     createdAt: null,
   };
 }
+
+export const makeUserService = (port: UserPort) => ({
+  getUser: (id: string) => port.findById(id),
+  listUsers: (status?: UserStatus) => port.list(status),
+});
 
 export type { UserPort };

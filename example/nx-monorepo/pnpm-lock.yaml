@@ -2380,7 +2380,7 @@ packages:
     engines: {node: '>=10'}
 
   eslint-config-kelo-nestjs@file:.local-packages/eslint-config-kelo-nestjs.tgz:
-    resolution: {integrity: sha512-mmezS91W/T0wjXRjX/PompKDVWccMNOg4LflnJqEIZOTYmv3tk+gnWiWXZcWr2bqKEi1CXyxKNuT7WWa6/71XQ==, tarball: file:.local-packages/eslint-config-kelo-nestjs.tgz}
+    resolution: {integrity: sha512-BiSMP4aHGcWQkr/LjDNugVMlChIefCtXEvCK9LMf0EifyMs7YQDFyfxgK8NIPWqOySgoBrphOASdNQ7xqFM6Zw==, tarball: file:.local-packages/eslint-config-kelo-nestjs.tgz}
     version: 1.1.0
     engines: {node: ^22.23.4 || ^24.22.1 || >=26.12.1}
     hasBin: true
@@ -2400,7 +2400,7 @@ packages:
       typescript-eslint: '>=8.0.0'
 
   eslint-config-kelo-nextjs@file:.local-packages/eslint-config-kelo-nextjs.tgz:
-    resolution: {integrity: sha512-oOYayvC7be7c23EsJX7hnA3AMTqTbEVbAtR0DwfdPfrtL+b/wkfbKrJSQflSOEmAeX8TxRMVsSdJ+q3VeixHJg==, tarball: file:.local-packages/eslint-config-kelo-nextjs.tgz}
+    resolution: {integrity: sha512-lmq4KjO++D3FghYgHtE/zD+uRuVOGplW4KMMwmYqBHyel1PVZL/ikPAjYXOj8rTzhd+1fsjJaIAikg+MQLuJLA==, tarball: file:.local-packages/eslint-config-kelo-nextjs.tgz}
     version: 1.1.0
     engines: {node: ^22.23.4 || ^24.22.1 || >=26.12.1}
     hasBin: true

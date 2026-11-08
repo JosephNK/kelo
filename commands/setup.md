@@ -1,6 +1,6 @@
 ---
 description: Set up or sync Kelo (Next.js / NestJS / Flutter, single project or monorepo) from kelo.yaml
-argument-hint: '[project-path]'
+argument-hint: "[project-path]"
 ---
 
 # Kelo Setup
@@ -90,3 +90,11 @@ git diff -- '*pubspec.lock' | grep -E '^[-+]    version:' | wc -l
 - **kelo 관리 (매번 재생성)**: `AGENTS.md`(+ `@AGENTS.md`를 import하는 `CLAUDE.md`), `docs/{ARCHITECTURE,CONVENTIONS}.md`, `eslint.config.mjs`, `stylelint.config.mjs`, `prettier.config.mjs`, `.husky/*`, `commitlint.config.mjs`, `analysis_options.yaml`, `.kelo/plugins/**`
 - **프로젝트 소유 (없을 때만 생성)**: `kelo.yaml`, `kelo.lint.json`, `eslint.project.config.mjs`, `AGENTS.PROJECT.md`, `docs/CONVENTIONS.PROJECT.md`
 - 모노레포 루트의 `.husky/`·`commitlint.config.mjs`는 **없을 때만** 생성합니다.
+
+## 6. 진단
+
+setup 결과를 lint로 확인합니다. 오류·경고·경계 위반 수, 상위 규칙, 미분류 파일(폴더별 + 옮길 위치 제안)을 요약해 보고합니다. 제안대로 파일을 옮기는 것은 사용자 확인 후에만 합니다.
+
+```bash
+node "$KELO_DIR/scripts/kelo.mjs" doctor -p "$PROJECT_ROOT"
+```

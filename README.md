@@ -61,11 +61,11 @@ Add to your project's `.claude/settings.json` so teammates get the plugin automa
 
 ## Supported Frameworks
 
-| Framework | Stacks (`rules/<framework>/stacks.yaml`) |
-|-----------|------------------------------------------|
+| Framework   | Stacks (`rules/<framework>/stacks.yaml`)        |
+| ----------- | ----------------------------------------------- |
 | **Flutter** | freezed, go-router, leaf-kit, easy-localization |
-| **Next.js** | tanstack-query, next-proxy |
-| **NestJS** | typeorm |
+| **Next.js** | tanstack-query, next-proxy                      |
+| **NestJS**  | typeorm                                         |
 
 ## Setup (`/kelo:setup`)
 
@@ -97,6 +97,8 @@ workspaces:
 
 모노레포에서는 워크스페이스별 생성 → 루트에서 install 한 번 → 워크스페이스별 후속 단계 순으로 실행하고, 루트 `.husky/`·`commitlint.config.mjs`는 없을 때만 만듭니다.
 
+setup 후 `node scripts/kelo.mjs doctor -p <프로젝트>`로 워크스페이스별 lint 요약(오류·경고·경계 위반 수, 상위 규칙, 미분류 파일을 폴더별로 묶고 옮길 위치 제안)을 봅니다. `--json`으로 기계 출력. 제안은 `rules/<framework>/doctor.yaml`의 힌트이며 파일을 옮기지는 않습니다.
+
 ```bash
 node scripts/kelo.mjs detect   -p <dir>                 # 감지 결과(JSON)
 node scripts/kelo.mjs validate -p <dir>                 # kelo.yaml 검증
@@ -107,50 +109,50 @@ node scripts/kelo.mjs setup    -p <dir> [--dry-run] [--no-install] [--move-app]
 
 ### Flutter — Init & Setup
 
-| Command | Description |
-|---------|-------------|
-| `/kelo:flutter-app-scaffold` | app.dart, main.dart, router, 다국어 리소스 생성 |
-| `/kelo:flutter-android-setup` | build.gradle.kts, AndroidManifest, proguard 설정 |
-| `/kelo:flutter-ios-setup` | pbxproj (4 flavor × 3 build type), xcscheme, Info.plist 설정 |
+| Command                       | Description                                                  |
+| ----------------------------- | ------------------------------------------------------------ |
+| `/kelo:flutter-app-scaffold`  | app.dart, main.dart, router, 다국어 리소스 생성              |
+| `/kelo:flutter-android-setup` | build.gradle.kts, AndroidManifest, proguard 설정             |
+| `/kelo:flutter-ios-setup`     | pbxproj (4 flavor × 3 build type), xcscheme, Info.plist 설정 |
 
 ### Flutter — Development
 
-| Command | Description |
-|---------|-------------|
+| Command                            | Description                                           |
+| ---------------------------------- | ----------------------------------------------------- |
 | `/kelo:flutter-create-bloc-screen` | Screen + BLoC + View + DI + Route 보일러플레이트 생성 |
-| `/kelo:flutter-design` | 프로덕션급 UI 디자인 (LeafTheme + Atomic Design) |
-| `/kelo:flutter-openapi-gen` | OpenAPI 3.x → BuiltValue 모델 + Dio 서비스 코드 생성 |
-| `/kelo:flutter-create-package` | 모노레포 워크스페이스 패키지 생성 |
+| `/kelo:flutter-design`             | 프로덕션급 UI 디자인 (LeafTheme + Atomic Design)      |
+| `/kelo:flutter-openapi-gen`        | OpenAPI 3.x → BuiltValue 모델 + Dio 서비스 코드 생성  |
+| `/kelo:flutter-create-package`     | 모노레포 워크스페이스 패키지 생성                     |
 
 ### Flutter — Quality
 
-| Command | Description |
-|---------|-------------|
-| `/kelo:flutter-build-fix` | 빌드/분석 에러 점진적 수정 |
+| Command                   | Description                             |
+| ------------------------- | --------------------------------------- |
+| `/kelo:flutter-build-fix` | 빌드/분석 에러 점진적 수정              |
 | `/kelo:check-conventions` | CONVENTIONS.md 기반 변경 파일 규칙 검증 |
 
 ### Flutter — Build & Deploy
 
-| Command | Description |
-|---------|-------------|
-| `/kelo:flutter-build-deploy` | APK / AppBundle / IPA 빌드 (flavor: production/staging/dev/qa) |
-| `/kelo:flutter-android-keystore-info` | 키스토어 인증서 정보 조회 |
-| `/kelo:flutter-android-signing-report` | 키스토어 alias별 서명 정보 |
-| `/kelo:flutter-android-verify-apk` | APK 서명 검증 |
+| Command                                | Description                                                    |
+| -------------------------------------- | -------------------------------------------------------------- |
+| `/kelo:flutter-build-deploy`           | APK / AppBundle / IPA 빌드 (flavor: production/staging/dev/qa) |
+| `/kelo:flutter-android-keystore-info`  | 키스토어 인증서 정보 조회                                      |
+| `/kelo:flutter-android-signing-report` | 키스토어 alias별 서명 정보                                     |
+| `/kelo:flutter-android-verify-apk`     | APK 서명 검증                                                  |
 
 ### Flutter — Maintenance
 
-| Command | Description |
-|---------|-------------|
+| Command                             | Description                       |
+| ----------------------------------- | --------------------------------- |
 | `/kelo:flutter-update-dependencies` | pub.dev 패키지 최신 버전 업데이트 |
 
 ### Cross-Framework
 
-| Command | Description |
-|---------|-------------|
-| `/kelo:commit` | 변경 분석 → 한국어 커밋 메시지 자동 생성 (3개 후보) |
-| `/kelo:typeorm-migration` | TypeORM 마이그레이션 SQL 생성 (dev/prod 분리) |
-| `/kelo:update-plugin-ref` | `flutter_leaf_kit` git ref 일괄 업데이트 |
+| Command                   | Description                                         |
+| ------------------------- | --------------------------------------------------- |
+| `/kelo:commit`            | 변경 분석 → 한국어 커밋 메시지 자동 생성 (3개 후보) |
+| `/kelo:typeorm-migration` | TypeORM 마이그레이션 SQL 생성 (dev/prod 분리)       |
+| `/kelo:update-plugin-ref` | `flutter_leaf_kit` git ref 일괄 업데이트            |
 
 ## Generator Scripts
 
@@ -201,10 +203,10 @@ ESLint 규칙에는 스택이 없습니다. 특정 라이브러리 전용 규칙
 
 lint 규칙과 조립 로직은 npm 패키지로 배포되고, 소비 프로젝트는 설치 + 짧은 참조만 갖습니다.
 
-| 패키지 | 소스 | 제공 |
-|---|---|---|
-| `eslint-config-kelo-nextjs` | `rules/nextjs/` | `nextjs()` factory, `./formatter`, `./stylelint`, `kelo-lint-nextjs` CLI |
-| `eslint-config-kelo-nestjs` | `rules/nestjs/` | `nestjs()` factory, `./formatter`, `kelo-lint-nestjs` / `kelo-check-i18n` CLI |
+| 패키지                      | 소스            | 제공                                                           |
+| --------------------------- | --------------- | -------------------------------------------------------------- |
+| `eslint-config-kelo-nextjs` | `rules/nextjs/` | `nextjs()` factory, `./stylelint`, `kelo-lint-nextjs` CLI      |
+| `eslint-config-kelo-nestjs` | `rules/nestjs/` | `nestjs()` factory, `kelo-lint-nestjs` / `kelo-check-i18n` CLI |
 
 소비 프로젝트 구성 (`/kelo:setup`이 생성):
 
@@ -216,6 +218,7 @@ export default nestjs({ root: import.meta.dirname, project: projectConfig });
 ```
 
 - `kelo.lint.json` — 프로젝트 소유. 프로젝트별 확장 `boundaryElements` / `boundaryRules` / `boundaryIgnores` / `ignores` + 추가 금지 목록 (setup이 보존)
+  - `boundaryElements` 항목에 `capture: ["module"]`을 주면 base 모듈 레이어처럼 모듈 레이어가 된다 (`pattern`의 `**`/`*`가 모듈 이름). `boundaryRules` 항목의 `scope: "module"`은 모듈 레이어 대상을 같은 모듈로 한정하고, `scope: "cross-module"`이나 `scope` 없음은 어느 모듈이든 허용한다.
 - `eslint.project.config.mjs` — 사용자 소유. 새 규칙·플러그인 **추가만** 허용. kelo 규칙/settings 재정의, `linterOptions`, 전역 ignores는 로드 시 에러
 - inline `eslint-disable` 주석은 무시됩니다 (`noInlineConfig`)
 - `kelo-lint-<framework>` — 프로젝트 `eslint.config.mjs`를 무시하고 패키지 규칙으로 검사. `scripts.lint`(eslint 기반 `lint:ci`/`lint:fix` 포함)와 lint-staged가 모두 이 CLI로 통일됩니다. 경로/`--ignore-pattern` 인자는 `kelo.lint.json`의 `ignores`로 옮깁니다. 에디터 실시간 표시는 `eslint.config.mjs`가 담당합니다
@@ -234,8 +237,8 @@ NestJS 소비 프로젝트의 `package.json`에 `kelo-rules` 객체를 두면 �
 }
 ```
 
-| Key | 기본값 | 효과 (`false` 시) |
-|---|---|---|
+| Key              | 기본값 | 효과 (`false` 시)                                                                    |
+| ---------------- | ------ | ------------------------------------------------------------------------------------ |
 | `pathAliasCheck` | `true` | 모든 레이어에서 상대 parent import(`../**`) 차단 룰 OFF — `@/*` path alias 강제 해제 |
 
 > 옵션을 추가하지 않거나 객체 자체를 두지 않으면 모든 검사가 활성된 기본값으로 동작합니다.
@@ -249,6 +252,7 @@ ESLint 기본 `stylish` formatter로 렌더링합니다. 그 외 룰 메시지�
 프로젝트 `package.json` lint 스크립트에 `--format` 지정:
 
 **Next.js**
+
 ```json
 {
   "scripts": {
@@ -258,6 +262,7 @@ ESLint 기본 `stylish` formatter로 렌더링합니다. 그 외 룰 메시지�
 ```
 
 **NestJS**
+
 ```json
 {
   "scripts": {

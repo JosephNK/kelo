@@ -156,6 +156,50 @@ test("kelo.lint.json 규칙(scope 없음)은 모듈 레이어 대상이어도 ca
   ]);
 });
 
+test("kelo.lint.json element의 capture·rule의 scope도 base와 같이 모듈 레이어로 변환", () => {
+  // factory는 kelo.lint.json을 JSON.parse한 값을 base 뒤에 그대로 붙인다 (index.mjs [5])
+  const lint = JSON.parse(
+    JSON.stringify({
+      boundaryElements: [
+        {
+          type: "job",
+          pattern: "src/modules/**/job/**",
+          capture: ["module"],
+        },
+      ],
+      boundaryRules: [
+        {
+          from: { type: "job" },
+          allow: { to: { type: ["service", "common"] } },
+          scope: "module",
+        },
+      ],
+    }),
+  );
+  const elements = [...nestElements, ...lint.boundaryElements];
+  const { classification } = splitBoundaryElements(elements);
+  assert.ok(classification.moduleTypes.has("job"));
+  const [policy] = toBoundariesPolicies(lint.boundaryRules, classification);
+  assert.deepEqual(policy.allow.to, [
+    {
+      element: {
+        type: "service",
+        captured: { module: ELEMENT_MODULE },
+      },
+    },
+    { element: { type: "common" } },
+  ]);
+  const job = guidancePolicies(
+    [...nestRules, ...lint.boundaryRules],
+    elements,
+    classification,
+  ).at(-1);
+  assert.match(
+    job.message,
+    /job가 import할 수 있는 레이어 — 같은 모듈: service/,
+  );
+});
+
 test("base 규칙: scope가 있는 규칙은 모두 모듈 레이어 from이고, 정책에 scope가 남지 않는다", () => {
   for (const [els, rules] of [
     [nextElements, nextRules],

@@ -7,6 +7,7 @@
 //   kelo.mjs setup    [-p <dir>] [--move-app] [--dry-run] [--no-install] [--analysis-path <dir>]
 //                     --no-install: 의존성 설치 단계(install·peers·exec) 생략
 //                     --analysis-path: (개발용) Flutter kelo_analysis를 로컬 체크아웃 path 의존성으로
+//   kelo.mjs doctor   [-p <dir>] [--json]              setup 후 lint 요약 (위반 수·미분류 파일과 제안 위치)
 //
 // 입력
 //   <dir>/kelo.yaml                 프로젝트 설정 (단일 프로젝트 또는 workspaces)
@@ -21,6 +22,8 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import YAML from "yaml";
+
+import { doctor } from "./kelo-doctor.mjs";
 
 const PLUGIN_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -40,6 +43,7 @@ const HELP = `Usage:
   kelo.mjs detect   [-p <dir>]
   kelo.mjs validate [-p <dir>]
   kelo.mjs setup    [-p <dir>] [--move-app] [--dry-run] [--no-install] [--analysis-path <dir>]
+  kelo.mjs doctor   [-p <dir>] [--json]
 `;
 
 class KeloError extends Error {}
@@ -641,6 +645,7 @@ function parseArgs(argv) {
     moveApp: false,
     noInstall: false,
     analysisPath: null,
+    json: false,
   };
   while (rest.length) {
     const a = rest.shift();
@@ -648,6 +653,7 @@ function parseArgs(argv) {
     else if (a === "--dry-run") opts.dryRun = true;
     else if (a === "--move-app") opts.moveApp = true;
     else if (a === "--no-install") opts.noInstall = true;
+    else if (a === "--json") opts.json = true;
     else if (a === "--analysis-path") {
       const dir = rest.shift();
       if (!dir || !fs.existsSync(dir))
@@ -679,6 +685,12 @@ function main() {
     case "setup":
       setup(opts.dir, opts);
       process.stdout.write("\n✔ kelo setup 완료\n");
+      break;
+    case "doctor":
+      process.exitCode = doctor(loadConfig(opts.dir), {
+        json: opts.json,
+        pluginRoot: PLUGIN_ROOT,
+      });
       break;
     case "help":
       process.stdout.write(HELP);

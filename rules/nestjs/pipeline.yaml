@@ -37,7 +37,7 @@ steps:
   - builtin: install
   - builtin: peers
     packages:
-      - eslint-plugin-boundaries@^7
+      - "eslint-plugin-boundaries@>=7"
       - eslint-plugin-import
       - eslint-import-resolver-typescript
       - eslint-plugin-simple-import-sort

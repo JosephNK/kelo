@@ -3,12 +3,12 @@
 // peer 보강 명령에 넘길 패키지 중 실제로 설치가 필요한 것만 출력한다.
 //   - package.json(dependencies/devDependencies)에 없으면 → 출력
 //   - 있고 스펙에 범위가 없으면(`name`) → 건너뜀
-//   - 있고 스펙에 범위가 있으면(`name@^7`) → 기존 범위 하한이 그 이상이면 건너뜀
-//     (예: 기존 `^16.3.6`은 `eslint-config-next@^16`을 만족하므로 `^16`으로 덮어쓰지 않는다)
+//   - 있고 스펙에 범위가 있으면(`name@>=7`) → 기존 범위 하한이 그 이상이면 건너뜀
+//     (예: 기존 `^16.3.6`은 `eslint-config-next@>=16`을 만족하므로 `>=16`으로 덮어쓰지 않는다)
 //
 // Usage:
 //   missing-peers.mjs -p <project-dir> <spec>...
-//   PEERS=$(missing-peers.mjs -p . eslint-plugin-boundaries@^7 typescript-eslint)
+//   PEERS=$(missing-peers.mjs -p . "eslint-plugin-boundaries@>=7" typescript-eslint)
 // =============================================================================
 
 import fs from "node:fs";

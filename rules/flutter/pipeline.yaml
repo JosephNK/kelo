@@ -22,12 +22,9 @@ steps:
     rootIfMissing: package.json
   - run: gen-agents.mjs {framework} -p . -n {name} --docs-dir docs
     if: agents
-  - run: gen-git.mjs -p docs
   - run: gen-architecture.mjs {framework} -p docs
   - run: gen-conventions.mjs {framework} -p docs
     stacks: { flag: --with, having: conventions.md }
-  - run: gen-lint.mjs {framework} -p docs
-    stacks: { flag: --with, having: lint-rules-reference.md }
   # 모노레포(kelo.yaml workspaces)면 --monorepo-root로 루트 .husky/pre-commit에 호출 한 줄만 추가한다
   - run: gen-husky.mjs {framework} -p . -entry {entryDir}
     monorepoRootFlag: --monorepo-root

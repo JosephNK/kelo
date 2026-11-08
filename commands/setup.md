@@ -87,6 +87,6 @@ git diff -- '*pubspec.lock' | grep -E '^[-+]    version:' | wc -l
 
 `kelo.mjs` 출력의 단계별 결과를 요약합니다. 생성물 소유 구분:
 
-- **kelo 관리 (매번 재생성)**: `AGENTS.md`(+ `CLAUDE.md` 링크), `docs/{GIT,ARCHITECTURE,CONVENTIONS,LINT}.md`, `eslint.config.mjs`, `stylelint.config.mjs`, `prettier.config.mjs`, `.husky/*`, `commitlint.config.mjs`, `analysis_options.yaml`, `.kelo/plugins/**`
+- **kelo 관리 (매번 재생성)**: `AGENTS.md`(+ `@AGENTS.md`를 import하는 `CLAUDE.md`), `docs/{ARCHITECTURE,CONVENTIONS}.md`, `eslint.config.mjs`, `stylelint.config.mjs`, `prettier.config.mjs`, `.husky/*`, `commitlint.config.mjs`, `analysis_options.yaml`, `.kelo/plugins/**`
 - **프로젝트 소유 (없을 때만 생성)**: `kelo.yaml`, `kelo.lint.json`, `eslint.project.config.mjs`, `AGENTS.PROJECT.md`, `docs/CONVENTIONS.PROJECT.md`
 - 모노레포 루트의 `.husky/`·`commitlint.config.mjs`는 **없을 때만** 생성합니다.

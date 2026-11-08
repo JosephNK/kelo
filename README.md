@@ -157,9 +157,8 @@ node scripts/kelo.mjs setup    -p <dir> [--dry-run] [--no-install] [--move-app]
 `/kelo:setup` 외에 개별 스크립트로도 실행 가능합니다.
 
 ```bash
-# Agents, Git, Architecture, Conventions
+# Agents, Architecture, Conventions
 ./scripts/gen-agents.mjs <framework> -p /path/to/project -n "Project Name"
-./scripts/gen-git.mjs -p /path/to/project
 ./scripts/gen-architecture.mjs <framework> -p /path/to/project
 ./scripts/gen-conventions.mjs <framework> -p /path/to/project --with stack1,stack2
 

@@ -1,17 +1,13 @@
 # {{PROJECT_NAME}}
 
-### Mandatory Docs
+**Before writing code, read:**
+- @{{DOCS_DIR}}ARCHITECTURE.md — folder structure (enforced by lint)
+- @{{DOCS_DIR}}CONVENTIONS.md — team conventions lint cannot enforce
 
-**BEFORE writing or modifying code, you MUST first read:**
-- @{{DOCS_DIR}}ARCHITECTURE.md — Full architecture details with code examples
-- @{{DOCS_DIR}}CONVENTIONS.md — Full conventions with code examples
-- @{{DOCS_DIR}}LINT.md — Layer glossary, rule table (E/N/S), package whitelists, path mapping
+## Rules
 
-**BEFORE committing or using git/GitHub commands, you MUST first read:**
-- [Git]({{DOCS_DIR}}GIT.md) — Git & GitHub guide with commit conventions
+- Architecture and code rules are enforced by lint. After changing code, run `dart analyze` and `dart run kelo_analysis:verify`, and fix errors in code, not in config.
+- Never modify or bypass rules on your own — ask the user first. `analysis_options.yaml` and `.kelo/plugins/**` are kelo-managed (edits are blocked), and `// ignore:` comments for kelo rules are rejected by `verify`.
+- Commits follow Conventional Commits (enforced by commitlint).
 
-### Rule Modifications
-
-**If you need to modify rules (lint · conventions · architecture), DO NOT proceed on your own — you MUST ask the user first.** This applies equally to changing `analysis_options.yaml`, modifying `architecture_lint` rules, adding `// ignore:` comments, or otherwise bypassing or disabling rules.
-
-See @AGENTS.PROJECT.md for project-specific required reading.
+See @AGENTS.PROJECT.md for project-specific guidance.

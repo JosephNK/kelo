@@ -12,9 +12,8 @@ argument-hint: "<free-form text containing target feature + design source>"
 
 **BEFORE running this skill, you MUST first read:**
 
-- @ARCHITECTURE.md — Hexagonal layer 구조와 의존 방향
+- @ARCHITECTURE.md — 폴더 구조 (lint로 강제)
 - @CONVENTIONS.md — naming, port/adapter, BLoC 컨벤션
-- @LINT.md — Layer 글로서리, 룰 표, 패키지 화이트/블랙리스트
 
 ## $ARGUMENTS Parsing
 
@@ -49,7 +48,7 @@ argument-hint: "<free-form text containing target feature + design source>"
 
 ## Redesign Scope
 
-본 스킬이 **수정**할 수 있는 파일 범위 — import 제약은 별도로 architecture lint가 강제한다 (`@LINT.md` 참조).
+본 스킬이 **수정**할 수 있는 파일 범위 — import 제약은 별도로 architecture lint가 강제한다 (`dart analyze`로 검출).
 
 ### 수정 허용 (생성/수정/삭제 OK)
 
@@ -67,7 +66,7 @@ argument-hint: "<free-form text containing target feature + design source>"
 - `<entry>/lib/di/**`
 - `<entry>/lib/router/**`
 
-> import 가능 여부는 `@LINT.md`의 `presentation`·`bloc`·`usecases`·`ports`·`adapters` 레이어 룰을 따른다. 본 스킬은 lint 룰을 복제·요약하지 않으며, 위반은 9단계 검증의 `dart analyze`에서 자동 검출된다.
+> import 가능 여부는 architecture lint의 `presentation`·`bloc`·`usecases`·`ports`·`adapters` 레이어 룰을 따른다. 본 스킬은 lint 룰을 복제·요약하지 않으며, 위반은 9단계 검증의 `dart analyze`에서 자동 검출된다.
 
 ## Markers (디자인 우선 + 사후 보완)
 
@@ -103,7 +102,7 @@ argument-hint: "<free-form text containing target feature + design source>"
 
 ### 2. Mandatory Docs 로드
 
-위 `@` eager imports로 자동 로드. 특히 `LINT.md`의 `presentation`·`bloc` 레이어 import 제약을 한 번 더 확인.
+위 `@` eager imports로 자동 로드. import 제약 위반은 9단계 `dart analyze`에서 확인한다.
 
 ### 3. 계약 읽기 (수정 금지)
 

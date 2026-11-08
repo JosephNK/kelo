@@ -720,8 +720,11 @@ function renderStructure({
 
   lines.push("## 프로젝트 구조");
   lines.push("");
+  const nextRouting = stackLabel.startsWith("nextjs")
+    ? " `[name]`/`[...name]`/`(name)` = Next.js 라우팅 컨벤션 (브래킷/괄호가 진짜 폴더명의 일부), `[locale]`처럼 명시된 literal bracket은 그대로 강제합니다."
+    : "";
   lines.push(
-    "> 아래 트리는 **대표 구조 예시**입니다. 표기 컨벤션: `<name>` = doc placeholder (실제 폴더는 구체 이름, 예: `<feature>` → `users/`/`products/`). `[name]`/`[...name]`/`(name)` = Next.js 라우팅 컨벤션 (브래킷/괄호가 진짜 폴더명의 일부). lint는 glob(`**`, `*`)로 유연 매칭, `[locale]`처럼 명시된 literal bracket은 그대로 강제합니다.",
+    `> 아래 트리는 **대표 구조 예시**입니다. 표기 컨벤션: \`<name>\` = doc placeholder (실제 폴더는 구체 이름, 예: \`<feature>\` → \`users/\`/\`products/\`). lint는 glob(\`**\`, \`*\`)로 유연 매칭합니다.${nextRouting}`,
   );
   lines.push("");
   const tree = buildPathTree(elements);

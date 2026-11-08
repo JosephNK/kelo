@@ -1,6 +1,6 @@
 # Flutter 스택 정의 — /kelo:setup 선택지와 kelo.yaml `stacks` 검증의 원본.
 # 스택이 기여하는 산출물은 rules/flutter/<stack>/ 의 파일 존재로 정해진다:
-#   conventions.md → CONVENTIONS.md, lint-rules-reference.md → LINT.md
+#   conventions.md → CONVENTIONS.md
 # lintPackage: 선택 시 .kelo/plugins/ 에 vendoring 되는 analyzer 플러그인 (path는 저장소 루트 기준).
 freezed:
   description: freezed 불변 모델 (Entity/State)

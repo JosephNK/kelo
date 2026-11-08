@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // =============================================================================
 // Generates AGENTS.md from rules/<framework>/base/agents.template.md and
-// creates a CLAUDE.md symlink pointing at it.
+// writes CLAUDE.md that imports it (`@AGENTS.md`) — a plain file, not a
+// symlink, so it also works where git checks symlinks out as text (Windows).
 //
 // Usage:
 //   gen-agents.mjs <framework> -p <output-dir> [-n <project-name>] [--docs-dir <dir>]
@@ -16,7 +17,7 @@ import { ensureGitRepo, normalizePath } from "./common.mjs";
 
 const HELP = `Usage: gen-agents.mjs <framework> -p <output-dir> [-n <project-name>] [--docs-dir <dir>]
 
-Generates AGENTS.md and creates CLAUDE.md symlink.
+Generates AGENTS.md and CLAUDE.md (@AGENTS.md import).
 
 Arguments:
   <framework>    Framework name (e.g. nextjs, nestjs, flutter)
@@ -117,14 +118,13 @@ function renderProjectTemplate({ projectName }) {
 `;
 }
 
-function writeSymlink(target, linkPath) {
-  if (
-    fs.existsSync(linkPath) ||
-    fs.lstatSync(linkPath, { throwIfNoEntry: false })
-  ) {
-    fs.rmSync(linkPath, { force: true });
+// CLAUDE.md는 AGENTS.md를 import하는 한 줄짜리 파일. 기존 파일·심볼릭 링크는
+// 먼저 지운다 (링크 위에 쓰면 링크 대상인 AGENTS.md가 덮어써진다).
+function writeClaudeImport(filePath) {
+  if (fs.lstatSync(filePath, { throwIfNoEntry: false })) {
+    fs.rmSync(filePath, { force: true });
   }
-  fs.symlinkSync(target, linkPath);
+  fs.writeFileSync(filePath, "@AGENTS.md\n");
 }
 
 function main() {
@@ -172,11 +172,11 @@ function main() {
   const rendered = renderTemplate(template, { projectName, docsDir });
   fs.writeFileSync(outputFile, rendered);
 
-  const symlink = path.join(outputDir, "CLAUDE.md");
-  writeSymlink("AGENTS.md", symlink);
+  const claudeFile = path.join(outputDir, "CLAUDE.md");
+  writeClaudeImport(claudeFile);
 
   process.stdout.write(`Generated: ${outputFile}\n`);
-  process.stdout.write(`Symlink: ${symlink} -> AGENTS.md\n`);
+  process.stdout.write(`Generated: ${claudeFile} (@AGENTS.md)\n`);
 
   // AGENTS.PROJECT.md is user-owned. Create it only when missing so subsequent
   // runs preserve user edits.

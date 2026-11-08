@@ -29,12 +29,7 @@ const PLUGIN_ROOT = path.resolve(
 const FRAMEWORKS = ["nextjs", "nestjs", "flutter"];
 const CONFIG_FILE = "kelo.yaml";
 const PACKAGE_MANAGERS = ["npm", "yarn", "pnpm", "bun"];
-const DOCS = [
-  "docs/GIT.md",
-  "docs/ARCHITECTURE.md",
-  "docs/CONVENTIONS.md",
-  "docs/LINT.md",
-];
+const DOCS = ["docs/ARCHITECTURE.md", "docs/CONVENTIONS.md"];
 
 const PROJECT_KEYS = ["framework", "name", "stacks", "agents", "entryDir"];
 const SINGLE_KEYS = [...PROJECT_KEYS, "packageManager"];

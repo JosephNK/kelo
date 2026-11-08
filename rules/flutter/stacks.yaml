@@ -1,4 +1,5 @@
 # Flutter 스택 정의 — /kelo:setup 선택지와 kelo.yaml `stacks` 검증의 원본.
+# conflicts: [stack] — 함께 선택할 수 없는 스택 (한쪽에만 적어도 양방향, setup이 검증).
 # 스택이 기여하는 산출물은 rules/flutter/<stack>/ 의 파일 존재로 정해진다:
 #   conventions.md → CONVENTIONS.md
 # lintPackage: 선택 시 .kelo/plugins/ 에 vendoring 되는 analyzer 플러그인 (path는 저장소 루트 기준).

@@ -24,6 +24,7 @@ import { fileURLToPath } from "node:url";
 import YAML from "yaml";
 
 import { doctor } from "./kelo-doctor.mjs";
+import { checkStackDefinitions, checkStackSelection } from "./stacks.mjs";
 
 const PLUGIN_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -62,7 +63,11 @@ const stackCache = new Map();
 function loadStacks(framework) {
   if (!stackCache.has(framework)) {
     const file = path.join(PLUGIN_ROOT, "rules", framework, "stacks.yaml");
-    stackCache.set(framework, fs.existsSync(file) ? readYaml(file) : {});
+    const defined = fs.existsSync(file) ? readYaml(file) : {};
+    const errors = checkStackDefinitions(defined);
+    if (errors.length)
+      throw new KeloError(`${file}:\n  ${errors.join("\n  ")}`);
+    stackCache.set(framework, defined);
   }
   return stackCache.get(framework);
 }
@@ -99,11 +104,10 @@ function normalizeProject(where, raw, dir) {
   if (!Array.isArray(stacks) || stacks.some((s) => typeof s !== "string")) {
     throw new KeloError(`${where}: stacks는 문자열 배열이어야 합니다`);
   }
-  const defined = loadStacks(raw.framework);
-  const unknown = stacks.filter((s) => !(s in defined));
-  if (unknown.length) {
+  const stackErrors = checkStackSelection(loadStacks(raw.framework), stacks);
+  if (stackErrors.length) {
     throw new KeloError(
-      `${where}: 알 수 없는 ${raw.framework} 스택 ${unknown.join(", ")} (사용 가능: ${Object.keys(defined).join(", ") || "없음"})`,
+      `${where}: ${raw.framework} stacks — ${stackErrors.join(" / ")}`,
     );
   }
   if (raw.entryDir !== undefined && raw.framework !== "flutter") {

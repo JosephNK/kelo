@@ -53,16 +53,18 @@ function groupByProjectRoot(patterns, cwd) {
 }
 
 function parseArgs(argv, binName) {
-  const args = { fix: false, maxWarnings: -1, patterns: [] };
+  const args = { fix: false, maxWarnings: -1, format: "stylish", patterns: [] };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--fix") args.fix = true;
     else if (a === "--max-warnings") args.maxWarnings = Number(argv[++i]);
+    else if (a === "--format") args.format = argv[++i];
     else if (a === "-h" || a === "--help") {
       process.stdout.write(
-        `Usage: ${binName} [--fix] [--max-warnings <n>] [patterns...]\n\n` +
+        `Usage: ${binName} [--fix] [--max-warnings <n>] [--format <name>] [patterns...]\n\n` +
           "프로젝트의 eslint.config.mjs 대신 kelo 규칙(+ kelo.lint.json,\n" +
-          "eslint.project.config.mjs)으로 검사합니다. 패턴 생략 시 '.' 전체.\n",
+          "eslint.project.config.mjs)으로 검사합니다. 패턴 생략 시 '.' 전체.\n" +
+          "--format: ESLint formatter 이름 (기본 stylish, kelo doctor는 json).\n",
       );
       process.exit(0);
     } else if (a.startsWith("-")) {
@@ -84,9 +86,8 @@ async function loadProjectConfig(root) {
  * @param {object} options
  * @param {string} options.binName CLI 이름 (도움말 표시용)
  * @param {(opts: {root: string, project: unknown[]}) => unknown[]} options.factory
- * @param {string} options.formatterPath kelo formatter 절대 경로
  */
-export async function runLintCli({ binName, factory, formatterPath }) {
+export async function runLintCli({ binName, factory }) {
   const args = parseArgs(process.argv.slice(2), binName);
 
   try {
@@ -111,7 +112,7 @@ export async function runLintCli({ binName, factory, formatterPath }) {
       results.push(...groupResults);
     }
 
-    const formatter = await eslint.loadFormatter(formatterPath);
+    const formatter = await eslint.loadFormatter(args.format);
     const output = await formatter.format(results);
     if (output) process.stdout.write(output);
 

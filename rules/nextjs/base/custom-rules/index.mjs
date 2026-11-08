@@ -2,6 +2,10 @@
 // Kelo NextJS — Custom ESLint Plugin
 // -----------------------------------------------------------------------------
 
+import {
+  noUnknownDependencies,
+  noUnknownFiles,
+} from "./boundaries-unknown.mjs";
 import noInlineStyleTokens from "./no-inline-style-tokens.mjs";
 import noNestedFeatureDir from "./no-nested-feature-dir.mjs";
 import noUnknownSrcDir from "./no-unknown-src-dir.mjs";
@@ -13,6 +17,9 @@ import noUnknownSrcDir from "./no-unknown-src-dir.mjs";
 /** @type {import('eslint').ESLint.Plugin} */
 export default {
   rules: {
+    // boundaries/no-unknown-* 래퍼 (안내 메시지) — build-architecture-boundaries가 켠다
+    "no-unknown-files": noUnknownFiles,
+    "no-unknown-dependencies": noUnknownDependencies,
     "no-inline-style-tokens": noInlineStyleTokens,
     "no-nested-feature-dir": noNestedFeatureDir,
     "no-unknown-src-dir": noUnknownSrcDir,

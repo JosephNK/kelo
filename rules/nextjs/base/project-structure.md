@@ -38,7 +38,7 @@ src/
 
 ## Top-level directories (excluded from architecture boundaries)
 
-The following project-root directories are reserved for tooling and tests. They are pre-registered in `baseBoundaryIgnores` (see `eslint.rules.mjs`) so `boundaries/no-unknown-files` does not flag them.
+The following project-root directories are reserved for tooling and tests. They are pre-registered in `baseBoundaryIgnores` (see `eslint.rules.mjs`) so `local/no-unknown-files` does not flag them.
 
 ```
 scripts/          # Build, deploy, codegen, and maintenance utilities

@@ -649,7 +649,7 @@ ESLint 오버라이드 중 **LLM이 코드 작성 시 명시적으로 따라야 
 
 ## Ignored Paths (무시 경로)
 
-Boundary 검사 제외 (boundaries/no-unknown-files 오탐 방지).
+Boundary 검사 제외 (local/no-unknown-files 오탐 방지).
 테스트/스펙/설정, 루트 메타 파일, 프레임워크 진입점(`src/proxy.ts`), scripts/e2e 빌드 유틸, 전역 타입,
 모노레포 sibling workspace로 resolve된 import 등.
 

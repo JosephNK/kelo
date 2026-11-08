@@ -26,7 +26,7 @@
 //   src/http/_generated/    — generator 산출물 (client.ts·index.ts·types·endpoints·services 전부; 구조 고정, layer root 허용 항목)
 //
 // 보완 룰:
-//   - boundaries/no-unknown-files: 어떤 element pattern에도 매치되지 않는 파일 차단
+//   - local/no-unknown-files: 어떤 element pattern에도 매치되지 않는 파일 차단
 // =============================================================================
 
 import fs from "node:fs";

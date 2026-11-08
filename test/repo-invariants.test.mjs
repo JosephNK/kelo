@@ -17,6 +17,7 @@ const SHARED_FILES = [
   "lib/run-lint-cli.mjs",
   "base/eslint-rules/builders/to-boundaries-policies.mjs",
   "base/eslint-rules/quality/sonarjs.mjs",
+  "base/custom-rules/boundaries-unknown.mjs",
 ];
 
 for (const file of SHARED_FILES) {

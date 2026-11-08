@@ -1,6 +1,7 @@
 import { defineConfig } from "eslint/config";
 import boundaries from "eslint-plugin-boundaries";
 
+import keloLocalPlugin from "../../custom-rules/index.mjs";
 import { baseBoundaryIgnores } from "../boundaries/boundary-ignores.mjs";
 import { baseImportResolverSettings } from "../settings/import-resolver-settings.mjs";
 import {
@@ -31,7 +32,7 @@ export function buildArchitectureBoundaries(
   const internal = internalDependencyOptions(folderElements, classification);
   return defineConfig([
     {
-      plugins: { boundaries },
+      plugins: { boundaries, local: keloLocalPlugin },
       settings: {
         ...baseImportResolverSettings,
         "boundaries/elements": folderElements,
@@ -45,8 +46,9 @@ export function buildArchitectureBoundaries(
           : {}),
       },
       rules: {
-        "boundaries/no-unknown-dependencies": "error",
-        "boundaries/no-unknown-files": "error",
+        // boundaries/no-unknown-* 대신 같은 동작에 안내 메시지를 붙인 래퍼를 쓴다 (에디터에도 표시)
+        "local/no-unknown-dependencies": "error",
+        "local/no-unknown-files": "error",
         "boundaries/dependencies": [
           "error",
           {

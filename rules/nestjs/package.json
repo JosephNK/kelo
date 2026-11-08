@@ -22,7 +22,6 @@
   },
   "exports": {
     ".": "./index.mjs",
-    "./formatter": "./base/eslint.formatter.mjs",
     "./package.json": "./package.json"
   },
   "bin": {
@@ -34,7 +33,6 @@
     "lib/",
     "bin/",
     "base/eslint.rules.mjs",
-    "base/eslint.formatter.mjs",
     "base/eslint-rules/",
     "base/custom-rules/"
   ],

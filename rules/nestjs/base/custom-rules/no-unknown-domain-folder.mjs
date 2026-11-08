@@ -24,7 +24,7 @@
 //
 // 보완 룰:
 //   - no-nested-layer-dir: 레이어 폴더 *내부*에 하위 폴더 금지
-//   - boundaries/no-unknown-files: 어떤 element pattern에도 안 맞는 파일 차단
+//   - local/no-unknown-files: 어떤 element pattern에도 안 맞는 파일 차단
 //
 // 제외 대상:
 //   - *.spec.ts / *.test.ts (테스트 파일은 anchor에서 제외)
@@ -120,7 +120,7 @@ export default {
         } else {
           const layerIdx = dirSegments.findIndex((s) => LAYERS.includes(s));
           if (layerIdx === -1) {
-            // 레이어 폴더가 경로에 없음 — boundaries/no-unknown-files가 처리
+            // 레이어 폴더가 경로에 없음 — local/no-unknown-files가 처리
             return;
           }
           if (layerIdx === 1 || layerIdx === 2) {

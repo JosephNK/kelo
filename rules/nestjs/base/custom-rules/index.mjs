@@ -2,6 +2,10 @@
 // Kelo NestJS — Custom ESLint Plugin
 // -----------------------------------------------------------------------------
 
+import {
+  noUnknownDependencies,
+  noUnknownFiles,
+} from "./boundaries-unknown.mjs";
 import requireApiProperty from "./require-api-property.mjs";
 import dtoNamingConvention from "./dto-naming-convention.mjs";
 import requireTimestamptz from "./require-timestamptz.mjs";
@@ -17,6 +21,9 @@ import noEntityReturn from "./no-entity-return.mjs";
 /** @type {import('eslint').ESLint.Plugin} */
 export default {
   rules: {
+    // boundaries/no-unknown-* 래퍼 (안내 메시지) — build-architecture-boundaries가 켠다
+    "no-unknown-files": noUnknownFiles,
+    "no-unknown-dependencies": noUnknownDependencies,
     "require-api-property": requireApiProperty,
     "dto-naming-convention": dtoNamingConvention,
     "require-timestamptz": requireTimestamptz,

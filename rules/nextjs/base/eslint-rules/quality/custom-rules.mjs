@@ -21,7 +21,7 @@ export const baseCustomRules = defineConfig(
   },
 
   // src/{domain,http}/<feature>/ 직속 하위 디렉토리 금지 (flat-only).
-  // boundaries/no-unknown-files가 잡지 못하는 빈 폴더·구조 위반을 보강.
+  // local/no-unknown-files가 잡지 못하는 빈 폴더·구조 위반을 보강.
   {
     files: ["src/domain/**/*.{ts,tsx}", "src/http/**/*.{ts,tsx}"],
     ignores: ["**/*.spec.ts", "**/*.spec.tsx", "**/*.test.ts", "**/*.test.tsx"],

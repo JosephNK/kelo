@@ -1,0 +1,5 @@
+framework: flutter
+name: example_flutter
+stacks: [leaf-kit]
+agents: false
+entryDir: "."

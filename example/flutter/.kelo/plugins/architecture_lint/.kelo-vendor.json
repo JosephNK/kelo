@@ -1,7 +1,7 @@
 {
   "$comment": "Vendored by kelo — do not edit. Regenerate with /kelo:flutter-sync.",
   "package": "architecture_lint",
-  "source": "kelo@0.4.2/rules/flutter/base/custom-lint/architecture_lint",
+  "source": "kelo@1.1.0/rules/flutter/base/custom-lint/architecture_lint",
   "files": {
     "lib/architecture_lint.dart": "8244f4b35cbb153a2eaf17052f0783ba7e1e9af4b245064d2904b4ce4a29c21e",
     "lib/main.dart": "c42acb64377460e9e20d61e29b00e89dade9a0efe2d8331d3c1830249dce2b41",
@@ -24,6 +24,6 @@
     "lib/src/lints/al_s1_file_size_lint.dart": "45d0b8d63e4c272a3cc33e6c8a37c819235eaa86821166e80a72cd64af8ed658",
     "lib/src/lints/al_s2_unknown_path_lint.dart": "6f3cb291c25d25488e17cd0004c4e7dd35c0ba1afb73b3c2356b256a9b16ab99",
     "lib/src/structure_annotation.dart": "09de101a3028af3c57b7d3e7f3bf117eeb3a5863030ef71fd69c7e0542cee6b0",
-    "pubspec.yaml": "4fb04d697fb528b8817899591967c36cda30c5c61133c4a0c73a57b2e6e3a0c9"
+    "pubspec.yaml": "730f1a7b8e7c2f3ee31e0442cadfa75347804dcc1736a3593e872bc5a7e8cf35"
   }
 }

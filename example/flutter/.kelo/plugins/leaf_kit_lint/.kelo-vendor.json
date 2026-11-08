@@ -1,7 +1,7 @@
 {
   "$comment": "Vendored by kelo — do not edit. Regenerate with /kelo:flutter-sync.",
   "package": "leaf_kit_lint",
-  "source": "kelo@0.4.2/rules/flutter/leaf-kit/custom-lint/leaf_kit_lint",
+  "source": "kelo@1.1.0/rules/flutter/leaf-kit/custom-lint/leaf_kit_lint",
   "files": {
     "lib/leaf_kit_lint.dart": "da96423bbc651eb597579f1eeff43f44303a7748f187c19225186161e5f22543",
     "lib/main.dart": "c1fda28adf372a4abd81ccfefa2a92607daf0cb1476973dc01d893211d60985c",
@@ -13,6 +13,6 @@
     "lib/src/lints/lk_e6_no_cross_bloc_lint.dart": "7ed3b92c210a1f157072a9a320dd6281fa9a086685beea14cd22c4d1e1912872",
     "lib/src/lints/lk_e8_no_direct_usecase_in_view_lint.dart": "f32181aafad5cde752f68736344d2ae50ecee9ae77291b332b0273e748b617fb",
     "lib/src/lints/lk_e9_preferred_widget_lint.dart": "9df6638d0b285b933c06e124c1ed271b5896cd9d091b2037775596b4e1764be9",
-    "pubspec.yaml": "1e58bd8b1c2155df69efeba282e3982aa1ba454fab4e1d78403fbe64c9debf9e"
+    "pubspec.yaml": "f13a8b7f1ee7b07c06eb3972679b7e9e63d65d775adb70bf3e1c57d7417ba77b"
   }
 }

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -e
+
+# 모노레포에서는 gen-husky가 git 루트 기준 프로젝트 경로(예: apps/app/)를 넣는다. 단독 프로젝트는 빈 값.
+ROOT="$(git rev-parse --show-toplevel)"
+PROJECT_PREFIX="example/flutter/"
+ENTRY="."
+if [ "$ENTRY" = "." ]; then ENTRY_PREFIX="$PROJECT_PREFIX"; else ENTRY_PREFIX="${PROJECT_PREFIX}${ENTRY}/"; fi
+cd "$ROOT"
+
+# kelo 분석 규칙 약화 검사 (analysis_options.yaml 오버라이드, // ignore: 주석 등).
+# .dart 또는 analysis_options.yaml / pubspec.yaml 변경이 staged일 때 실행.
+staged_lint_inputs=$(git diff --cached --name-only --diff-filter=ACMR | grep "^${PROJECT_PREFIX}" | grep -E '(\.dart|analysis_options\.yaml|pubspec\.yaml)$' || true)
+if [ -n "$staged_lint_inputs" ]; then
+  (cd "${ENTRY_PREFIX:-.}" && dart run kelo_analysis:verify -p "$ROOT/${PROJECT_PREFIX}.")
+fi
+
+# Only run when .dart files are staged.
+# vendoring된 .kelo/plugins/**는 제외 — kelo 소스를 그대로 복사한 것이라 프로젝트가 포맷·수정하면
+# .kelo-vendor.json 해시와 달라져 verify가 실패한다 (무결성은 위 verify가 검사).
+staged_dart=$(git diff --cached --name-only --diff-filter=ACMR | grep "^${PROJECT_PREFIX}" | grep '\.dart$' | grep -vE '(^|/)\.kelo/' || true)
+if [ -z "$staged_dart" ]; then
+  exit 0
+fi
+
+# dart format (fail if any staged .dart file would be reformatted)
+echo "$staged_dart" | xargs dart format --set-exit-if-changed
+
+# dart analyze (staged dart 파일만 — 속도 우선)
+# architecture_lint 및 stack lint 패키지 진단은 analysis_server_plugin이
+# analysis_options.yaml의 plugins: 섹션을 isolate로 로드해 함께 보고한다.
+# flutter analyze는 plugin 진단을 보고하지 않으므로 사용하지 않는다 (flutter/flutter#187999).
+# 디렉터리 인자도 plugin 진단이 빠지므로 파일 목록으로 넘긴다.
+# 주의: cross-file 의존 룰(예: 잘못된 import를 하는 쪽이 staged 안 된 경우)은 검출되지 않을 수 있다.
+staged_in_entry=$(echo "$staged_dart" | grep "^${ENTRY_PREFIX}" | sed "s|^${ENTRY_PREFIX}||" || true)
+if [ -n "$staged_in_entry" ]; then
+  (cd "${ENTRY_PREFIX:-.}" && echo "$staged_in_entry" | xargs dart analyze --fatal-infos)
+fi
+
+# flutter test (related only)
+(cd "${ENTRY_PREFIX:-.}" && tf=$(echo "$staged_in_entry" | while read -r f; do [ -z "$f" ] && continue; if [[ $f == test/*_test.dart ]]; then echo "$f"; elif [[ $f == lib/* ]]; then t="test/${f#lib/}"; t="${t%.dart}_test.dart"; [ -f "$t" ] && echo "$t"; fi; done | sort -u); if [ -n "$tf" ]; then flutter test $tf; else echo "No related tests found, skipping"; fi)

@@ -2,9 +2,6 @@
 # Managed by kelo (overwritten by /kelo:flutter-init and -sync).
 # Workspace member: workspace root + package:kelo_analysis rules
 
-analyzer:
-  exclude:
-    - build/**
 include:
   - ../analysis_options.yaml
   - package:kelo_analysis/analysis_options.yaml

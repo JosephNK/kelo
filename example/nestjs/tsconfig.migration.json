@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist-migration"
+  },
+  "include": [
+    "src/**/*.orm-entity.ts",
+    "src/infrastructure/database/data-source.ts"
+  ]
+}

@@ -8,15 +8,16 @@
     "build": "next build",
     "lint": "kelo-lint-nextjs",
     "lint:ci": "kelo-lint-nextjs",
-    "lint:css": "stylelint \"**/*.{css,scss}\" --fix"
+    "lint:css": "stylelint \"**/*.{css,scss}\" --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,json,md,yml,yaml}\""
   },
   "devDependencies": {
-    "eslint-config-kelo-nextjs": "https://github.com/JosephNK/kelo/releases/download/v0.4.1/eslint-config-kelo-nextjs-0.4.1.tgz",
     "@tanstack/react-query": "^5.101.0",
     "@types/node": "^25.9.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
+    "eslint-config-kelo-nextjs": "1.1.0",
     "eslint-config-next": "^16",
     "eslint-config-prettier": "^9.0.0",
     "eslint-import-resolver-typescript": "^3.6.3",
@@ -28,6 +29,8 @@
     "eslint-plugin-unused-imports": "^4.0.0",
     "ky": "^2.0.2",
     "next": "^16.0.0",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "stylelint": "^17.11.1",

@@ -100,14 +100,16 @@ export class OrderService {
 
 ### `http-client`
 
-**Role** — HTTP 클라이언트 단일 파일 (axios/fetch/ky 래퍼). baseURL·인터셉터·에러 포맷팅 공통화.
+**Role** — HTTP 클라이언트 팩토리 (ky 래퍼). createApiClient(config)로 prefix·retry·hooks를 주입받아 KyInstance 생성 — 인증·prefix 같은 비즈니스 로직은 호출부가 주입.
 
 **Contains**
 
-- client 인스턴스 export — `src/http/client.ts` (단일 파일)
+- createApiClient 팩토리·getApi 싱글톤 export — `src/http/_generated/client.ts` (generator 산출물)
+- 이전 구조의 `src/http/client.ts` (generator가 `_generated/`로 옮기기 전 위치, 같은 레이어로 인식)
 
 **Forbids**
 
+- `_generated/client.ts` 수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)
 - 이 파일에서 다른 레이어 import (순수 통신 경계; allow: [])
 
 ### `http-endpoint`
@@ -136,6 +138,32 @@ export class OrderService {
 - 수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)
 - 도메인 변환 로직 (→ http-mapper)
 - 다른 레이어 import (allow: [])
+
+### `http-service`
+
+**Role** — OpenAPI tag별 자동 생성 API 서비스 클래스. operation = 메서드 1개로 매핑되어 KyInstance·endpoints·DTO를 조립한 HTTP 호출 + `.json<Dto>()` 반환을 담당. 도메인 변환은 하지 않음 (→ http-repository에서 mapper 호출).
+
+**Contains**
+
+- tag별 서비스 클래스 — `src/http/_generated/services/<tag-kebab>.ts` (generator 산출물)
+- query param 객체를 URLSearchParams로 정규화하는 private helper
+
+**Forbids**
+
+- 수기 편집 (kelo:nextjs-openapi-gen으로만 갱신)
+- 도메인 모델 import (DTO만 반환 — 변환은 repository 책임)
+- 다른 레이어 import (allow: http-endpoint, http-dto만)
+
+```ts
+// src/http/_generated/services/o-auth.ts (generated)
+export class OAuthService {
+  constructor(private readonly api: KyInstance) {}
+
+  async oAuthAuthControllerLogin(body: OAuthLoginDto): Promise<{ success: boolean; data: OAuthAuthDataResponseDto }> {
+    return this.api.post(endpoints.oAuthAuthControllerLogin(), { json: body }).json<{...}>();
+  }
+}
+```
 
 ### `http-mapper`
 
@@ -188,20 +216,29 @@ export class OrderRepository implements OrderRepositoryPort {
 
 ### `http-hook`
 
-**Role** — UI에 제공되는 데이터 페칭 훅 (TanStack Query 등). domain-service만 호출 — Repository 직접 호출 금지.
+**Role** — UI에 제공되는 데이터 페칭 훅 (TanStack Query 등). 데이터 호출은 domain-service만 사용 — http-repository는 Service 팩토리에서 Port 구현체 주입 용도로만 import.
 
 **Contains**
 
 - 한 feature의 React Query 훅 (useQuery/useMutation) — `src/http/<feature>/hook.ts`
-- Service 팩토리 훅도 같은 파일에 동거 가능
+- Service 팩토리 훅 (예: `useOrderService`)을 같은 파일에 동거. Port 구현체(`http-repository`)는 여기서만 주입.
 
 **Forbids**
 
-- http-repository 직접 import (→ domain-service 경유)
+- http-repository를 데이터 호출에 직접 사용 (→ Service 메서드를 거쳐야 함)
 - UI 컴포넌트 import (훅은 데이터 계약만)
 
 ```ts
 // src/http/order/hook.ts
+import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { OrderService } from '@/domain/order/service';
+import { OrderRepository } from '@/http/order/repository';
+
+function useOrderService() {
+  return useMemo(() => new OrderService(new OrderRepository()), []);
+}
+
 export function useOrder(id: string) {
   const service = useOrderService();
   return useQuery({
@@ -210,6 +247,19 @@ export function useOrder(id: string) {
   });
 }
 ```
+
+### `lib-shared-barrel`
+
+**Role** — 공용 유틸 barrel — `src/lib/utils/index.ts`. `lib-shared` leaf의 re-export 전용.
+
+**Contains**
+
+- barrel re-export — `export * from './cn'`, `export { foo } from './format-date'` 등
+
+**Forbids**
+
+- 런타임 로직 정의 (helper 구현은 leaf 파일에 두고 여기서는 재노출만)
+- `lib-shared` 외 다른 레이어 import (barrel은 leaf 묶음 역할만)
 
 ### `lib-shared`
 
@@ -226,16 +276,43 @@ export function useOrder(id: string) {
 
 ### `dictionary`
 
-**Role** — i18n 사전. 로케일별 메시지 객체 + 타입 안전 키 (shared-type과 상호 참조).
+**Role** — i18n 사전. 로케일별 메시지 객체·JSON + 타입 안전 키 (shared-type과 상호 참조).
 
 **Contains**
 
-- 사전 파일 — `src/lib/dictionaries/*.ts`
+- 사전 파일 — `src/i18n/dictionaries/*.{json,ts}` (예: `en.json`, `ko.json`)
 - 로케일 loader — `src/app/[locale]/dictionaries.ts`
 
 **Forbids**
 
 - 런타임 비즈니스 로직 (순수 데이터 객체)
+- next-intl 설정 파일 동거 (`routing.ts`/`request.ts`/`navigation.ts`는 `i18n-config` 레이어로)
+
+### `i18n-config`
+
+**Role** — next-intl 런타임 설정 — routing(로케일/기본 로케일/prefix), request(서버 메시지 로드), navigation(Link/useRouter 헬퍼). 외부 패키지(next-intl)와 dictionary만 다루는 설정 경계.
+
+**Contains**
+
+- `src/i18n/routing.ts` — `defineRouting({ locales, defaultLocale, localePrefix })`
+- `src/i18n/request.ts` — `getRequestConfig` 기반 서버 메시지 로더
+- `src/i18n/navigation.ts` — `createNavigation(routing)` 결과 (Link·redirect·useRouter)
+
+**Forbids**
+
+- 도메인/HTTP/UI 레이어 import (설정 경계 — 사전만 참조)
+- 사전 데이터를 `src/lib/dictionaries/`에 두는 패턴 (모두 `src/i18n/dictionaries/`로 통일)
+
+```ts
+// src/i18n/routing.ts
+import { defineRouting } from 'next-intl/routing';
+export const routing = defineRouting({
+  locales: ['en', 'ko'] as const,
+  defaultLocale: 'en',
+  localePrefix: 'always',
+});
+export type Locale = (typeof routing.locales)[number];
+```
 
 ### `shared-type`
 
@@ -260,6 +337,96 @@ export function useOrder(id: string) {
 **Forbids**
 
 - 프로젝트 내 다른 레이어 import (순수 래퍼; allow: [])
+
+### `shared-hook`
+
+**Role** — 전역 재사용 Client React hook. UI/HTTP 비의존 — domain-service/http-hook/Repository 호출 금지. 도메인 모델은 타입 표현용으로만 참조.
+
+**Contains**
+
+- 공용 React hook — `src/hooks/<name>.ts` (예: `use-reduced-motion.ts`, `use-debounce.ts`, `use-media-query.ts`)
+- hook 조합용 내부 helper (콜로케이션)
+
+**Forbids**
+
+- domain-service / http-hook / http-repository 호출 (→ http-hook 또는 page-component가 담당)
+- UI 컴포넌트 import (hook은 behavior만 — JSX 반환 금지)
+
+```ts
+// src/hooks/use-reduced-motion.ts
+'use client';
+import { useEffect, useState } from 'react';
+export function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return reduced;
+}
+```
+
+### `style`
+
+**Role** — 전역 CSS·디자인 토큰 리소스. CSS custom property(`:root { --color-* }`)와 TS 토큰(타입 안전 참조)을 한곳에 모아 page/UI 레이어가 import해 쓴다.
+
+**Contains**
+
+- 전역 CSS — `src/styles/globals.css` (layout.tsx에서 side-effect import)
+- CSS 토큰 — `src/styles/tokens.css` (palette/typography/spacing custom property)
+- 타이포그래피 CSS — `src/styles/typography.css`
+- TS 디자인 토큰 (선택) — `src/styles/tokens.ts` (컴포넌트에서 타입 안전 참조)
+
+**Forbids**
+
+- 다른 레이어 import (domain/http/UI 컴포넌트 참조 금지 — 순수 리소스 경계)
+- 런타임 비즈니스 로직 (CSS 변수 정의·토큰 객체에만 집중)
+
+```ts
+/* src/styles/tokens.css */
+:root {
+  --color-surface: oklch(98% 0 0);
+  --color-text: oklch(18% 0 0);
+  --text-base: clamp(1rem, 0.92rem + 0.4vw, 1.125rem);
+  --space-section: clamp(4rem, 3rem + 5vw, 10rem);
+}
+
+// src/app/[locale]/layout.tsx
+import '@/styles/globals.css';
+```
+
+### `theme`
+
+**Role** — 디자인 시스템 테마 설정 파일 (`src/theme.ts` + generator 산출물 `src/theme.generated.ts`). Mantine `createTheme()`, Ant Design `ConfigProvider.theme` 객체, shadcn 토큰 등 디자인 시스템 라이브러리에 주입할 테마 객체를 export. layout/Provider 레이어가 import해 ThemeProvider에 전달.
+
+**Contains**
+
+- 수기 테마 객체 export — `src/theme.ts`
+- generator 산출물 — `src/theme.generated.ts` (디자인 토큰 추출/변환 도구가 갱신)
+- 필요 시 `src/styles`의 TS 디자인 토큰을 조합해 테마 객체 구성
+
+**Forbids**
+
+- 도메인/HTTP/UI 레이어 import (설정 경계 — style만 참조)
+- 런타임 비즈니스 로직 (테마 객체 정의에만 집중)
+- `theme.generated.ts` 수기 편집 (generator가 덮어씀)
+- 복수 파일로 분리 (`src/theme/` 디렉토리 X — 위 두 파일만 유지)
+
+```ts
+// src/theme.ts (Mantine 예시)
+import { createTheme } from '@mantine/core';
+export const theme = createTheme({
+  primaryColor: 'blue',
+  fontFamily: 'Inter, sans-serif',
+});
+
+// src/app/[locale]/layout.tsx
+import { theme } from '@/theme';
+// <MantineProvider theme={theme}>...</MantineProvider>
+```
 
 ### `shared-ui`
 
@@ -387,28 +554,36 @@ export async function GET(
 | `http-client` | _(no layer imports)_ |
 | `http-endpoint` | _(no layer imports)_ |
 | `http-dto` | _(no layer imports)_ |
+| `http-service` | `http-endpoint`, `http-dto` |
 | `http-mapper` | `domain-model`, `http-dto` |
-| `http-repository` | `http-client`, `http-endpoint`, `http-dto`, `http-mapper`, `domain-port`, `domain-error`, `domain-model`, `db` |
-| `http-hook` | `domain-service` |
+| `http-repository` | `http-client`, `http-endpoint`, `http-dto`, `http-service`, `http-mapper`, `domain-port`, `domain-error`, `domain-model`, `db` |
+| `http-hook` | `domain-service`, `http-repository`, `domain-model` |
 | `lib-shared` | _(no layer imports)_ |
+| `lib-shared-barrel` | `lib-shared` |
 | `db` | _(no layer imports)_ |
-| `shared-ui` | `domain-model`, `shared-ui`, `shared-type` |
-| `page-component` | `http-hook`, `shared-ui`, `domain-model`, `page-component`, `lib-shared`, `shared-type` |
-| `page-provider` | `lib-shared` |
+| `shared-hook` | `lib-shared`, `lib-shared-barrel`, `shared-type`, `domain-model`, `shared-hook`, `style` |
+| `shared-ui` | `domain-model`, `shared-ui`, `shared-hook`, `shared-type`, `i18n-config`, `style`, `theme` |
+| `page-component` | `http-hook`, `shared-ui`, `shared-hook`, `domain-model`, `page-component`, `lib-shared`, `lib-shared-barrel`, `shared-type`, `i18n-config`, `style`, `theme` |
+| `page-provider` | `lib-shared`, `lib-shared-barrel`, `shared-hook`, `style`, `theme` |
+| `style` | `style` |
+| `theme` | `style`, `theme` |
 | `dictionary` | `shared-type`, `dictionary` |
+| `i18n-config` | `dictionary`, `i18n-config` |
 | `shared-type` | `dictionary` |
 | `email-template` | `dictionary`, `shared-type` |
-| `route-handler` | `domain-model`, `domain-error`, `domain-service`, `shared-type` |
-| `page` | `page-component`, `page-provider`, `shared-ui`, `dictionary`, `shared-type`, `page` |
+| `route-handler` | `domain-model`, `domain-error`, `domain-service`, `shared-type`, `i18n-config` |
+| `page` | `page-component`, `page-provider`, `shared-ui`, `dictionary`, `shared-type`, `i18n-config`, `style`, `theme`, `page` |
 
 ## Restricted Patterns (Import 금지 패턴)
 
 전역 no-restricted-imports 패턴. 깊은 상대경로(`../../**`) 금지로 폴더 구조
 리팩토링 시 import 파손 방지 + `@/*` path alias 사용 강제.
+더불어 deprecated 경로(`@/lib/dictionaries/**`)를 `@/i18n/**`로 이동시키도록 차단.
 
 | 패턴 | 메시지 |
 | --- | --- |
 | `../../**` | Use @/* path alias instead of deep relative parent imports. |
+| `@/lib/dictionaries/*`, `@/lib/dictionaries/**` | Move i18n to src/i18n/: dictionaries → @/i18n/dictionaries/*, routing/request/navigation → @/i18n/*. |
 
 ## Restricted Syntax (AST 금지 구문)
 
@@ -425,13 +600,14 @@ AST selector 기반 금지 구문.
 ## Domain Purity (도메인 순수성)
 
 도메인 레이어(`src/domain/**`)에서 import 금지 패키지.
-프레임워크 비의존 유지. 스택별로 UI 라이브러리 추가 차단.
+프레임워크 비의존 유지. 프로젝트별 추가 차단은 `kelo.lint.json`의 `domainBannedPackages`.
 
 ### 도메인 레이어 금지 패키지
 
 - `react` (+ 서브경로)
 - `react-dom` (+ 서브경로)
 - `next` (+ 서브경로)
+- `@tanstack/**`
 - `mongodb` (+ 서브경로)
 - `pg` (+ 서브경로)
 - `redis` (+ 서브경로)
@@ -453,14 +629,15 @@ ESLint 오버라이드 중 **LLM이 코드 작성 시 명시적으로 따라야 
 ## Ignored Paths (무시 경로)
 
 Boundary 검사 제외 (boundaries/no-unknown-files 오탐 방지).
-테스트/스펙/설정, 루트 메타 파일, scripts/e2e 빌드 유틸, 전역 타입 등.
+테스트/스펙/설정, 루트 메타 파일, 프레임워크 진입점(`src/proxy.ts`), scripts/e2e 빌드 유틸, 전역 타입,
+모노레포 sibling workspace로 resolve된 import 등.
 
 ### 무시 패턴 목록
 
-- **테스트/설정 파일**: `**/*.test.ts`, `**/*.test.tsx`, `**/*.spec.ts`, `**/*.spec.tsx`, `*.config.*`
+- **테스트/설정 파일**: `**/*.test.ts`, `**/*.test.tsx`, `**/*.spec.ts`, `**/*.spec.tsx`, `*.config.*`, `eslint.project.config.mjs`, `prettier.config.mjs`, `commitlint.config.mjs`
 - **타입/메타 파일**: `*.ts`, `*.d.ts`, `types/**`, `src/lib/types/**`
-- **특수 경로**: `specs/**`
-- **빌드/툴 산출물 (코드 작성 무관)**: `.kelo/**`, `scripts/**`, `e2e/**`, `.next/**`, `out/**`, `build/**`, `coverage/**`, `next-env.d.ts`
+- **특수 경로**: `src/proxy.ts`, `specs/**`, `**/packages/**`, `src/http/_generated/**`, `src/theme.generated.ts`
+- **빌드/툴 산출물 (코드 작성 무관)**: `.kelo/**`, `scripts/**`, `e2e/**`, `eslint.config.mjs`, `.next/**`, `out/**`, `build/**`, `coverage/**`, `next-env.d.ts`
 
 # Lint Rules — Structure Reference (nextjs/base)
 
@@ -481,7 +658,7 @@ Boundary 검사 제외 (boundaries/no-unknown-files 오탐 방지).
     │   │   ├── _components/      # page-component — Page-colocated Client Components ('use client')
     │   │   ├── _providers/       # page-provider — Page-colocated Providers ('use client')
     │   │   ├── (group)/          # Next.js route group — 괄호가 진짜 폴더명. URL 미포함. 실제: `(protected)`, `(auth)` 등
-    │   │   ├── <feature>/        # doc placeholder — 실제 폴더는 구체 이름 (예: `users/`, `products/`, `dashboard/`)
+    │   │   ├── <feature>/        # feature module — 실제 이름 가변 (예: `users/`, `products/`, `dashboard/`)
     │   │   │   ├── _components/  # page-component — 이 레벨에도 가능 (glob `**` 매칭)
     │   │   │   ├── [id]/         # Next.js 동적 세그먼트 — 브래킷이 진짜 폴더명. 안의 이름은 가변 (`[id]`, `[slug]`, `[orderId]` 등)
     │   │   │   │   └── page.tsx
@@ -492,8 +669,8 @@ Boundary 검사 제외 (boundaries/no-unknown-files 오탐 방지).
     │   │   ├── loading.tsx       # Suspense fallback UI (선택)
     │   │   ├── not-found.tsx     # 404 페이지 (선택)
     │   │   └── page.tsx          # Home page (Server Component)
-    │   └── api/                  # Route Handlers 관용 위치 — `/api/*`
-    │       └── <resource>/       # doc placeholder — 실제 폴더는 구체 자원명 (예: `users/`, `auth/`, `projects/`)
+    │   └── api/                  # Route Handlers — `/api/*` 관례 위치
+    │       └── <resource>/       # API resource — 실제 이름 가변 (예: `users/`, `auth/`, `projects/`)
     │           ├── [...slug]/    # Next.js catch-all 세그먼트 — 폴더명이 그대로 `[...slug]` (예: `auth/[...nextauth]`)
     │           │   └── route.ts  # route-handler — API 진입점 (얇은 HTTP 어댑터)
     │           ├── [id]/         # Next.js 동적 세그먼트 — 폴더명이 그대로 `[id]` 또는 `[slug]` 등
@@ -502,27 +679,44 @@ Boundary 검사 제외 (boundaries/no-unknown-files 오탐 방지).
     ├── components/               # shared-ui — 전역 재사용 컴포넌트
     ├── db/                       # db — DB 드라이버 래퍼
     ├── domain/
-    │   └── *
+    │   └── <feature>/            # feature module — 실제 이름 가변 (예: `users/`, `products/`, `dashboard/`)
     │       ├── errors.ts         # domain-error — 도메인 에러
     │       ├── model.ts          # domain-model — Entity·VO
     │       ├── port.ts           # domain-port — Repository 인터페이스
     │       └── service.ts        # domain-service — UseCase/서비스
     ├── email-templates/          # email-template — React Email 등 이메일 템플릿
+    ├── hooks/                    # shared-hook — 전역 재사용 React hook
     ├── http/
     │   ├── _generated/
+    │   │   ├── client.ts         # http-client — HTTP 클라이언트 팩토리 (generated, 이전 위치 `src/http/client.ts` 포함)
     │   │   ├── endpoints.ts      # http-endpoint — (generated) URL 헬퍼
+    │   │   ├── services/
+    │   │   │   └── *.ts          # http-service — (generated) tag별 API 서비스 클래스
     │   │   └── types.ts          # http-dto — (generated) DTO 타입
-    │   ├── *
+    │   ├── <feature>/            # feature module — 실제 이름 가변 (예: `users/`, `products/`, `dashboard/`)
     │   │   ├── hook.ts           # http-hook — TanStack Query 훅
     │   │   ├── mapper.ts         # http-mapper — DTO ↔ Domain 변환
     │   │   └── repository.ts     # http-repository — Port 구현체
-    │   └── client.ts             # http-client — HTTP 클라이언트
-    └── lib/
-        ├── dictionaries/
-        │   └── *                 # dictionary — i18n 사전
-        ├── types/                # shared-type — 전역 타입
-        └── utils/
-            └── *.ts              # lib-shared — 공용 유틸 함수
+    │   └── client.ts             # http-client — HTTP 클라이언트 팩토리 (generated, 이전 위치 `src/http/client.ts` 포함)
+    ├── i18n/
+    │   ├── *.ts                  # i18n-config — next-intl 런타임 설정 (routing/request/navigation)
+    │   ├── dictionaries/         # 로케일별 i18n 사전 (`<locale>.json` 또는 `<locale>.ts`)
+    │   │   └── <locale>.json     # 예: `en.json`, `ko.json`
+    │   ├── navigation.ts         # next-intl `createNavigation(routing)` — Link/redirect/useRouter
+    │   ├── request.ts            # next-intl `getRequestConfig` — 서버 메시지 로더
+    │   └── routing.ts            # next-intl `defineRouting` — locales/defaultLocale/localePrefix
+    ├── lib/
+    │   ├── types/                # shared-type — 전역 타입
+    │   └── utils/
+    │       ├── *.ts              # lib-shared — 공용 유틸 함수
+    │       └── index.ts          # lib-shared-barrel — 공용 유틸 barrel (re-export 전용)
+    ├── styles/                   # style — 전역 스타일·토큰 리소스
+    │   ├── globals.css           # 전역 스타일 (layout.tsx에서 side-effect import)
+    │   ├── tokens.css            # CSS custom property 토큰 (palette/typography/spacing)
+    │   ├── tokens.ts             # TS 디자인 토큰 (타입 안전 참조; 선택)
+    │   └── typography.css        # 타이포그래피 정의 (선택)
+    ├── theme.generated.ts        # theme — 디자인 시스템 테마 설정
+    └── theme.ts                  # theme — 디자인 시스템 테마 설정
 ```
 
 ## 레이어별 경로 매핑
@@ -533,16 +727,22 @@ Boundary 검사 제외 (boundaries/no-unknown-files 오탐 방지).
 | `domain-error` | `src/domain/*/errors.ts` | `full` | 도메인 에러 |
 | `domain-port` | `src/domain/*/port.ts` | `full` | Repository 인터페이스 |
 | `domain-service` | `src/domain/*/service.ts` | `full` | UseCase/서비스 |
-| `http-client` | `src/http/client.ts` | `full` | HTTP 클라이언트 |
+| `http-client` | `src/http/_generated/client.ts` / `src/http/client.ts` | `full` | HTTP 클라이언트 팩토리 (generated, 이전 위치 `src/http/client.ts` 포함) |
 | `http-endpoint` | `src/http/_generated/endpoints.ts` | `full` | (generated) URL 헬퍼 |
 | `http-dto` | `src/http/_generated/types.ts` | `full` | (generated) DTO 타입 |
+| `http-service` | `src/http/_generated/services/*.ts` | `full` | (generated) tag별 API 서비스 클래스 |
 | `http-mapper` | `src/http/*/mapper.ts` | `full` | DTO ↔ Domain 변환 |
 | `http-repository` | `src/http/*/repository.ts` | `full` | Port 구현체 |
 | `http-hook` | `src/http/*/hook.ts` | `full` | TanStack Query 훅 |
+| `lib-shared-barrel` | `src/lib/utils/index.ts` | `full` | 공용 유틸 barrel (re-export 전용) |
 | `lib-shared` | `src/lib/utils/*.ts` | `full` | 공용 유틸 함수 |
-| `dictionary` | `src/lib/dictionaries/*` / `src/app/\[locale\]/dictionaries.ts` | `full` | i18n 사전 |
+| `dictionary` | `src/i18n/dictionaries/*` / `src/app/\[locale\]/dictionaries.ts` | `full` | i18n 사전 (로케일 메시지 JSON·TS) |
+| `i18n-config` | `src/i18n/*.ts` | `full` | next-intl 런타임 설정 (routing/request/navigation) |
 | `shared-type` | `src/lib/types` | — | 전역 타입 |
 | `db` | `src/db` | — | DB 드라이버 래퍼 |
+| `shared-hook` | `src/hooks` | — | 전역 재사용 React hook |
+| `style` | `src/styles` | — | 전역 스타일·토큰 리소스 |
+| `theme` | `src/theme.ts` / `src/theme.generated.ts` | `full` | 디자인 시스템 테마 설정 |
 | `shared-ui` | `src/components` | — | 전역 재사용 컴포넌트 |
 | `page-component` | `src/app/\[locale\]/**/_components` | — | 페이지 전용 컴포넌트 ([locale] 아래) |
 | `page-provider` | `src/app/\[locale\]/**/_providers` | — | 페이지 전용 Provider ([locale] 아래) |
@@ -597,17 +797,16 @@ outline: 2px solid var(--mantine-primary-color-filled, #005da7);
 
 디자인 토큰 리터럴 차단 — `var(--token)` 또는 design-token 참조만 허용 (컨벤션 C13).
 
+Note: `ignoreFunctions`는 `boolean | { [prop]: boolean }`, `message`는 `${property}`
+`${value}` `${types}` placeholder를 받는 string. 배열/함수 형태는 v1.11 이후
+"Invalid Option" 경고와 함께 exit code 2를 유발한다.
+
 ### Configuration
 
 - **Enforced properties**: `/color$/`, `fill`, `stroke`, `font-family`, `border-radius`, `box-shadow`
 - **Allowed values (ignoreValues)**: `/^var\(/`, `transparent`, `inherit`, `currentColor`, `unset`, `initial`, `none`, `0`, `auto`
-- **Allowed functions (ignoreFunctions)**: `var`
-- **Stylelint message (fn)**:
-  ```js
-  (property) =>
-            `Expected \`var(--token, <fallback>)\` or design-token reference for \`${property}\`. ` +
-            'Hardcoded values bypass theme tokens (src/theme.ts) and break dark/light switching.'
-  ```
+- **Stylelint message**:
+  > Expected `var(--token, <fallback>)` or design-token reference for ${property}. Hardcoded ${value} bypasses theme tokens (src/theme.ts) and breaks dark/light switching.
 
 ### Why
 
@@ -630,14 +829,3 @@ border-radius: 12px;
 color: var(--mantine-color-text, #1a1a1a);
 border-radius: var(--mantine-radius-md, 8px);
 ```
-
-# Lint Rules Reference (nextjs/tanstack-query)
-
-## Domain Purity (도메인 순수성)
-
-도메인 레이어에서 TanStack 차단 — React 런타임 결합 hook 라이브러리.
-사용 위치: `src/http/<feature>/hook.ts` (http-hook 레이어).
-
-### 도메인 레이어 금지 패키지
-
-- `@tanstack/**`

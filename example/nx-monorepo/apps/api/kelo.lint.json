@@ -1,9 +1,4 @@
 {
-  "stacks": [
-    "anthropic-ai",
-    "gcp",
-    "typeorm"
-  ],
   "ignores": [
     "src/libs/**"
   ]

@@ -1,0 +1,18 @@
+packageManager: pnpm
+workspaces:
+  - path: apps/api
+    framework: nestjs
+    name: demo-api
+    stacks: [typeorm]
+    agents: false
+  - path: apps/admin
+    framework: nextjs
+    name: demo-admin
+    stacks: [tanstack-query, next-proxy]
+    agents: false
+  - path: apps/app
+    framework: flutter
+    name: demo_app
+    stacks: [leaf-kit]
+    entryDir: app
+    agents: false

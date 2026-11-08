@@ -11,7 +11,8 @@
     "url": "https://github.com/JosephNK/kelo.git"
   },
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "node --test test/*.test.mjs rules/nextjs/test/*.test.mjs"
   },
   "devDependencies": {
     "acorn": "^8.16.0",

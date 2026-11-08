@@ -12,7 +12,7 @@
 //
 // 허용:
 // - MemberExpression: `theme.radius.sm`, `theme.colors.primary[6]`, `token.colorPrimary`
-// - `var(...)` 문자열: `'var(--mantine-shadow-sm)'` — negative lookahead로 통과
+// - `var(...)` 문자열: `'var(--shadow-sm)'` — negative lookahead로 통과
 // - TemplateLiteral: `\`${x}px\`` — 동적 값 escape
 // - Identifier: `radiusVar` — 변수 참조
 //
@@ -41,7 +41,7 @@ export default {
     },
     messages: {
       identifierKey:
-        "Do not hardcode inline style tokens in JSX style prop. Use theme references (e.g., theme.radius.*, theme.colors.*, theme.shadows.*, var(--mantine-*)) instead of raw literals.",
+        "Do not hardcode inline style tokens in JSX style prop. Use theme references (e.g., theme.radius.*, theme.colors.*, theme.shadows.*, var(--*)) instead of raw literals.",
       stringLiteralKey:
         "Do not hardcode inline style tokens in JSX style prop (string-literal key). Use theme references.",
     },

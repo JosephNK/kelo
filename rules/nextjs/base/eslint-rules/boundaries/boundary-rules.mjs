@@ -130,7 +130,7 @@ export const baseBoundaryRules = [
   { from: { type: "style" }, allow: [{ to: { type: "style" } }] },
   // theme: 디자인 시스템 테마 설정. TS 디자인 토큰(style) + 동일 레이어(theme) 참조만 — 도메인/HTTP/UI 레이어 import 금지.
   // self-allow: `theme.ts`가 generator 산출물 `theme.generated.ts`를 import하는 경우(둘 다 `type: "theme"`)를 위해 필요.
-  // 외부 디자인 시스템 패키지(mantine/antd/shadcn 등)는 element 규칙 대상 아님.
+  // 외부 UI 라이브러리 패키지는 element 규칙 대상 아님.
   {
     from: { type: "theme" },
     allow: [{ to: { type: "style" } }, { to: { type: "theme" } }],

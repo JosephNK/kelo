@@ -11,7 +11,7 @@ export const baseBoundaryIgnores = [
   "*.config.*",
   "*.ts",
   "*.d.ts",
-  // Next.js 16 `src/proxy.ts`(구 middleware) — 프레임워크 진입점이라 레이어에 속하지 않음
+  // Next.js `src/proxy.ts`(구 middleware) — 프레임워크 진입점이라 레이어에 속하지 않음
   "src/proxy.ts",
   "types/**",
   "src/lib/types/**",

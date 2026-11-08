@@ -301,7 +301,7 @@ export const baseLayerSemantics = {
 
   // ─── Theme layer ──────────────────────────────────────────────────────────
   theme: {
-    role: "디자인 시스템 테마 설정 파일 (`src/theme.ts` + generator 산출물 `src/theme.generated.ts`). Mantine `createTheme()`, Ant Design `ConfigProvider.theme` 객체, shadcn 토큰 등 디자인 시스템 라이브러리에 주입할 테마 객체를 export. layout/Provider 레이어가 import해 ThemeProvider에 전달.",
+    role: "디자인 시스템 테마 설정 파일 (`src/theme.ts` + generator 산출물 `src/theme.generated.ts`). UI 라이브러리·ThemeProvider에 주입할 테마 객체를 export. layout/Provider 레이어가 import해 ThemeProvider에 전달.",
     contains: [
       "수기 테마 객체 export — `src/theme.ts`",
       "generator 산출물 — `src/theme.generated.ts` (디자인 토큰 추출/변환 도구가 갱신)",
@@ -314,16 +314,15 @@ export const baseLayerSemantics = {
       "복수 파일로 분리 (`src/theme/` 디렉토리 X — 위 두 파일만 유지)",
     ],
     example: [
-      "// src/theme.ts (Mantine 예시)",
-      "import { createTheme } from '@mantine/core';",
-      "export const theme = createTheme({",
+      "// src/theme.ts",
+      "export const theme = {",
       "  primaryColor: 'blue',",
       "  fontFamily: 'Inter, sans-serif',",
-      "});",
+      "} as const;",
       "",
       "// src/app/[locale]/layout.tsx",
       "import { theme } from '@/theme';",
-      "// <MantineProvider theme={theme}>...</MantineProvider>",
+      "// <ThemeProvider theme={theme}>...</ThemeProvider>",
     ].join("\n"),
   },
 

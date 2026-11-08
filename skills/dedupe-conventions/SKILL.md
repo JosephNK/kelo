@@ -80,7 +80,7 @@ find rules/<framework> -maxdepth 3 -name conventions.md \
 - **코드 예시**: 글로서리 `Example:`에 없는 통합 패턴 (예: 다중 데이터 소스 Adapter, Page→Component props 흐름, 테스트 mock 셋업)
 - **디자인 가이드**: "언제 X 사용", "왜 그렇게", scope 결정 기준 (common/ vs features/, registerLazySingleton vs registerFactory)
 - **운영 절차**: i18n 등록, codegen 명령, jscpd 임계치
-- **도구 사용 가이드**: optimizePackageImports, ConfigProvider 위치, theme.ts 구조
+- **도구 사용 가이드**: optimizePackageImports, ThemeProvider 위치, theme.ts 구조
 - **테스트 전략**: mock 대상·tearDown 패턴
 - **외부 라이브러리 사용법**: leaf_kit API 호출, TanStack Query `queryOptions` 등
 

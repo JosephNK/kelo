@@ -66,7 +66,7 @@ export const baseBoundaryElements = [
   { type: "shared-hook", pattern: ["src/hooks"] }, // 전역 재사용 React hook
   // Style layer — 전역 CSS·디자인 토큰 (CSS custom property + TS 토큰)
   { type: "style", pattern: ["src/styles"] }, // 전역 스타일·토큰 리소스
-  // Theme layer — 디자인 시스템 테마 설정 (Mantine `createTheme()`, Ant Design `ConfigProvider.theme`, shadcn 토큰 등)
+  // Theme layer — UI 라이브러리·ThemeProvider에 주입할 테마 설정
   // 수기 작성한 `theme.ts` + generator 산출물 `theme.generated.ts` 두 파일을 함께 인정.
   {
     type: "theme",

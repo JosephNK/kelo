@@ -37,13 +37,13 @@ Theme provider 하이드레이션 이전 경로(SSR 초기 페인트, error.tsx,
 **Bad**
 
 ```css
-outline: 2px solid var(--mantine-primary-color-filled);
+outline: 2px solid var(--color-primary);
 ```
 
 **Good**
 
 ```css
-outline: 2px solid var(--mantine-primary-color-filled, #005da7);
+outline: 2px solid var(--color-primary, #005da7);
 ```
 
 ## Rule 2: `scale-unlimited/declaration-strict-value`
@@ -79,6 +79,6 @@ border-radius: 12px;
 **Good**
 
 ```css
-color: var(--mantine-color-text, #1a1a1a);
-border-radius: var(--mantine-radius-md, 8px);
+color: var(--color-text, #1a1a1a);
+border-radius: var(--radius-md, 8px);
 ```

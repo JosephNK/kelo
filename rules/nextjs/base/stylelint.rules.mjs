@@ -60,8 +60,8 @@ export const stylelintBaseConfig = {
      * 브라우저 기본 outline·색까지 무효화 → 포커스 링 소실·FOUC. WCAG 2.4.7 리스크.
      * Theme provider 하이드레이션 이전 경로(SSR 초기 페인트, error.tsx, not-found.tsx)에서 재현.
      *
-     * Bad: `outline: 2px solid var(--mantine-primary-color-filled);`
-     * Good: `outline: 2px solid var(--mantine-primary-color-filled, #005da7);`
+     * Bad: `outline: 2px solid var(--color-primary);`
+     * Good: `outline: 2px solid var(--color-primary, #005da7);`
      */
     "declaration-property-value-disallowed-list": [
       {
@@ -83,7 +83,7 @@ export const stylelintBaseConfig = {
      * `no-inline-style-tokens`가 대칭 커버.
      *
      * Bad: `color: #ff0000; border-radius: 12px;`
-     * Good: `color: var(--mantine-color-text, #1a1a1a); border-radius: var(--mantine-radius-md, 8px);`
+     * Good: `color: var(--color-text, #1a1a1a); border-radius: var(--radius-md, 8px);`
      *
      * Note: `ignoreFunctions`는 `boolean | { [prop]: boolean }`, `message`는 `${property}`
      * `${value}` `${types}` placeholder를 받는 string. 배열/함수 형태는 v1.11 이후

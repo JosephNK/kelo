@@ -1,4 +1,4 @@
 framework: nextjs
 name: example-nextjs
-stacks: [tanstack-query]
-agents: false
+stacks: [tanstack-query, next-proxy]
+agents: true

@@ -1,4 +1,4 @@
 framework: nestjs
 name: example-nestjs
 stacks: [typeorm]
-agents: false
+agents: true

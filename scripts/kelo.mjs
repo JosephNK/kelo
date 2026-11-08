@@ -365,8 +365,16 @@ function describeStep(step) {
 }
 
 class Runner {
-  constructor({ dryRun, moveApp, noInstall, analysisPath, packageManager }) {
+  constructor({
+    dryRun,
+    moveApp,
+    noInstall,
+    analysisPath,
+    packageManager,
+    monorepoRoot,
+  }) {
     this.dryRun = dryRun;
+    this.monorepoRoot = monorepoRoot;
     this.analysisPath = analysisPath;
     this.noInstall = noInstall;
     this.moveApp = moveApp;
@@ -422,6 +430,10 @@ class Runner {
         step.analysisPathFlag && this.analysisPath
           ? [step.analysisPathFlag, this.analysisPath]
           : [];
+      const monorepoArgs =
+        step.monorepoRootFlag && this.monorepoRoot
+          ? [step.monorepoRootFlag, this.monorepoRoot]
+          : [];
       this.spawn(
         process.execPath,
         [
@@ -429,6 +441,7 @@ class Runner {
           ...args,
           ...stackArgs(step, project),
           ...devArgs,
+          ...monorepoArgs,
         ],
         cwd,
       );
@@ -518,6 +531,7 @@ function setup(root, { dryRun, moveApp, noInstall, analysisPath }) {
     noInstall,
     analysisPath,
     packageManager,
+    monorepoRoot: config.mode === "workspaces" ? root : null,
   });
   process.stdout.write(
     `kelo setup — ${config.mode} @ ${root} (packageManager: ${packageManager})\n`,

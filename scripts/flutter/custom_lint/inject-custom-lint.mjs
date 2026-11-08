@@ -29,19 +29,15 @@
 //     pick up the root's `plugins:` (and other options). Without that include,
 //     the root config has zero effect on the member. dart-lang/sdk#62161.
 //   - Pass --strip-stale-from <member-path> to:
-//       (a) strip any direct `plugins:`/`analyzer.plugins:` from the member
+//       (a) strip any direct managed `plugins:` entries from the member
 //           (single source of truth at root)
 //       (b) prepend `include: <relpath-to-root>` if not already present
-//
-// Also strips the legacy `custom_lint` dev dependency and `analyzer.plugins:
-// [custom_lint]` registration if found, to clean up post-migration.
 //
 // Uses the `yaml` package (Document API) for round-trip YAML editing —
 // preserves comments, formatting, and existing structure.
 //
 // Usage:
 //   inject-custom-lint.mjs \
-//     --pubspec app/pubspec.yaml \
 //     --analysis-options analysis_options.yaml \
 //     --plugin-root /abs/path/to/kelo \
 //     [--stacks leaf-kit,freezed] \
@@ -55,9 +51,6 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 import YAML from "yaml";
-
-// Legacy umbrella plugin name — stripped from pubspec/analysis_options on injection.
-const LEGACY_CUSTOM_LINT = "custom_lint";
 
 // Base package — always injected. `subPath` is relative to --plugin-root
 // (the local kelo checkout).
@@ -96,7 +89,7 @@ const ALL_LINT_PACKAGE_NAMES = new Set([
 // lowercase snake_case (e.g. `al_e1_entities_import`).
 const LINT_CODE_RE = /LintCode\(\s*['"]([a-z][a-z0-9_]*)['"]/g;
 
-const HELP = `Usage: inject-custom-lint.mjs --pubspec <path> --analysis-options <path> --plugin-root <abs-dir> [--stacks <stacks>] [--strip-stale-from <path>]
+const HELP = `Usage: inject-custom-lint.mjs --analysis-options <path> --plugin-root <abs-dir> [--stacks <stacks>] [--strip-stale-from <path>]
 
 Inject architecture_lint (base) + optional stack lint packages into Flutter
 project's analysis_options.yaml via the analysis_server_plugin top-level
@@ -104,7 +97,6 @@ plugins: section. Each entry gets path: + diagnostics: enable list (codes
 auto-extracted from each plugin's lib/src/lints/*.dart).
 
 Options:
-  --pubspec <path>           Path to pubspec.yaml (used to strip legacy custom_lint dev dep)
   --analysis-options <path>  Path to analysis_options.yaml (required)
   --plugin-root <abs-dir>    Absolute path to the local kelo checkout (required)
   --stacks <stacks>          Comma-separated convention stacks (optional)
@@ -124,7 +116,6 @@ function usage(code = 1) {
 
 function parseArgs(argv) {
   const args = {
-    pubspec: "",
     analysisOptions: "",
     pluginRoot: "",
     stacks: [],
@@ -135,13 +126,6 @@ function parseArgs(argv) {
   while (rest.length > 0) {
     const a = rest.shift();
     switch (a) {
-      case "--pubspec":
-        if (!rest.length) {
-          process.stderr.write("--pubspec requires a value\n");
-          usage();
-        }
-        args.pubspec = rest.shift();
-        break;
       case "--analysis-options":
         if (!rest.length) {
           process.stderr.write("--analysis-options requires a value\n");
@@ -185,7 +169,6 @@ function parseArgs(argv) {
   }
 
   for (const [name, value] of [
-    ["--pubspec", args.pubspec],
     ["--analysis-options", args.analysisOptions],
     ["--plugin-root", args.pluginRoot],
   ]) {
@@ -336,72 +319,11 @@ function resolvePackages(stacks) {
   return packages;
 }
 
-// ─── pubspec.yaml — strip legacy lint deps ───
-//
-// analysis_server_plugin loads plugins from a synthetic package, so the user's
-// pubspec.yaml does NOT need any of the lint packages or the legacy custom_lint
-// umbrella. Strip them on injection.
-function cleanPubspec(pubspecPath) {
-  if (!fs.existsSync(pubspecPath) || !fs.statSync(pubspecPath).isFile()) {
-    return true;
-  }
-
-  const raw = fs.readFileSync(pubspecPath, "utf-8");
-  const doc = YAML.parseDocument(raw);
-  if (doc.contents === null) return true;
-
-  let changed = false;
-
-  for (const section of ["dependencies", "dev_dependencies"]) {
-    const sectionMap = doc.get(section);
-    if (!YAML.isMap(sectionMap)) continue;
-
-    if (sectionMap.has(LEGACY_CUSTOM_LINT)) {
-      sectionMap.delete(LEGACY_CUSTOM_LINT);
-      process.stdout.write(
-        `  Removed legacy ${LEGACY_CUSTOM_LINT} from ${section} in ${pubspecPath}\n`,
-      );
-      changed = true;
-    }
-    for (const name of ALL_LINT_PACKAGE_NAMES) {
-      if (sectionMap.has(name)) {
-        sectionMap.delete(name);
-        process.stdout.write(
-          `  Removed ${name} from ${section} in ${pubspecPath} (now in analysis_options.yaml plugins:)\n`,
-        );
-        changed = true;
-      }
-    }
-    // Drop the section entirely if it became empty after stripping.
-    if (sectionMap.items.length === 0 && changed) {
-      doc.delete(section);
-    }
-  }
-
-  if (changed) writeDoc(pubspecPath, doc);
-  return true;
-}
-
 // ─── analysis_options.yaml — register plugins under top-level `plugins:` ───
 function injectAnalysisOptions(analysisPath, pluginRoot, packages) {
   const doc = loadOrCreateDoc(analysisPath);
 
-  // 1. Strip legacy `analyzer.plugins: [custom_lint]` registration.
-  const analyzer = doc.get("analyzer");
-  if (YAML.isMap(analyzer)) {
-    const legacyPlugins = analyzer.get("plugins");
-    if (legacyPlugins != null) {
-      analyzer.delete("plugins");
-      process.stdout.write(
-        `  Removed legacy analyzer.plugins from ${analysisPath}\n`,
-      );
-    }
-    if (analyzer.items.length === 0) {
-      doc.delete("analyzer");
-    }
-  }
-
-  // 2. Build/update top-level `plugins:` section with `path:` deps.
+  // Build/update top-level `plugins:` section with `path:` deps.
   let pluginsMap = doc.get("plugins");
   if (pluginsMap != null && !YAML.isMap(pluginsMap)) {
     doc.delete("plugins");
@@ -470,12 +392,11 @@ function injectAnalysisOptions(analysisPath, pluginRoot, packages) {
 // the workspace root. Each member must explicitly include the root's options
 // to pick up `plugins:` (and other settings) written there. dart-lang/sdk#62161.
 //
-// This function applies three idempotent fixes to a workspace member's
+// This function applies two idempotent fixes to a workspace member's
 // analysis_options.yaml:
 //   1. Strip our managed `plugins:` entries (single source of truth at root —
 //      direct entries in the member also raise `plugins_in_inner_options`).
-//   2. Strip legacy `analyzer.plugins: [custom_lint]` registration.
-//   3. Prepend `include: <relpath-to-root>` if absent (for a list-form include,
+//   2. Prepend `include: <relpath-to-root>` if absent (for a list-form include,
 //      prepend it to the list). If the member already has a non-matching
 //      scalar include, warn and preserve (chain it manually).
 function normalizeWorkspaceMember(memberPath, rootPath) {
@@ -515,20 +436,6 @@ function normalizeWorkspaceMember(memberPath, rootPath) {
           }
         }
         if (plugins.items.length === 0 && stripped) doc.delete("plugins");
-      }
-
-      // 2. Strip legacy analyzer.plugins
-      const analyzer = doc.get("analyzer");
-      if (YAML.isMap(analyzer)) {
-        const legacyPlugins = analyzer.get("plugins");
-        if (legacyPlugins != null) {
-          analyzer.delete("plugins");
-          process.stdout.write(
-            `  Stripped legacy analyzer.plugins from ${memberPath}\n`,
-          );
-          stripped = true;
-          if (analyzer.items.length === 0) doc.delete("analyzer");
-        }
       }
 
       currentInclude = doc.get("include");
@@ -608,7 +515,6 @@ function main() {
   );
 
   let ok = true;
-  ok = cleanPubspec(path.resolve(args.pubspec)) && ok;
   if (args.stripStaleFrom) {
     ok =
       normalizeWorkspaceMember(

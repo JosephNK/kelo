@@ -9,6 +9,7 @@
 #   stacks: { flag, having }  — 선택 스택을 `<flag> a,b`로 덧붙임. having이 있으면
 #                               rules/<framework>/<stack>/<having> 파일이 있는 스택만 (없으면 플래그 생략)
 #   analysisPathFlag: <flag>  — setup --analysis-path <dir>가 주어지면 `<flag> <dir>`을 덧붙임 (개발용)
+#   monorepoRootFlag: <flag>  — kelo.yaml이 workspaces 모드면 `<flag> <모노레포 루트>`를 덧붙임
 #   scope: root               — 모노레포(kelo.yaml workspaces)에서는 워크스페이스가 아닌 루트에서 한 번만 실행.
 #                               rootIfMissing 경로가 루트에 이미 있으면 건너뜀 (단일 프로젝트에서는 항상 실행)
 # 치환: {framework} {name} {entryDir}
@@ -44,5 +45,5 @@ steps:
       - eslint-plugin-unused-imports
       - eslint-plugin-sonarjs
       - eslint-config-prettier
-      - eslint-config-next@^16
+      - "eslint-config-next@>=16"
   - builtin: format-docs

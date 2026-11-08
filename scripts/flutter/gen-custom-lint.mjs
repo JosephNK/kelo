@@ -6,15 +6,14 @@
 //
 // Each lint package is vendored into `.kelo/plugins/<package>/` next to the
 // analysis_options.yaml that hosts `plugins:` and registered with a relative
-// `path:` — portable across machines/CI. No umbrella custom_lint package. Also strips legacy
-// custom_lint dev dependency and `analyzer.plugins:` registration if present.
+// `path:` — portable across machines/CI.
 //
 // Delegates the YAML edits to `custom_lint/inject-custom-lint.mjs`, which uses
 // the `yaml` package for round-trip YAML editing (preserves comments &
 // formatting).
 //
 // Usage:
-//   gen-custom-lint.mjs flutter -p <project-dir> [-entry <dir>] [--ref <git-ref>]
+//   gen-custom-lint.mjs flutter -p <project-dir> [-entry <dir>] [--stacks <list>]
 // =============================================================================
 
 import { spawnSync } from "node:child_process";
@@ -28,9 +27,8 @@ import YAML from "yaml";
 
 import { ensureFlutterRoot, normalizePath } from "../common.mjs";
 
-// `--ref` and the legacy git URL are accepted for CLI backward compatibility
-// but no longer used: `git:` in plugins: reports no diagnostics even on
-// Dart 3.13.4 (dart-lang/sdk#61794), so plugin sources are vendored instead.
+// Plugin sources are vendored (not `git:`): `git:` in plugins: reports no
+// diagnostics even on Dart 3.13.4 (dart-lang/sdk#61794).
 
 /**
  * Detect whether projectDir is a Dart pub workspace root that includes the
@@ -63,7 +61,7 @@ are copied from this plugin's checkout into \`.kelo/plugins/<package>/\` (commit
 it) and registered with a relative \`path:\`, so they work on every machine/CI.
 
 Use \`dart analyze\` (not \`flutter analyze\`, flutter/flutter#187999) to see
-plugin diagnostics. \`--ref\` is accepted for backward compatibility but ignored.
+plugin diagnostics.
 
 Requires: Dart 3.10+ (Flutter 3.38+) and plugin's node_modules installed
 (\`npm install\` in plugin root).
@@ -76,7 +74,6 @@ Options:
   -entry <dir>    Flutter entry directory (default: app)
   --stacks <s>    Comma-separated convention stacks (default: none)
                   e.g. leaf-kit,freezed — installs matching stack lint package
-  --ref <ref>     Deprecated/ignored (kept for backward compat)
   -h, --help      Show this help
 
 Examples:
@@ -95,7 +92,6 @@ function parseArgs(argv) {
     framework: "",
     projectDir: "",
     entry: "app",
-    ref: "",
     stacks: "",
   };
   const rest = argv.slice(2);
@@ -120,13 +116,6 @@ function parseArgs(argv) {
           usage();
         }
         args.entry = rest.shift();
-        break;
-      case "--ref":
-        if (!rest.length) {
-          process.stderr.write("--ref requires a value\n");
-          usage();
-        }
-        args.ref = rest.shift();
         break;
       case "--stacks":
         if (!rest.length) {
@@ -209,8 +198,6 @@ function main() {
   // deps (see inject-custom-lint.mjs header for why not git/absolute path).
   const injectArgs = [
     injectScript,
-    "--pubspec",
-    path.join(args.entry, "pubspec.yaml"),
     "--analysis-options",
     analysisOptionsPath,
     "--plugin-root",
@@ -243,8 +230,8 @@ function main() {
   // Invalidate Dart analyzer plugin caches.
   // The new analysis_server_plugin system creates a synthetic package per
   // plugin set and caches the resolved sources. Restart of the analysis server
-  // is required after plugin changes (per Dart docs); clearing both legacy and
-  // new cache directories also helps surface fresh sources on next analyze.
+  // is required after plugin changes (per Dart docs); clearing both cache
+  // directories also helps surface fresh sources on next analyze.
   for (const cacheDir of [
     path.join(os.homedir(), ".dartServer", ".plugin_manager"),
     path.join(os.homedir(), ".dartServer", ".analysis_server_plugin"),

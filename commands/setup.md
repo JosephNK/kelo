@@ -16,7 +16,7 @@ argument-hint: '[project-path]'
 ## 1. 준비
 
 ```bash
-KELO_DIR=$(jq -r '.plugins["kelo@kelo"][0].installPath' ~/.claude/plugins/installed_plugins.json)
+KELO_DIR="${CLAUDE_PLUGIN_ROOT}"
 [ -d "$KELO_DIR/node_modules/yaml" ] || (cd "$KELO_DIR" && npm install --silent)
 PROJECT_ROOT="$(cd "${PROJECT_PATH:-.}" && pwd)"   # PROJECT_PATH = 인자 (없으면 cwd)
 ```

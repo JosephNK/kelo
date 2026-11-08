@@ -150,7 +150,7 @@ node scripts/kelo.mjs setup    -p <dir> [--dry-run] [--no-install] [--move-app]
 |---------|-------------|
 | `/kelo:commit` | 변경 분석 → 한국어 커밋 메시지 자동 생성 (3개 후보) |
 | `/kelo:typeorm-migration` | TypeORM 마이그레이션 SQL 생성 (dev/prod 분리) |
-| `/kelo:update-plugin-ref` | Kelo Dart 의존성 git ref 일괄 업데이트 (`architecture-lint` / `leaf-kit`) |
+| `/kelo:update-plugin-ref` | `flutter_leaf_kit` git ref 일괄 업데이트 |
 
 ## Generator Scripts
 
@@ -166,7 +166,7 @@ node scripts/kelo.mjs setup    -p <dir> [--dry-run] [--no-install] [--move-app]
 # Husky hooks (all frameworks)
 # - .husky/pre-commit, .husky/commit-msg 생성
 # - package.json에 husky/lint-staged/@commitlint devDeps + scripts.prepare 주입
-./scripts/gen-husky.mjs <framework> -p /path/to/project [-entry <dir>]
+./scripts/gen-husky.mjs <framework> -p /path/to/project [-entry <dir>] [--monorepo-root <dir>]
 
 # Commitlint config (Conventional Commits + 프로젝트 허용 타입)
 ./scripts/gen-commitlint.mjs -p /path/to/project

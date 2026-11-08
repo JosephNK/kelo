@@ -182,7 +182,7 @@ node scripts/kelo.mjs setup -p example/<dir> --no-install --analysis-path rules/
 
 - `--no-install`: example의 git 루트가 이 저장소라 `npm install`의 husky `prepare`가 저장소 hook 설정을 바꾸고, 레지스트리 패키지가 로컬 pack을 덮어쓴다. 로컬 패키지는 `npm pack` 결과를 `example/<dir>/node_modules/eslint-config-kelo-<fw>`에 풀어 쓴다.
 - `--analysis-path`: Flutter `kelo_analysis`를 git 태그 대신 상대 path 의존성으로 (절대 경로 금지).
-- Flutter `gen-husky`는 git 루트 ≠ 프로젝트를 모노레포로 보고 이 저장소의 `.husky/pre-commit`에 호출 줄을 추가한다 — 검증 후 `git show HEAD:.husky/pre-commit > .husky/pre-commit`으로 되돌린다.
+- Flutter `gen-husky`는 `kelo.yaml`이 workspaces 모드일 때만(`--monorepo-root`) 모노레포 루트 `.husky/pre-commit`에 연결한다 — 단일 example은 자기 `.husky/`를 만들고 이 저장소의 훅은 건드리지 않는다.
 
 ## 검증 기준
 

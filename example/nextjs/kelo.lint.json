@@ -1,7 +1,1 @@
-{
-  "stacks": [
-    "design-system/shadcn",
-    "nextauth",
-    "tanstack-query"
-  ]
-}
+{}

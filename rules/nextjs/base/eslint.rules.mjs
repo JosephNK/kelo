@@ -34,6 +34,7 @@ export { baseBoundaryIgnores } from "./eslint-rules/boundaries/boundary-ignores.
 export { baseConfig } from "./eslint-rules/quality/base-config.mjs";
 export { baseServerComponentRules } from "./eslint-rules/quality/server-component.mjs";
 export { baseCustomRules } from "./eslint-rules/quality/custom-rules.mjs";
+export { baseFileSizeRules } from "./eslint-rules/quality/file-size.mjs";
 export { baseIgnores } from "./eslint-rules/quality/ignores.mjs";
 
 // ─── Builders ────────────────────────────────────────────────────────────────

@@ -18,6 +18,7 @@ import {
   baseBoundaryRules,
   baseConfig,
   baseCustomRules,
+  baseFileSizeRules,
   baseDomainBannedPackages,
   baseIgnores,
   baseRestrictedPatterns,
@@ -96,6 +97,9 @@ function buildKeloBlocks(root, lintConfig) {
 
     // [8] 프로젝트 공용 custom 룰 (conventions.md 강제)
     ...baseCustomRules,
+
+    // [8-1] 파일 크기 제한 (800줄, warn)
+    ...baseFileSizeRules,
   ];
 }
 

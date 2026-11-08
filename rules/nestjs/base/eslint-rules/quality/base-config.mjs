@@ -6,6 +6,8 @@ import unusedImports from "eslint-plugin-unused-imports";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
+import { baseSonarjsConfig } from "./sonarjs.mjs";
+
 /**
  * NestJS 공용 ESLint 베이스. 블록 순서대로 뒤가 앞을 override.
  * 각 블록 의도는 인라인 주석 참조.
@@ -53,6 +55,9 @@ export const baseConfig = defineConfig(
       ],
     },
   },
+
+  // [5-1] SonarJS — 버그·보안 성격은 error, 개선 제안은 warn
+  ...baseSonarjsConfig,
 
   // [6] 프로젝트 공통 스타일 룰
   {

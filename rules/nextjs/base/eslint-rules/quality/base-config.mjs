@@ -3,9 +3,10 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import prettier from "eslint-config-prettier";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
-import sonarjs from "eslint-plugin-sonarjs";
 import unusedImports from "eslint-plugin-unused-imports";
 import tseslint from "typescript-eslint";
+
+import { baseSonarjsConfig } from "./sonarjs.mjs";
 
 /**
  * Next.js 공용 ESLint 베이스. 블록 순서대로 뒤가 앞을 override.
@@ -60,14 +61,8 @@ export const baseConfig = defineConfig([
   // [3] Prettier와 충돌하는 포맷 룰 비활성화 (반드시 마지막에서 두 번째 근처에 위치)
   prettier,
 
-  // [4] SonarJS — 코드 스멜/복잡도/중복 탐지
-  sonarjs.configs.recommended,
-  {
-    rules: {
-      "sonarjs/todo-tag": "off", // TODO 허용 (워크플로상 추적)
-      "sonarjs/no-nested-conditional": "warn", // 중첩 3항 연산자 — error는 과도, warn으로
-    },
-  },
+  // [4] SonarJS — 버그·보안 성격은 error, 개선 제안은 warn
+  ...baseSonarjsConfig,
 
   // [5] import 정렬 + 미사용 import 자동 제거
   {

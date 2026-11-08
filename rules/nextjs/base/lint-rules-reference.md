@@ -626,7 +626,6 @@ ESLint 오버라이드 중 **LLM이 코드 작성 시 명시적으로 따라야 
 - `@typescript-eslint/no-explicit-any` — `any` 금지 — 정확한 타입 또는 `unknown` 사용.
 - `no-console` — `console.warn` / `console.error`만 허용. `console.log` / `console.debug` 금지.
 - `no-warning-comments` — TODO / FIXME / HACK 주석 추적 (warn) — 차단하지 않음, 장기 방치 금지.
-- `sonarjs/no-nested-conditional` — 중첩 삼항 연산자 금지 — `if/else` 블록 또는 함수 추출.
 - `unused-imports/no-unused-vars` — 사용 안 하는 변수/파라미터는 `_` prefix (예: `_unused`, `_ctx`).
 
 ## Ignored Paths (무시 경로)

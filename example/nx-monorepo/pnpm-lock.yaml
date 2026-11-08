@@ -150,7 +150,7 @@ importers:
         version: 9.39.5
       eslint-config-kelo-nestjs:
         specifier: file:../../.local-packages/eslint-config-kelo-nestjs.tgz
-        version: file:.local-packages/eslint-config-kelo-nestjs.tgz(@eslint/js@9.39.5)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint-import-resolver-typescript@3.10.1)(eslint-plugin-boundaries@7.2.0(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5))(eslint-plugin-import@2.32.0)(eslint-plugin-prettier@5.5.7(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.10))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.5))(eslint-plugin-unused-imports@4.4.1(@typescript-eslint/eslint-plugin@8.71.2(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5))(eslint@9.39.5)(globals@17.13.0)(prettier@3.9.10)(typescript-eslint@8.71.2(eslint@9.39.5)(typescript@5.9.3))
+        version: file:.local-packages/eslint-config-kelo-nestjs.tgz(@eslint/js@9.39.5)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint-import-resolver-typescript@3.10.1)(eslint-plugin-boundaries@7.2.0(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5))(eslint-plugin-import@2.32.0)(eslint-plugin-prettier@5.5.7(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.10))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.5))(eslint-plugin-sonarjs@3.0.7(eslint@9.39.5))(eslint-plugin-unused-imports@4.4.1(@typescript-eslint/eslint-plugin@8.71.2(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5))(eslint@9.39.5)(globals@17.13.0)(prettier@3.9.10)(typescript-eslint@8.71.2(eslint@9.39.5)(typescript@5.9.3))
       eslint-config-prettier:
         specifier: ^10.0.1
         version: 10.1.8(eslint@9.39.5)
@@ -169,6 +169,9 @@ importers:
       eslint-plugin-simple-import-sort:
         specifier: ^12.1.1
         version: 12.1.1(eslint@9.39.5)
+      eslint-plugin-sonarjs:
+        specifier: ^3.0.7
+        version: 3.0.7(eslint@9.39.5)
       eslint-plugin-unused-imports:
         specifier: ^4.4.1
         version: 4.4.1(@typescript-eslint/eslint-plugin@8.71.2(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)
@@ -2377,7 +2380,7 @@ packages:
     engines: {node: '>=10'}
 
   eslint-config-kelo-nestjs@file:.local-packages/eslint-config-kelo-nestjs.tgz:
-    resolution: {integrity: sha512-YhWA4ssEOXN1aIK2g0XQ2rpgngHHTGXHwfHY6nYdzZ00XLLpQVy3KQdZzQJzusnzs/ATtEjHi0Fs6WSBoOncBg==, tarball: file:.local-packages/eslint-config-kelo-nestjs.tgz}
+    resolution: {integrity: sha512-mmezS91W/T0wjXRjX/PompKDVWccMNOg4LflnJqEIZOTYmv3tk+gnWiWXZcWr2bqKEi1CXyxKNuT7WWa6/71XQ==, tarball: file:.local-packages/eslint-config-kelo-nestjs.tgz}
     version: 1.1.0
     engines: {node: ^22.23.4 || ^24.22.1 || >=26.12.1}
     hasBin: true
@@ -2390,13 +2393,14 @@ packages:
       eslint-plugin-import: '>=2.31.0'
       eslint-plugin-prettier: '>=5.0.0'
       eslint-plugin-simple-import-sort: '>=12.0.0'
+      eslint-plugin-sonarjs: '>=3.0.0'
       eslint-plugin-unused-imports: '>=4.0.0'
       globals: '>=15.0.0'
       prettier: '>=3.0.0'
       typescript-eslint: '>=8.0.0'
 
   eslint-config-kelo-nextjs@file:.local-packages/eslint-config-kelo-nextjs.tgz:
-    resolution: {integrity: sha512-N+BwZ5WBvFfmkYqUZGxmbXN/VFRnr2pVIw9MJZe7HiFUK2EuFVpYsfDK57b4kfivPU2kmX+xaOSItGv5JEYFsQ==, tarball: file:.local-packages/eslint-config-kelo-nextjs.tgz}
+    resolution: {integrity: sha512-oOYayvC7be7c23EsJX7hnA3AMTqTbEVbAtR0DwfdPfrtL+b/wkfbKrJSQflSOEmAeX8TxRMVsSdJ+q3VeixHJg==, tarball: file:.local-packages/eslint-config-kelo-nextjs.tgz}
     version: 1.1.0
     engines: {node: ^22.23.4 || ^24.22.1 || >=26.12.1}
     hasBin: true
@@ -7102,7 +7106,7 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-config-kelo-nestjs@file:.local-packages/eslint-config-kelo-nestjs.tgz(@eslint/js@9.39.5)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint-import-resolver-typescript@3.10.1)(eslint-plugin-boundaries@7.2.0(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5))(eslint-plugin-import@2.32.0)(eslint-plugin-prettier@5.5.7(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.10))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.5))(eslint-plugin-unused-imports@4.4.1(@typescript-eslint/eslint-plugin@8.71.2(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5))(eslint@9.39.5)(globals@17.13.0)(prettier@3.9.10)(typescript-eslint@8.71.2(eslint@9.39.5)(typescript@5.9.3)):
+  eslint-config-kelo-nestjs@file:.local-packages/eslint-config-kelo-nestjs.tgz(@eslint/js@9.39.5)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint-import-resolver-typescript@3.10.1)(eslint-plugin-boundaries@7.2.0(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5))(eslint-plugin-import@2.32.0)(eslint-plugin-prettier@5.5.7(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.10))(eslint-plugin-simple-import-sort@12.1.1(eslint@9.39.5))(eslint-plugin-sonarjs@3.0.7(eslint@9.39.5))(eslint-plugin-unused-imports@4.4.1(@typescript-eslint/eslint-plugin@8.71.2(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5))(eslint@9.39.5)(globals@17.13.0)(prettier@3.9.10)(typescript-eslint@8.71.2(eslint@9.39.5)(typescript@5.9.3)):
     dependencies:
       '@eslint/js': 9.39.5
       eslint: 9.39.5
@@ -7112,6 +7116,7 @@ snapshots:
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.5)
       eslint-plugin-prettier: 5.5.7(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@9.39.5))(eslint@9.39.5)(prettier@3.9.10)
       eslint-plugin-simple-import-sort: 12.1.1(eslint@9.39.5)
+      eslint-plugin-sonarjs: 3.0.7(eslint@9.39.5)
       eslint-plugin-unused-imports: 4.4.1(@typescript-eslint/eslint-plugin@8.71.2(@typescript-eslint/parser@8.71.2(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)
       globals: 17.13.0
       prettier: 3.9.10

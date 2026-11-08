@@ -88,6 +88,16 @@
     "*.{json,md,yml,yaml}": "prettier --write"
   },
   "resolutions": {
-    "eslint-plugin-sonarjs/typescript": "5.9.3"
+    "handlebars": "^4.7.10",
+    "eslint-plugin-sonarjs/typescript": "5.9.3",
+    "fast-uri": "^3.1.9",
+    "body-parser": "^2.4.0",
+    "multer": "^2.5.0",
+    "eslint-plugin-sonarjs/minimatch": "^11.0.1",
+    "**/@typescript-eslint/typescript-estree/minimatch": "^11.0.1",
+    "**/@jest/reporters/glob/minimatch": "^11.0.1",
+    "**/jest-config/glob/minimatch": "^11.0.1",
+    "**/jest-runtime/glob/minimatch": "^11.0.1",
+    "@nestjs/cli/glob/minimatch": "^11.0.1"
   }
 }

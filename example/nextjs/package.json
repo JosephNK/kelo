@@ -50,11 +50,19 @@
   },
   "overrides": {
     "handlebars": "^4.7.10",
-    "eslint-plugin-sonarjs": {
-      "minimatch": "^10.2.6"
-    },
     "next": {
       "postcss": "^8.5.30"
+    },
+    "fast-uri": "^3.1.9",
+    "minimatch@>=7.0.0 <11.0.1": "^11.0.1",
+    "eslint": {
+      "minimatch": "^11.0.1"
+    },
+    "@eslint/config-array": {
+      "minimatch": "^11.0.1"
+    },
+    "@eslint/eslintrc": {
+      "minimatch": "^11.0.1"
     }
   }
 }

@@ -12,7 +12,12 @@ onlyBuiltDependencies:
 overrides:
   "eslint-config-kelo-nestjs": "file:.local-packages/eslint-config-kelo-nestjs.tgz"
   "eslint-config-kelo-nextjs": "file:.local-packages/eslint-config-kelo-nextjs.tgz"
-  # 보안 패치 — 상위 패키지가 취약 버전을 고정 (@boundaries/elements → handlebars 4.7.9, eslint-plugin-sonarjs 3 → minimatch 10.1, nx 23.3 → undici 7.29.0)
+  # 보안 패치 — 상위 패키지가 취약 버전을 고정 (@boundaries/elements → handlebars 4.7.9, nx 23.3 → undici 7.29.0)
+  # minimatch·glob은 취약 범위(7~11.0.0, 9~14.0.1)만 올린다 — minimatch 3.x 사용처는 API가 달라 그대로 둔다
   "handlebars": "^4.7.10"
-  "eslint-plugin-sonarjs>minimatch": "^10.2.6"
+  "minimatch@>=7.0.0 <11.0.1": "^11.0.1"
+  "glob@>=9.0.0 <=14.0.1": "^14.0.2"
+  "fast-uri": "^3.1.9"
+  "body-parser": "^2.4.0"
+  "multer": "^2.5.0"
   "nx>undici": "^7.29.1"

@@ -36,7 +36,7 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/block-destructive-git.sh\"",
-            "description": "Block destructive git commands (stash, reset --hard, clean -f, push --force, rebase, commit --amend 등)"
+            "description": "Guard destructive git commands: back up then allow (reset --hard, checkout --, restore, clean -f, stash drop/clear, branch -D, update-ref -d); block only force push/delete on protected branches, push --mirror, filter-repo, reflog delete/expire"
           },
           {
             "type": "command",

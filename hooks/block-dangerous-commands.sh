@@ -1,6 +1,7 @@
 #!/bin/bash
 # 위험 명령어 차단 훅
 # PreToolUse 이벤트에서 실행됨
+# 차단 시 사유는 stderr로 출력한다 — exit 2일 때 Claude Code는 stderr만 Claude에게 전달한다.
 
 INPUT=$(cat)
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
@@ -24,9 +25,9 @@ if [ "$TOOL_NAME" = "Bash" ]; then
     fi
   done < <(printf '%s\n' "$RM_SCAN" | tr ';&|' '\n')
   if [ "$rm_danger" = 1 ]; then
-    echo "차단: 광범위한 rm 재귀 삭제가 감지되었습니다 (예: rm -rf . / ~ '*' \$HOME)."
-    echo "명령어: $COMMAND"
-    echo "특정 하위 경로만 삭제하도록 좁히거나, 의도한 광범위 삭제는 사용자가 직접 실행하세요."
+    echo "차단: 광범위한 rm 재귀 삭제가 감지되었습니다 (예: rm -rf . / ~ '*' \$HOME)." >&2
+    echo "명령어: $COMMAND" >&2
+    echo "특정 하위 경로만 삭제하도록 좁히거나, 의도한 광범위 삭제는 사용자가 직접 실행하세요." >&2
     exit 2
   fi
 
@@ -42,16 +43,16 @@ if [ "$TOOL_NAME" = "Bash" ]; then
   if echo "$COMMAND" | grep -qiE "$DESTRUCTIVE_SQL"; then
     if echo "$COMMAND" | grep -qiE "$HAS_HOST" && \
        ! echo "$COMMAND" | grep -qiE "$IS_LOCAL"; then
-      echo "차단: 외부 DB에 대한 파괴적 SQL이 감지되었습니다."
-      echo "명령어: $COMMAND"
-      echo "로컬(localhost/127.0.0.1/::1/0.0.0.0) 또는 호스트 미지정만 허용됩니다. 외부 DB 작업은 사용자가 직접 확인 후 실행하세요."
+      echo "차단: 외부 DB에 대한 파괴적 SQL이 감지되었습니다." >&2
+      echo "명령어: $COMMAND" >&2
+      echo "로컬(localhost/127.0.0.1/::1/0.0.0.0) 또는 호스트 미지정만 허용됩니다. 외부 DB 작업은 사용자가 직접 확인 후 실행하세요." >&2
       exit 2
     fi
   fi
 
   # chmod 777 차단 (0777 포함)
   if echo "$COMMAND" | grep -qE 'chmod\s+0?777'; then
-    echo "차단: chmod 777은 보안 정책에 의해 금지되었습니다."
+    echo "차단: chmod 777은 보안 정책에 의해 금지되었습니다." >&2
     exit 2
   fi
 fi

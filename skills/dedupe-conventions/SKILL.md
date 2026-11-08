@@ -1,12 +1,12 @@
 ---
 name: dedupe-conventions
-description: kelo의 `rules/<framework>/<scope>/conventions.md`와 같은 디렉토리의 `lint-rules-reference.md`를 비교해 중복 영역을 식별하고, 사용자 합의 후 conventions.md에서 제거한다. AGENTS.md가 두 파일을 모두 mandatory docs로 링크하므로 같은 정보를 중복 기재하면 LLM 컨텍스트가 낭비된다. Use when 룰 추가/수정 후, 또는 conventions 정리 시.
+description: kelo의 `rules/<framework>/<scope>/conventions.md`와 같은 디렉토리의 `lint-rules-reference.md`를 비교해 중복 영역을 식별하고, 사용자 합의 후 conventions.md에서 제거한다. lint가 이미 강제하는 규칙을 CONVENTIONS.md(소비 프로젝트 AGENTS.md가 매번 로드)에 다시 적으면 LLM 컨텍스트가 낭비된다. Use when 룰 추가/수정 후, 또는 conventions 정리 시.
 argument-hint: "<framework | all>  (e.g. flutter, nestjs, nextjs, all — 생략 시 all)"
 ---
 
 # Dedupe Conventions Skill
 
-`conventions.md`(사람 작성, 자유 형식)와 `lint-rules-reference.md`(generator 산출물)는 모두 사용자 프로젝트의 `AGENTS.md`에서 mandatory docs로 링크된다. 같은 룰을 양쪽에 중복 기재하면 LLM이 컨텍스트를 두 번 읽으며 낭비하고, 룰 변경 시 동기화 부담이 생긴다.
+`conventions.md`(사람 작성)는 소비 프로젝트 `CONVENTIONS.md`로 생성돼 `AGENTS.md`가 매번 로드한다. lint가 강제하는 규칙(`lint-rules-reference.md`에 정리됨)은 lint 메시지로 전달되므로 conventions.md에 다시 적으면 컨텍스트 낭비와 동기화 부담만 생긴다.
 
 본 스킬은 자동으로 중복을 식별·보고하고, 사용자 합의를 받아 `conventions.md`에서만 제거한다. `lint-rules-reference.md`는 generator 산출물이므로 절대 수정하지 않는다.
 

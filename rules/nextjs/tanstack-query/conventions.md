@@ -1,26 +1,10 @@
-## Tanstack
+## TanStack Query
 
-Use TanStack Query for all server state management.
+- Use TanStack Query for all server state (hooks in `src/http/<feature>/hook.ts`).
+- Retry is owned by the ky client (`createApiClient({ retry })`) — disable it in QueryClient so requests don't multiply:
 
-### Retry — Single Source (ky transport layer)
+  ```ts
+  new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } });
+  ```
 
-- Retry is owned by the ky client (`createApiClient` `DEFAULT_RETRY`), not by TanStack Query.
-- ky covers every call site (SSR, route handlers, browser); TanStack Query only wraps client-side hooks, so keeping retry in ky avoids losing it on the server.
-- Disable RQ retry to prevent request multiplication — RQ default (3) × ky (2 on GET) compounds into many requests per call:
-
-```ts
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { retry: false }, // ky owns retry
-    mutations: { retry: false },
-  },
-});
-```
-
-- To tune retry, change `createApiClient({ retry })` — not the QueryClient.
-
-### Error Handling — Hook Layer (TanStack Query)
-
-- `useQuery` with `throwOnError: false` (default) — Hook returns `error` object
-- Global error handling via `QueryClient`'s `onError` callback (toast, logging)
-- Mutation failures provide user feedback via `onError` callback
+- Errors: hooks return `error` (`throwOnError: false`); global toast/logging via the QueryClient `onError`; mutations report failures in their `onError`.

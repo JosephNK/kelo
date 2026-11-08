@@ -27,7 +27,7 @@ export const baseBoundaryRules = [
     scope: "module",
   },
   // service — UseCase. port를 주입받아 도메인 로직 수행
-  // controller/provider/dto는 의도적으로 제외 (헥사고날 역방향 의존 방지)
+  // controller/provider/dto는 의도적으로 제외 (헥사고날 역방향 의존 방지). 외부 I/O(infrastructure)는 Port 뒤로 — shared만 허용
   {
     from: { type: "service" },
     allow: {
@@ -39,7 +39,7 @@ export const baseBoundaryRules = [
           "module-common",
           "common",
           "common-pure",
-          "infrastructure",
+          "infrastructure-shared",
         ],
       },
     },
@@ -60,6 +60,7 @@ export const baseBoundaryRules = [
           "common",
           "common-pure",
           "libs",
+          "infrastructure-shared",
         ],
       },
     },
@@ -79,6 +80,7 @@ export const baseBoundaryRules = [
           "common",
           "common-pure",
           "libs",
+          "infrastructure-shared",
         ],
       },
     },
@@ -97,6 +99,7 @@ export const baseBoundaryRules = [
           "common",
           "common-pure",
           "infrastructure",
+          "infrastructure-shared",
           "provider",
           "libs",
         ],
@@ -142,16 +145,47 @@ export const baseBoundaryRules = [
     from: { type: "common-pure" },
     allow: { to: { type: "common-pure" } },
   },
-  // infrastructure — common만 참조 가능 (모듈 로직에 의존하면 안 됨)
+  // infrastructure — 인프라끼리 + 공용만 (모듈 로직에 의존하면 안 됨)
   {
     from: { type: "infrastructure" },
-    allow: { to: { type: ["infrastructure", "common", "common-pure"] } },
+    allow: {
+      to: {
+        type: [
+          "infrastructure",
+          "infrastructure-shared",
+          "common",
+          "common-pure",
+        ],
+      },
+    },
+  },
+  // infrastructure-shared — 트랜잭션이 DB 커넥션을 쓰는 등 구현상 infrastructure 참조 허용 (re-export 통로로 쓰지 않는다)
+  {
+    from: { type: "infrastructure-shared" },
+    allow: {
+      to: {
+        type: [
+          "infrastructure-shared",
+          "infrastructure",
+          "common",
+          "common-pure",
+        ],
+      },
+    },
   },
   // libs — 독립 라이브러리. 모듈 레이어 import 금지 (조립은 *.module.ts가 담당, 모듈 ↔ libs 순환 차단)
   {
     from: { type: "libs" },
     allow: {
-      to: { type: ["libs", "common", "common-pure", "infrastructure"] },
+      to: {
+        type: [
+          "libs",
+          "common",
+          "common-pure",
+          "infrastructure",
+          "infrastructure-shared",
+        ],
+      },
     },
   },
 ];

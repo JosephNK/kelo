@@ -87,16 +87,37 @@ export const baseStructureAnnotations = {
   },
   "src/infrastructure": {
     override: [
-      { name: "database", note: "Database configuration" },
-      { name: "i18n", note: "Internationalization" },
-      { name: "logger", note: "Logging" },
-      { name: "metrics", note: "Prometheus metrics" },
-      { name: "cache", note: "Cache configuration" },
-      { name: "email", note: "Email delivery infrastructure" },
-      { name: "transaction", note: "Transaction management" },
+      {
+        name: "database",
+        note: "infrastructure — Database configuration (provider 전용)",
+      },
+      {
+        name: "i18n",
+        note: "infrastructure — Internationalization (provider 전용)",
+      },
+      {
+        name: "logger",
+        note: "infrastructure-shared — Logging (어느 레이어든)",
+      },
+      {
+        name: "metrics",
+        note: "infrastructure-shared — Prometheus metrics (어느 레이어든)",
+      },
+      {
+        name: "cache",
+        note: "infrastructure — Cache configuration (provider 전용)",
+      },
+      {
+        name: "email",
+        note: "infrastructure — Email delivery (provider 전용)",
+      },
+      {
+        name: "transaction",
+        note: "infrastructure-shared — Transaction management (어느 레이어든)",
+      },
       {
         name: "external",
-        note: "External service clients (3rd-party SDK, HTTP client wrappers)",
+        note: "infrastructure — External service clients (provider 전용)",
       },
     ],
   },

@@ -40,7 +40,7 @@ test("NestJS: 객체 allow + type 배열에서 같은 모듈 / 다른 모듈 / �
   const msg = messageFor(nestElements, nestRules, "service");
   assert.match(
     msg,
-    /service가 import할 수 있는 레이어 — 같은 모듈: exception, model, module-common, port \/ 다른 모듈: model, port \/ 공유: common, common-pure, infrastructure\./,
+    /service가 import할 수 있는 레이어 — 같은 모듈: exception, model, module-common, port \/ 다른 모듈: model, port \/ 공유: common, common-pure, infrastructure-shared\./,
   );
   assert.match(
     messageFor(nestElements, nestRules, "exception"),
@@ -48,7 +48,7 @@ test("NestJS: 객체 allow + type 배열에서 같은 모듈 / 다른 모듈 / �
   );
   assert.match(
     messageFor(nestElements, nestRules, "libs"),
-    /libs가 import할 수 있는 레이어: common, common-pure, infrastructure, libs\./,
+    /libs가 import할 수 있는 레이어: common, common-pure, infrastructure, infrastructure-shared, libs\./,
   );
 });
 

@@ -30,14 +30,14 @@
     │   ├── pipes/                      # Validation Pipes
     │   └── utils/                      # Pure utility functions (no framework deps)
     ├── infrastructure/
-    │   ├── cache/                      # Cache configuration
-    │   ├── database/                   # Database configuration
-    │   ├── email/                      # Email delivery infrastructure
-    │   ├── external/                   # External service clients (3rd-party SDK, HTTP client wrappers)
-    │   ├── i18n/                       # Internationalization
-    │   ├── logger/                     # Logging
-    │   ├── metrics/                    # Prometheus metrics
-    │   └── transaction/                # Transaction management
+    │   ├── cache/                      # infrastructure — Cache configuration (provider 전용)
+    │   ├── database/                   # infrastructure — Database configuration (provider 전용)
+    │   ├── email/                      # infrastructure — Email delivery (provider 전용)
+    │   ├── external/                   # infrastructure — External service clients (provider 전용)
+    │   ├── i18n/                       # infrastructure — Internationalization (provider 전용)
+    │   ├── logger/                     # infrastructure-shared — Logging (어느 레이어든)
+    │   ├── metrics/                    # infrastructure-shared — Prometheus metrics (어느 레이어든)
+    │   └── transaction/                # infrastructure-shared — Transaction management (어느 레이어든)
     ├── libs/
     │   └── **                          # libs — 독립 라이브러리
     └── modules/
@@ -70,5 +70,6 @@
 | `module-common` | `src/modules/**/common/**` | — | 모듈 내부 공용 (같은 모듈에서만 import) |
 | `common-pure` | `src/common/constants/**` | — | — |
 | `common` | `src/common/authentication/**` / `src/common/guards/**` / `src/common/exceptions/**` / `src/common/interfaces/**` / `src/common/middlewares/**` / `src/common/pipes/**` / `src/common/interceptors/**` / `src/common/decorators/**` / `src/common/events/**` / `src/common/dtos/**` / `src/common/config/**` / `src/common/utils/**` | — | 전역 공용 (허용 하위 폴더만) |
-| `infrastructure` | `src/infrastructure/database/**` / `src/infrastructure/i18n/**` / `src/infrastructure/logger/**` / `src/infrastructure/metrics/**` / `src/infrastructure/cache/**` / `src/infrastructure/email/**` / `src/infrastructure/transaction/**` / `src/infrastructure/external/**` | — | 인프라 수평 관심사 (허용 하위 폴더만) |
+| `infrastructure-shared` | `src/infrastructure/logger/**` / `src/infrastructure/metrics/**` / `src/infrastructure/transaction/**` | — | I/O 없는 실행 환경 기능 — service 포함 어느 레이어든 사용 |
+| `infrastructure` | `src/infrastructure/database/**` / `src/infrastructure/i18n/**` / `src/infrastructure/cache/**` / `src/infrastructure/email/**` / `src/infrastructure/external/**` | — | 외부 시스템 I/O — provider(Port 구현체)에서만 사용 |
 | `libs` | `src/libs/**` | — | 독립 라이브러리 |

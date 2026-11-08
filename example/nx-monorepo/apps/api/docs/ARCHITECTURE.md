@@ -23,14 +23,14 @@
     │   ├── pipes/                      # Validation Pipes
     │   └── utils/                      # Pure utility functions (no framework deps)
     ├── infrastructure/
-    │   ├── cache/                      # Cache configuration
-    │   ├── database/                   # Database configuration
-    │   ├── email/                      # Email delivery infrastructure
-    │   ├── external/                   # External service clients (3rd-party SDK, HTTP client wrappers)
-    │   ├── i18n/                       # Internationalization
-    │   ├── logger/                     # Logging
-    │   ├── metrics/                    # Prometheus metrics
-    │   └── transaction/                # Transaction management
+    │   ├── cache/                      # infrastructure — Cache configuration (provider 전용)
+    │   ├── database/                   # infrastructure — Database configuration (provider 전용)
+    │   ├── email/                      # infrastructure — Email delivery (provider 전용)
+    │   ├── external/                   # infrastructure — External service clients (provider 전용)
+    │   ├── i18n/                       # infrastructure — Internationalization (provider 전용)
+    │   ├── logger/                     # infrastructure-shared — Logging (어느 레이어든)
+    │   ├── metrics/                    # infrastructure-shared — Prometheus metrics (어느 레이어든)
+    │   └── transaction/                # infrastructure-shared — Transaction management (어느 레이어든)
     ├── libs/
     │   └── **                          # libs — 독립 라이브러리
     └── modules/

@@ -77,9 +77,9 @@ export const ORDER_REPOSITORY_PORT = Symbol('OrderRepositoryPort');
 **Forbids**
 
 - @nestjs/* 대부분 (Injectable/Inject/OnEvent만 예외 허용)
-- 인프라 SDK/ORM 직접 사용 (→ Outbound Port로 추상화)
+- 인프라 SDK/ORM·`infrastructure`(DB·캐시·메일·외부 API) 직접 사용 (→ Outbound Port로 추상화)
 
-**Scope** — HTTP 관심사는 controller로 분리. `*.spec.ts`는 lint 완화 (mock/stub 자유).
+**Scope** — logger·metrics·transaction(`infrastructure-shared`)은 직접 사용 가능. HTTP 관심사는 controller로 분리. `*.spec.ts`는 lint 완화 (mock/stub 자유).
 
 ```ts
 // service/create-order.service.ts
@@ -289,31 +289,46 @@ export class CreateOrderRequestDto {
 
 **Forbids**
 
-- 허용 하위 폴더 외 경로에 파일 배치 (boundaries/no-unknown-files가 거부)
+- 허용 하위 폴더 외 경로에 파일 배치 (local/no-unknown-files가 거부)
+
+### `infrastructure-shared`
+
+**Role** — 외부 시스템 I/O가 없는 실행 환경 기능 — service 포함 어느 레이어든 직접 사용.
+
+**Contains**
+
+- Logger 설정 — `logger/**`
+- Prometheus 메트릭 수집 — `metrics/**`
+- 트랜잭션 관리 — `transaction/**`
+
+**Forbids**
+
+- 외부 시스템 I/O 코드 (DB 조회·메일 발송·외부 API) — `infrastructure`에 둔다
+- 모듈 도메인 로직 import (service/controller/provider)
+
+**Scope** — 새 인프라 폴더는 외부 시스템과 I/O를 하면 `infrastructure`, 아니면 `infrastructure-shared`에 등록한다.
 
 ### `infrastructure`
 
-**Role** — 인프라 수평 관심사 — 프레임워크/미들웨어 수준의 부트스트랩·설정 코드.
+**Role** — 외부 시스템 I/O 인프라 — Port 구현체(provider)에서만 사용. service는 Port를 거친다.
 
 **Contains**
 
 - DB 설정·커넥션 — `database/**`
-- I18n 설정 — `i18n/**`
-- Logger 설정 — `logger/**`
-- Prometheus 메트릭 수집 — `metrics/**`
+- I18n 설정·메시지 로더 — `i18n/**`
 - Cache 설정 — `cache/**`
 - 메일 발송 인프라 — `email/**`
-- 트랜잭션 관리 — `transaction/**`
 - 외부 서비스 클라이언트 (3rd-party SDK·HTTP client wrapper) — `external/**`
 
 **Forbids**
 
+- service에서 직접 import — Port를 정의하고 provider에서 구현
 - 모듈 도메인 로직 import (service/controller/provider)
-- 허용 하위 폴더 외 경로 (boundaries/no-unknown-files가 거부)
+- 허용 하위 폴더 외 경로 (local/no-unknown-files가 거부)
 
 ### `libs`
 
-**Role** — 독립 라이브러리성 모듈 — 모듈과 무관하게 재사용할 수 있는 단위. libs·common·common-pure·infrastructure만 참조.
+**Role** — 독립 라이브러리성 모듈 — 모듈과 무관하게 재사용할 수 있는 단위. libs·common·common-pure·infrastructure·infrastructure-shared만 참조.
 
 **Contains**
 
@@ -340,16 +355,17 @@ export class CreateOrderRequestDto {
 | `model` | `model`, `common-pure` | `model` |
 | `exception` | `exception`, `module-common`, `common`, `common-pure` | 없음 |
 | `port` | `model`, `module-common`, `common`, `common-pure` | `model`, `port` |
-| `service` | `model`, `port`, `exception`, `module-common`, `common`, `common-pure`, `infrastructure` | `model`, `port` |
-| `controller` | `port`, `dto`, `model`, `exception`, `module-common`, `common`, `common-pure`, `libs` | `model`, `port` |
-| `strategy` | `port`, `dto`, `model`, `exception`, `module-common`, `common`, `common-pure`, `libs` | `model`, `port` |
-| `provider` | `port`, `model`, `module-common`, `common`, `common-pure`, `infrastructure`, `provider`, `libs` | `model`, `port` |
+| `service` | `model`, `port`, `exception`, `module-common`, `common`, `common-pure`, `infrastructure-shared` | `model`, `port` |
+| `controller` | `port`, `dto`, `model`, `exception`, `module-common`, `common`, `common-pure`, `libs`, `infrastructure-shared` | `model`, `port` |
+| `strategy` | `port`, `dto`, `model`, `exception`, `module-common`, `common`, `common-pure`, `libs`, `infrastructure-shared` | `model`, `port` |
+| `provider` | `port`, `model`, `module-common`, `common`, `common-pure`, `infrastructure`, `infrastructure-shared`, `provider`, `libs` | `model`, `port` |
 | `dto` | `model`, `module-common`, `common`, `common-pure`, `dto` | `model` |
 | `module-common` | `module-common`, `model`, `common`, `common-pure` | 없음 |
 | `common` | `common`, `common-pure` | _(모듈 무관)_ |
 | `common-pure` | `common-pure` | _(모듈 무관)_ |
-| `infrastructure` | `infrastructure`, `common`, `common-pure` | _(모듈 무관)_ |
-| `libs` | `libs`, `common`, `common-pure`, `infrastructure` | _(모듈 무관)_ |
+| `infrastructure` | `infrastructure`, `infrastructure-shared`, `common`, `common-pure` | _(모듈 무관)_ |
+| `infrastructure-shared` | `infrastructure-shared`, `infrastructure`, `common`, `common-pure` | _(모듈 무관)_ |
+| `libs` | `libs`, `common`, `common-pure`, `infrastructure`, `infrastructure-shared` | _(모듈 무관)_ |
 
 ## Framework 금지 패키지 (순수 레이어 차단)
 

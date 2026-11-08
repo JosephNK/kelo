@@ -13,12 +13,15 @@ graph LR
     common_pure["common-pure"]
     common["common"]
   end
+  subgraph g_infrastructure [infrastructure]
+    infrastructure_shared["infrastructure-shared"]
+    infrastructure["infrastructure"]
+  end
   model["model"]
   exception["exception"]
   module_common["module-common"]
   port["port"]
   service["service"]
-  infrastructure["infrastructure"]
   controller["controller"]
   dto["dto"]
   libs["libs"]
@@ -38,7 +41,7 @@ graph LR
   service --> module_common
   service --> common
   service --> common_pure
-  service --> infrastructure
+  service --> infrastructure_shared
   controller --> port
   controller --> dto
   controller --> model
@@ -47,6 +50,7 @@ graph LR
   controller --> common
   controller --> common_pure
   controller --> libs
+  controller --> infrastructure_shared
   strategy --> port
   strategy --> dto
   strategy --> model
@@ -55,12 +59,14 @@ graph LR
   strategy --> common
   strategy --> common_pure
   strategy --> libs
+  strategy --> infrastructure_shared
   provider --> port
   provider --> model
   provider --> module_common
   provider --> common
   provider --> common_pure
   provider --> infrastructure
+  provider --> infrastructure_shared
   provider --> libs
   dto --> model
   dto --> module_common
@@ -70,9 +76,14 @@ graph LR
   module_common --> common
   module_common --> common_pure
   common --> common_pure
+  infrastructure --> infrastructure_shared
   infrastructure --> common
   infrastructure --> common_pure
+  infrastructure_shared --> infrastructure
+  infrastructure_shared --> common
+  infrastructure_shared --> common_pure
   libs --> common
   libs --> common_pure
   libs --> infrastructure
+  libs --> infrastructure_shared
 ```

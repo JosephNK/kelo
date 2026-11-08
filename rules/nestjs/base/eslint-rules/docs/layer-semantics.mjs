@@ -60,10 +60,10 @@ export const baseLayerSemantics = {
     ],
     forbids: [
       "@nestjs/* 대부분 (Injectable/Inject/OnEvent만 예외 허용)",
-      "인프라 SDK/ORM 직접 사용 (→ Outbound Port로 추상화)",
+      "인프라 SDK/ORM·`infrastructure`(DB·캐시·메일·외부 API) 직접 사용 (→ Outbound Port로 추상화)",
     ],
     scope:
-      "HTTP 관심사는 controller로 분리. `*.spec.ts`는 lint 완화 (mock/stub 자유).",
+      "logger·metrics·transaction(`infrastructure-shared`)은 직접 사용 가능. HTTP 관심사는 controller로 분리. `*.spec.ts`는 lint 완화 (mock/stub 자유).",
     example: [
       "// service/create-order.service.ts",
       "@Injectable()",
@@ -231,7 +231,7 @@ export const baseLayerSemantics = {
       "순수 유틸 함수 (프레임워크 비의존) — `utils/**`",
     ],
     forbids: [
-      "허용 하위 폴더 외 경로에 파일 배치 (boundaries/no-unknown-files가 거부)",
+      "허용 하위 폴더 외 경로에 파일 배치 (local/no-unknown-files가 거부)",
     ],
   },
 
@@ -248,26 +248,39 @@ export const baseLayerSemantics = {
       "`baseBoundaryRules`에서 모든 from→to allow에 `common-pure` 동반 추가 — model 포함 어떤 레이어에서든 import 가능. 새 pure 폴더 풀 때는 element pattern에만 append.",
   },
 
-  infrastructure: {
-    role: "인프라 수평 관심사 — 프레임워크/미들웨어 수준의 부트스트랩·설정 코드.",
+  "infrastructure-shared": {
+    role: "외부 시스템 I/O가 없는 실행 환경 기능 — service 포함 어느 레이어든 직접 사용.",
     contains: [
-      "DB 설정·커넥션 — `database/**`",
-      "I18n 설정 — `i18n/**`",
       "Logger 설정 — `logger/**`",
       "Prometheus 메트릭 수집 — `metrics/**`",
+      "트랜잭션 관리 — `transaction/**`",
+    ],
+    forbids: [
+      "외부 시스템 I/O 코드 (DB 조회·메일 발송·외부 API) — `infrastructure`에 둔다",
+      "모듈 도메인 로직 import (service/controller/provider)",
+    ],
+    scope:
+      "새 인프라 폴더는 외부 시스템과 I/O를 하면 `infrastructure`, 아니면 `infrastructure-shared`에 등록한다.",
+  },
+
+  infrastructure: {
+    role: "외부 시스템 I/O 인프라 — Port 구현체(provider)에서만 사용. service는 Port를 거친다.",
+    contains: [
+      "DB 설정·커넥션 — `database/**`",
+      "I18n 설정·메시지 로더 — `i18n/**`",
       "Cache 설정 — `cache/**`",
       "메일 발송 인프라 — `email/**`",
-      "트랜잭션 관리 — `transaction/**`",
       "외부 서비스 클라이언트 (3rd-party SDK·HTTP client wrapper) — `external/**`",
     ],
     forbids: [
+      "service에서 직접 import — Port를 정의하고 provider에서 구현",
       "모듈 도메인 로직 import (service/controller/provider)",
-      "허용 하위 폴더 외 경로 (boundaries/no-unknown-files가 거부)",
+      "허용 하위 폴더 외 경로 (local/no-unknown-files가 거부)",
     ],
   },
 
   libs: {
-    role: "독립 라이브러리성 모듈 — 모듈과 무관하게 재사용할 수 있는 단위. libs·common·common-pure·infrastructure만 참조.",
+    role: "독립 라이브러리성 모듈 — 모듈과 무관하게 재사용할 수 있는 단위. libs·common·common-pure·infrastructure·infrastructure-shared만 참조.",
     contains: ["라이브러리성 모듈 (내부 구조 자유) — `src/libs/**`"],
     forbids: [
       "모듈 레이어(model/port/service/controller/provider 등) import — 조립은 `*.module.ts`가 담당",

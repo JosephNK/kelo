@@ -33,7 +33,7 @@ OpenAPI 3.x specification files for code generation.
 
 ## Config Manifest (멀티 타깃)
 
-모노레포 루트에 `kelo.openapi.json`을 두면 여러 타깃을 한 번에 생성한다. 파일명이 `kelo.openapi.json`이면 **무인자 실행으로 자동 감지**되고, 다른 이름/경로는 `--config <file>`로 지정한다. **이 파일은 `kelo.workspaces.json`과 별개이며, `workspaces-sync`/`workspaces-init`은 이 파일을 읽지 않는다.** 오직 본 스킬이 소비한다.
+모노레포 루트에 `kelo.openapi.json`을 두면 여러 타깃을 한 번에 생성한다. 파일명이 `kelo.openapi.json`이면 **무인자 실행으로 자동 감지**되고, 다른 이름/경로는 `--config <file>`로 지정한다. **이 파일은 `kelo.yaml`과 별개이며, `/kelo:setup`은 이 파일을 읽지 않는다.** 오직 본 스킬이 소비한다.
 
 ```json
 {
@@ -339,4 +339,4 @@ Tag → 파일/클래스명 매핑은 kebab-case (파일) / PascalCase + `Servic
 - Generated files have `// GENERATED CODE - DO NOT MODIFY BY HAND` header.
 - 동일 spec으로 재실행하면 deterministic하게 같은 출력 (idempotent).
 - URL spec은 `specs/openapi.{yaml,json}`로 저장돼 VCS 추적 가능. boundary 검사는 `specs/`를 자동 무시.
-- 본 스킬은 `/kelo:nextjs-init`로 셋업된 `src/http/` 레이아웃을 가정한다.
+- 본 스킬은 `/kelo:setup`으로 셋업된 `src/http/` 레이아웃을 가정한다.

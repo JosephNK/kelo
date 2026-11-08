@@ -108,7 +108,7 @@ function main() {
   fs.writeFileSync(
     outputFile,
     `// GENERATED FILE - DO NOT MODIFY BY HAND
-// Managed by kelo (overwritten by /kelo:${args.framework}-init and -sync).
+// Managed by kelo (overwritten by /kelo:setup).
 // Rules: ${configPkg.name}/stylelint
 
 export { default } from "${configPkg.name}/stylelint";

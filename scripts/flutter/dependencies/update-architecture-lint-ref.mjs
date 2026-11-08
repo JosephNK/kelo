@@ -4,7 +4,7 @@
 //   - pubspec.yaml `dev_dependencies.kelo_analysis` (git) 의 ref → 새 버전
 //   - analysis_options.yaml `plugins:` 의 architecture_lint / leaf_kit_lint /
 //     freezed_lint 는 프로젝트 안 .kelo/plugins/ 에 vendoring 되므로 ref가 없다.
-//     등록 방식을 점검해 안내만 한다 (갱신·전환은 /kelo:flutter-sync).
+//     등록 방식을 점검해 안내만 한다 (갱신·전환은 /kelo:setup).
 //
 // Usage:
 //   update-architecture-lint-ref.mjs <ref> --project-dir <dir> [--dry-run]
@@ -189,13 +189,13 @@ function reportLintPlugins(analysisPath) {
     const p = entry.get("path");
     if (typeof p === "string" && !path.isAbsolute(p)) {
       process.stdout.write(
-        `  📦 ${analysisPath} [${pkgName}]: vendoring (${p}) — 규칙 갱신은 /kelo:flutter-sync\n`,
+        `  📦 ${analysisPath} [${pkgName}]: vendoring (${p}) — 규칙 갱신은 /kelo:setup\n`,
       );
     } else {
       legacy += 1;
       const how = entry.get("git") ? "git" : `절대 경로 ${p}`;
       process.stdout.write(
-        `  ⚠️  ${analysisPath} [${pkgName}]: 레거시 등록(${how}) — 다른 PC/CI에서 동작하지 않음. /kelo:flutter-sync로 vendoring 전환 필요\n`,
+        `  ⚠️  ${analysisPath} [${pkgName}]: 레거시 등록(${how}) — 다른 PC/CI에서 동작하지 않음. /kelo:setup로 vendoring 전환 필요\n`,
       );
     }
   }
@@ -243,7 +243,7 @@ function main() {
   }
   if (legacy > 0) {
     process.stdout.write(
-      `\n레거시 등록 ${legacy}건 — /kelo:flutter-sync를 실행해 .kelo/plugins/ vendoring으로 전환하세요.\n`,
+      `\n레거시 등록 ${legacy}건 — /kelo:setup를 실행해 .kelo/plugins/ vendoring으로 전환하세요.\n`,
     );
   }
 }

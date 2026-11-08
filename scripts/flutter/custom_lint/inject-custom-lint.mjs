@@ -14,7 +14,7 @@
 //   - An absolute `path:` to the kelo plugin cache only works on one machine.
 // A `.kelo-vendor.json` manifest (sha256 per file) is written next to each
 // copy; `dart run kelo_analysis:verify` rejects modified copies.
-// Every run replaces the copy (rules update via /kelo:flutter-sync).
+// Every run replaces the copy (rules update via /kelo:setup).
 //
 // Each plugin entry is written with both `path:` and a `diagnostics:` enable
 // list (every rule code mapped to `true`). The codes are auto-extracted from
@@ -52,6 +52,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
 import YAML from "yaml";
 
@@ -65,18 +66,26 @@ const BASE_PACKAGE = {
   subPath: "rules/flutter/base/custom-lint/architecture_lint",
 };
 
-// Stack → package mapping. Selecting a stack installs the corresponding lint
-// package as an additional analyzer plugin.
-const STACK_PACKAGES = {
-  "leaf-kit": {
-    name: "leaf_kit_lint",
-    subPath: "rules/flutter/leaf-kit/custom-lint/leaf_kit_lint",
-  },
-  freezed: {
-    name: "freezed_lint",
-    subPath: "rules/flutter/freezed/custom-lint/freezed_lint",
-  },
-};
+// Stack → package mapping (rules/flutter/stacks.yaml의 lintPackage). Selecting a
+// stack installs the corresponding lint package as an additional analyzer plugin.
+const STACK_PACKAGES = Object.fromEntries(
+  Object.entries(
+    YAML.parse(
+      fs.readFileSync(
+        path.resolve(
+          path.dirname(fileURLToPath(import.meta.url)),
+          "../../../rules/flutter/stacks.yaml",
+        ),
+        "utf8",
+      ),
+    ) ?? {},
+  )
+    .filter(([, def]) => def?.lintPackage)
+    .map(([stack, def]) => [
+      stack,
+      { name: def.lintPackage.name, subPath: def.lintPackage.path },
+    ]),
+);
 
 const ALL_LINT_PACKAGE_NAMES = new Set([
   BASE_PACKAGE.name,
@@ -251,8 +260,7 @@ function vendorPlugin(srcAbsPath, hostDir, pkg, pluginVersion) {
       .digest("hex");
   }
   const manifest = {
-    $comment:
-      "Vendored by kelo — do not edit. Regenerate with /kelo:flutter-sync.",
+    $comment: "Vendored by kelo — do not edit. Regenerate with /kelo:setup.",
     package: pkg.name,
     source: `kelo@${pluginVersion}/${pkg.subPath}`,
     files,

@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 import { ensureGitRepo, normalizePath } from "./common.mjs";
 
-const HELP = `Usage: gen-conventions.mjs <framework> -p <output-dir> [--with stack1,stack2,...] [--no-project-init]
+const HELP = `Usage: gen-conventions.mjs <framework> -p <output-dir> [--with stack1,stack2,...]
 
 Concatenates base/conventions.md + selected stack conventions.md files.
 
@@ -26,13 +26,11 @@ Arguments:
 Options:
   -p <dir>           Output directory (required)
   --with <list>      Comma-separated stacks (e.g. tanstack-query,next-proxy)
-  --no-project-init  Do not create CONVENTIONS.PROJECT.md when missing (sync mode)
   -h, --help         Show this help
 
 Examples:
   ./scripts/gen-conventions.mjs nextjs -p ./my-project --with tanstack-query,next-proxy
   ./scripts/gen-conventions.mjs nestjs -p ./my-project --with typeorm
-  ./scripts/gen-conventions.mjs nextjs -p ./my-project --with tanstack-query --no-project-init
 `;
 
 function usage(code = 1) {
@@ -45,7 +43,6 @@ function parseArgs(argv) {
     framework: "",
     outputDir: "",
     stacks: "",
-    noProjectInit: false,
   };
   const rest = argv.slice(2);
 
@@ -69,9 +66,6 @@ function parseArgs(argv) {
           usage();
         }
         args.stacks = rest.shift();
-        break;
-      case "--no-project-init":
-        args.noProjectInit = true;
         break;
       case "-h":
       case "--help":
@@ -181,16 +175,11 @@ function main() {
   }
 
   // CONVENTIONS.PROJECT.md is user-owned. Create it only when missing so
-  // subsequent runs preserve user edits. With --no-project-init (sync mode),
-  // skip creation entirely so a deliberately-deleted file stays deleted.
+  // subsequent runs preserve user edits.
   const projectFile = path.join(outputDir, "CONVENTIONS.PROJECT.md");
   const projectName = path.basename(path.resolve("."));
   if (fs.existsSync(projectFile)) {
     process.stdout.write(`Preserved: ${projectFile} (user-owned, untouched)\n`);
-  } else if (args.noProjectInit) {
-    process.stdout.write(
-      `Skipped: ${projectFile} (not created, --no-project-init)\n`,
-    );
   } else {
     fs.writeFileSync(
       projectFile,

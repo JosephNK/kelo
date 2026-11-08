@@ -61,13 +61,47 @@ Add to your project's `.claude/settings.json` so teammates get the plugin automa
 
 ## Supported Frameworks
 
-| Framework | Init Command | Convention Stacks |
-|-----------|-------------|-------------------|
-| **Flutter** | `/kelo:flutter-init` | freezed, go-router, leaf-kit, easy-localization |
-| **Next.js** | `/kelo:nextjs-init` | tanstack-query, next-proxy |
-| **NestJS** | `/kelo:nestjs-init` | typeorm |
+| Framework | Stacks (`rules/<framework>/stacks.yaml`) |
+|-----------|------------------------------------------|
+| **Flutter** | freezed, go-router, leaf-kit, easy-localization |
+| **Next.js** | tanstack-query, next-proxy |
+| **NestJS** | typeorm |
 
-Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등 프로젝트 설정 파일을 자동 생성합니다.
+## Setup (`/kelo:setup`)
+
+모든 프레임워크·단일 프로젝트·모노레포를 하나의 커맨드로 셋업하고 동기화합니다. 설정은 프로젝트 루트의 `kelo.yaml` 한 파일입니다.
+
+- `kelo.yaml`이 없으면 framework·워크스페이스·패키지 매니저를 감지해 보여주고, 스택 등을 물어 작성합니다.
+- `kelo.yaml`이 있으면 프롬프트 없이 그대로 적용합니다 (재실행 = sync).
+- 실제 작업은 `scripts/kelo.mjs`가 `rules/<framework>/pipeline.yaml`의 단계를 순서대로 실행합니다.
+
+```yaml
+# 단일 프로젝트
+framework: nextjs        # nextjs | nestjs | flutter
+name: web                # 기본: 디렉터리 이름
+stacks: [tanstack-query]
+agents: true             # AGENTS.md + CLAUDE.md 생성 (기본 true)
+packageManager: pnpm     # 생략하면 매번 감지
+# entryDir: app          # flutter만 (기본 app)
+
+# 모노레포 — 루트 kelo.yaml
+packageManager: pnpm
+workspaces:
+  - path: apps/web
+    framework: nextjs
+    stacks: [tanstack-query]
+  - path: apps/api
+    framework: nestjs
+    stacks: [typeorm]
+```
+
+모노레포에서는 워크스페이스별 생성 → 루트에서 install 한 번 → 워크스페이스별 후속 단계 순으로 실행하고, 루트 `.husky/`·`commitlint.config.mjs`는 없을 때만 만듭니다.
+
+```bash
+node scripts/kelo.mjs detect   -p <dir>                 # 감지 결과(JSON)
+node scripts/kelo.mjs validate -p <dir>                 # kelo.yaml 검증
+node scripts/kelo.mjs setup    -p <dir> [--dry-run] [--no-install] [--move-app]
+```
 
 ## Commands
 
@@ -75,7 +109,6 @@ Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등
 
 | Command | Description |
 |---------|-------------|
-| `/kelo:flutter-init` | 프로젝트 초기화 (conventions, husky hooks, commitlint 등) |
 | `/kelo:flutter-app-scaffold` | app.dart, main.dart, router, 다국어 리소스 생성 |
 | `/kelo:flutter-android-setup` | build.gradle.kts, AndroidManifest, proguard 설정 |
 | `/kelo:flutter-ios-setup` | pbxproj (4 flavor × 3 build type), xcscheme, Info.plist 설정 |
@@ -119,52 +152,9 @@ Init 커맨드 실행 시 AGENTS.md, GIT.md, ARCHITECTURE.md, CONVENTIONS.md 등
 | `/kelo:typeorm-migration` | TypeORM 마이그레이션 SQL 생성 (dev/prod 분리) |
 | `/kelo:update-plugin-ref` | Kelo Dart 의존성 git ref 일괄 업데이트 (`architecture-lint` / `leaf-kit`) |
 
-### Monorepo (Next.js / NestJS)
-
-`kelo.workspaces.json` 매니페스트로 모노레포의 여러 워크스페이스를 한 번에 init/sync. 앱별 스택 선택을 매니페스트에 보관해 반복 실행 시 프롬프트 없이 재현 가능.
-
-| Command | Description |
-|---------|-------------|
-| `/kelo:workspaces-init` | 매니페스트 기반 일괄 init. 매니페스트 없으면 워크스페이스 자동 탐색 후 부트스트랩 |
-| `/kelo:workspaces-sync` | 매니페스트 기반 일괄 sync. docs/lint config + husky 훅 갱신 |
-
-단일 워크스페이스만 갱신할 때는 기존 `/kelo:nextjs-init [path]`, `/kelo:nextjs-sync [path]`, `/kelo:nestjs-init [path]`, `/kelo:nestjs-sync [path]` 도 그대로 사용 가능합니다.
-
-### 단일 프로젝트 매니페스트 (`kelo.project.json`)
-
-`kelo.workspaces.json`의 단일 프로젝트 버전. 프로젝트 루트에 두면 `nextjs/nestjs/flutter`의 `-init`·`-sync`가 스택 선택 프롬프트 없이 매니페스트 값으로 **무인 재현**합니다. 셋업이 어떤 스택으로 구성됐는지 기록되어 `-sync` 반복 시 드리프트가 없습니다.
-
-```jsonc
-// nextjs/nestjs
-{
-  "framework": "nextjs",
-  "projectName": "web",
-  "conventionStacks": ["tanstack-query"],
-  "tsconfigStacks": [],
-  "generateAgents": true
-}
-// flutter — eslint/tsconfig 대신 entryDir
-{
-  "framework": "flutter",
-  "projectName": "my_app",
-  "conventionStacks": ["freezed", "leaf-kit"],
-  "entryDir": "app",
-  "generateAgents": true
-}
-```
-
-동작 (매니페스트 존재 여부로 분기):
-
-| | 있음 | 없음 |
-|---|---|---|
-| `-init` | 무인 재현 (프롬프트 생략) | 대화형 진행 후 매니페스트 **자동 작성** |
-| `-sync` | 무인 재현 (프롬프트 생략) | 대화형 진행 (기존과 동일) + 작성 **제안** |
-
-매니페스트가 없으면 기존 대화형 동작이 그대로 유지되므로 하위 호환됩니다. (모노레포의 `kelo.workspaces.json`은 워크스페이스별 동일 필드 집합을 배열로 보관합니다.)
-
 ## Generator Scripts
 
-Init 커맨드 외에 개별 스크립트로도 실행 가능합니다.
+`/kelo:setup` 외에 개별 스크립트로도 실행 가능합니다.
 
 ```bash
 # Agents, Git, Architecture, Conventions
@@ -196,6 +186,9 @@ Init 커맨드 외에 개별 스크립트로도 실행 가능합니다.
 
 ### 새 스택 추가
 
+1. `rules/<framework>/stacks.yaml`에 등록 (`description`, Flutter lint 패키지가 있으면 `lintPackage`)
+2. 스택 디렉터리에 산출물 파일을 둔다 — 파일이 있는 것만 적용된다
+
 ```
 rules/<framework>/<stack-name>/
 ├── conventions.md          # 컨벤션 규칙
@@ -214,25 +207,25 @@ lint 규칙과 조립 로직은 npm 패키지로 배포되고, 소비 프로젝�
 | `eslint-config-kelo-nextjs` | `rules/nextjs/` | `nextjs()` factory, `./formatter`, `./stylelint`, `kelo-lint-nextjs` CLI |
 | `eslint-config-kelo-nestjs` | `rules/nestjs/` | `nestjs()` factory, `./formatter`, `kelo-lint-nestjs` / `kelo-check-i18n` CLI |
 
-소비 프로젝트 구성 (`/kelo:*-init`, `/kelo:*-sync`가 생성):
+소비 프로젝트 구성 (`/kelo:setup`이 생성):
 
 ```js
-// eslint.config.mjs — kelo 관리 (매 sync 덮어씀, 직접 수정은 hook이 차단)
+// eslint.config.mjs — kelo 관리 (/kelo:setup마다 덮어씀, 직접 수정은 hook이 차단)
 import { nestjs } from "eslint-config-kelo-nestjs";
 import projectConfig from "./eslint.project.config.mjs";
 export default nestjs({ root: import.meta.dirname, project: projectConfig });
 ```
 
-- `kelo.lint.json` — 프로젝트 소유. 프로젝트별 확장 `boundaryElements` / `boundaryRules` / `boundaryIgnores` / `ignores` + 추가 금지 목록 (sync가 보존)
+- `kelo.lint.json` — 프로젝트 소유. 프로젝트별 확장 `boundaryElements` / `boundaryRules` / `boundaryIgnores` / `ignores` + 추가 금지 목록 (setup이 보존)
 - `eslint.project.config.mjs` — 사용자 소유. 새 규칙·플러그인 **추가만** 허용. kelo 규칙/settings 재정의, `linterOptions`, 전역 ignores는 로드 시 에러
 - inline `eslint-disable` 주석은 무시됩니다 (`noInlineConfig`)
 - `kelo-lint-<framework>` — 프로젝트 `eslint.config.mjs`를 무시하고 패키지 규칙으로 검사. `scripts.lint`(eslint 기반 `lint:ci`/`lint:fix` 포함)와 lint-staged가 모두 이 CLI로 통일됩니다. 경로/`--ignore-pattern` 인자는 `kelo.lint.json`의 `ignores`로 옮깁니다. 에디터 실시간 표시는 `eslint.config.mjs`가 담당합니다
 
-배포는 **npm 레지스트리**입니다: `./deploy.mjs`(버전 범프 + 태그 + `npm publish` + GitHub Release) → 소비 프로젝트는 `package.json`에 플러그인과 같은 정확한 버전(`"eslint-config-kelo-<fw>": "<ver>"`)을 쓰고, sync로 버전을 올립니다. 1.0.0 이전의 Release tarball URL 의존성은 다음 sync 때 레지스트리 버전으로 바뀝니다.
+배포는 **npm 레지스트리**입니다: `./deploy.mjs`(버전 범프 + 태그 + `npm publish` + GitHub Release) → 소비 프로젝트는 `package.json`에 플러그인과 같은 정확한 버전(`"eslint-config-kelo-<fw>": "<ver>"`)을 쓰고, `/kelo:setup`으로 버전을 올립니다.
 
 ## Project Preferences (NestJS)
 
-NestJS 소비 프로젝트의 `package.json`에 `kelo-rules` 객체를 두면 일부 lint 동작을 토글할 수 있습니다. 값은 ESLint config 로드 시점에 평가되므로 **`/kelo:nestjs-sync` 재실행 없이** 다음 ESLint 실행부터 반영됩니다.
+NestJS 소비 프로젝트의 `package.json`에 `kelo-rules` 객체를 두면 일부 lint 동작을 토글할 수 있습니다. 값은 ESLint config 로드 시점에 평가되므로 **`/kelo:setup` 재실행 없이** 다음 ESLint 실행부터 반영됩니다.
 
 ```json
 {

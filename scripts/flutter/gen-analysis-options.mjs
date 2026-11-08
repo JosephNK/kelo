@@ -18,8 +18,8 @@
 //
 // Behavior: ALWAYS overwrite. Each scaffolded file starts with the banner
 //   `# GENERATED FILE - DO NOT MODIFY BY HAND`
-// for visual signaling only — there is no banner-based skip. /kelo:flutter-init
-// and /kelo:flutter-sync both regenerate these files unconditionally so that
+// for visual signaling only — there is no banner-based skip. /kelo:setup
+// regenerates these files unconditionally so that
 // template updates (e.g. new lint rules added in a kelo release) propagate.
 // If a file did not previously contain the banner (e.g. created by
 // `flutter create` or hand-edited), the script logs an INFO line noting the
@@ -36,7 +36,7 @@
 // scaffolded file via YAML round-trip (preserving template content).
 //
 // To opt out for a specific project: remove the gen-analysis-options.mjs call
-// from your /flutter-init / /flutter-sync command (fork the command file).
+// from rules/flutter/pipeline.yaml (fork it).
 //
 // Usage:
 //   gen-analysis-options.mjs flutter -p <project-dir> [-entry <dir>] [-analysis-path <dir>]
@@ -334,8 +334,14 @@ function main() {
   // kelo_analysis dev dependency — entry 패키지가 kelo 규칙을 include하므로
   // entry pubspec에 둔다 (workspace에서도 해석은 공유된다).
   try {
+    // -analysis-path는 미배포 체크아웃 검증용 — 이식성을 위해 entry pubspec 기준 상대 경로로 기록
     const spec = args.analysisPath
-      ? { path: normalizePath(args.analysisPath) }
+      ? {
+          path: path.relative(
+            path.join(projectDir, args.entry),
+            normalizePath(args.analysisPath),
+          ),
+        }
       : {
           git: {
             url: KELO_ANALYSIS_GIT_URL,

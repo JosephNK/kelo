@@ -1,0 +1,6 @@
+# NestJS 스택 정의 — /kelo:setup 선택지와 kelo.yaml `stacks` 검증의 원본.
+# 스택이 기여하는 산출물은 rules/nestjs/<stack>/ 의 파일 존재로 정해진다:
+#   conventions.md → CONVENTIONS.md 에 이어 붙임
+#   tsconfig.patch.json → tsconfig.json 패치 (+ extraFiles)
+typeorm:
+  description: TypeORM 영속성 (+ tsconfig.migration.json)

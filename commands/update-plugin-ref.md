@@ -60,7 +60,7 @@ target에 따라 해당 백엔드 스크립트를 실행합니다.
 
 **architecture-lint** (`pubspec.yaml` / `kelo_analysis`):
 
-`kelo_analysis` git ref만 갱신합니다. `analysis_options.yaml` `plugins:`의 `architecture_lint`·`leaf_kit_lint`·`freezed_lint`는 `.kelo/plugins/`에 vendoring되어 있어 ref가 없고, 스크립트는 등록 방식만 점검해 안내합니다. vendoring 갱신·레거시 등록(절대 경로/`git:`) 전환은 사용자에게 `/kelo:flutter-sync` 실행을 안내합니다.
+`kelo_analysis` git ref만 갱신합니다. `analysis_options.yaml` `plugins:`의 `architecture_lint`·`leaf_kit_lint`·`freezed_lint`는 `.kelo/plugins/`에 vendoring되어 있어 ref가 없고, 스크립트는 등록 방식만 점검해 안내합니다. vendoring 갱신·레거시 등록(절대 경로/`git:`) 전환은 사용자에게 `/kelo:setup` 실행을 안내합니다.
 ```bash
 $KELO_DIR/scripts/flutter/dependencies/update-architecture-lint-ref.mjs [<ref>] --project-dir <user-project-dir> [--dry-run]
 ```
@@ -79,4 +79,4 @@ $KELO_DIR/scripts/flutter/dependencies/update-leaf-kit-ref.mjs <ref> --project-d
 
 - `--dry-run`이었다면 변경될 파일 목록을 보여주고 "실제로 적용할까요?"를 묻습니다.
 - 스크립트가 실패하면 가능한 원인을 안내합니다 (예: 대상 manifest 미발견, 해당 의존성 없음, plugin.json 파싱 실패).
-- `architecture-lint`를 실제로 적용했다면 엔트리에서 `dart pub get`을 실행하고, `pubspec.lock` 변경이 `kelo_analysis`에만 그쳤는지 확인하도록 안내합니다. 관련 없는 패키지가 대량으로 바뀌었으면 lock을 커밋된 상태로 되돌린 뒤 다시 받습니다 (상세: `/kelo:flutter-sync`의 "lock 변경 범위 확인").
+- `architecture-lint`를 실제로 적용했다면 엔트리에서 `dart pub get`을 실행하고, `pubspec.lock` 변경이 `kelo_analysis`에만 그쳤는지 확인하도록 안내합니다. 관련 없는 패키지가 대량으로 바뀌었으면 lock을 커밋된 상태로 되돌린 뒤 다시 받습니다 (상세: `/kelo:setup`의 "lock 변경 범위 확인").

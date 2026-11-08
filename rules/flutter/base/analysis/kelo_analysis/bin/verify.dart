@@ -240,7 +240,7 @@ void _checkVendoredPlugin(
 ) {
   if (entry['git'] != null) {
     violations.add(
-      '$where: plugins.$name이 git 으로 등록됨 (진단이 동작하지 않음) — /kelo:flutter-sync로 재생성하세요.',
+      '$where: plugins.$name이 git 으로 등록됨 (진단이 동작하지 않음) — /kelo:setup로 재생성하세요.',
     );
     return;
   }
@@ -248,7 +248,7 @@ void _checkVendoredPlugin(
   if (rel is! String) return;
   if (rel.startsWith('/') || RegExp(r'^[A-Za-z]:[\\/]').hasMatch(rel)) {
     violations.add(
-      '$where: plugins.$name.path가 절대 경로($rel) — 다른 PC/CI에서 동작하지 않음. /kelo:flutter-sync로 재생성하세요.',
+      '$where: plugins.$name.path가 절대 경로($rel) — 다른 PC/CI에서 동작하지 않음. /kelo:setup로 재생성하세요.',
     );
     return;
   }
@@ -281,7 +281,7 @@ void _checkVendoredPlugin(
   if (changed.isNotEmpty) {
     violations.add(
       '$where: vendoring된 $name 복사본이 변경됨 (${changed.take(3).join(', ')}'
-      '${changed.length > 3 ? ' 외 ${changed.length - 3}개' : ''}) — 직접 수정 금지, /kelo:flutter-sync로 재생성하세요.',
+      '${changed.length > 3 ? ' 외 ${changed.length - 3}개' : ''}) — 직접 수정 금지, /kelo:setup로 재생성하세요.',
     );
   }
 }

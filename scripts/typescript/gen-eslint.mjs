@@ -58,7 +58,7 @@ function usage(code = 1) {
 // 생성물 — 매 init/sync마다 덮어쓴다. 규칙과 조립 로직은 패키지 안에 있다.
 function renderEslintConfig(pkgName, factory) {
   return `// GENERATED FILE - DO NOT MODIFY BY HAND
-// Managed by kelo (overwritten by /kelo:${factory}-init and -sync).
+// Managed by kelo (overwritten by /kelo:setup).
 // Rules: ${pkgName} | Project extensions: kelo.lint.json | Project rules: eslint.project.config.mjs
 
 import { ${factory} } from "${pkgName}";
@@ -70,7 +70,7 @@ export default ${factory}({ root: import.meta.dirname, project: projectConfig })
 }
 
 // 사용자 소유 파일의 초기 스텁. init에서 없을 때만 생성하고, sync는 보존한다.
-const PROJECT_CONFIG_STUB = `// Project-specific ESLint rules (user-owned — created once, never overwritten by sync).
+const PROJECT_CONFIG_STUB = `// Project-specific ESLint rules (user-owned — created once, never overwritten by /kelo:setup).
 // Allowed: new rules/plugins. Redefining kelo rules/settings, linterOptions, or
 // global ignores fails at load time — use kelo.lint.json \`ignores\` for exclusions.
 // Install any plugin you import here as a devDependency of this project.

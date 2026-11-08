@@ -1,0 +1,47 @@
+# /kelo:setup 실행 단계 — scripts/kelo.mjs가 배열 순서대로 실행한다.
+#
+# 단계 종류
+#   run: <스크립트 경로(scripts/ 기준)> <인자...>   — node로 실행, cwd = 프로젝트 루트
+#   exec: <외부 명령>  (cwd: 프로젝트 기준 하위 경로)
+#   builtin: ensure-package-json | move-app-to-src | install | peers | format-docs
+# 옵션
+#   if: agents                — kelo.yaml 값이 true일 때만 실행
+#   stacks: { flag, having }  — 선택 스택을 `<flag> a,b`로 덧붙임. having이 있으면
+#                               rules/<framework>/<stack>/<having> 파일이 있는 스택만 (없으면 플래그 생략)
+#   analysisPathFlag: <flag>  — setup --analysis-path <dir>가 주어지면 `<flag> <dir>`을 덧붙임 (개발용)
+#   scope: root               — 모노레포(kelo.yaml workspaces)에서는 워크스페이스가 아닌 루트에서 한 번만 실행.
+#                               rootIfMissing 경로가 루트에 이미 있으면 건너뜀 (단일 프로젝트에서는 항상 실행)
+# 치환: {framework} {name} {entryDir}
+# 모노레포에서 install은 루트에서 한 번 실행되고, install 뒤 단계는 워크스페이스별로 이어서 실행된다.
+
+steps:
+  - builtin: ensure-package-json
+  - run: gen-agents.mjs {framework} -p . -n {name} --docs-dir docs
+    if: agents
+  - run: gen-git.mjs -p docs
+  - run: gen-architecture.mjs {framework} -p docs
+  - run: gen-conventions.mjs {framework} -p docs
+    stacks: { flag: --with, having: conventions.md }
+  - run: gen-lint.mjs {framework} -p docs
+  - run: typescript/gen-eslint.mjs {framework} -p .
+  - run: typescript/gen-prettier.mjs {framework} -p .
+  - run: typescript/gen-tsconfig.mjs {framework} -p .
+    stacks: { flag: --with, having: tsconfig.patch.json }
+  - run: gen-husky.mjs {framework} -p .
+    scope: root
+    rootIfMissing: .husky
+  - run: gen-commitlint.mjs -p .
+    scope: root
+    rootIfMissing: commitlint.config.mjs
+  - builtin: install
+  - builtin: peers
+    packages:
+      - eslint-plugin-boundaries@^7
+      - eslint-plugin-import
+      - eslint-import-resolver-typescript
+      - eslint-plugin-simple-import-sort
+      - eslint-plugin-unused-imports
+      - eslint-plugin-prettier
+      - eslint-config-prettier
+      - typescript-eslint
+  - builtin: format-docs

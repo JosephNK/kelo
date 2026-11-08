@@ -57,7 +57,7 @@ block() {
   echo "- kelo 규칙 변경/완화: kelo 저장소에서 규칙을 수정하고 배포하세요." >&2
   echo "- 프로젝트 전용 규칙 추가: eslint.project.config.mjs에 작성하세요." >&2
   echo "- 제외 경로·boundary 확장: kelo.lint.json의 ignores/boundaryIgnores/boundaryElements를 편집하세요." >&2
-  echo "- 스택 변경: /kelo:<framework>-sync 를 실행하세요." >&2
+  echo "- 스택 변경: kelo.yaml의 stacks를 고친 뒤 /kelo:setup 을 실행하세요." >&2
   echo "- lint 에러는 설정이 아니라 코드를 수정해 해결하세요." >&2
   exit 2
 }

@@ -129,6 +129,7 @@ export const baseDomainBannedPackages = [...];
 
 ## 스크립트 역할 구분
 
+- `scripts/kelo.mjs` — `/kelo:setup`의 실행기. 입력: 소비 프로젝트 `kelo.yaml`(단일 또는 `workspaces`) + `rules/<framework>/stacks.yaml`(스택 정의·검증, Flutter `lintPackage`) + `rules/<framework>/pipeline.yaml`(실행 단계). `detect`/`validate`/`setup [--dry-run] [--no-install] [--move-app] [--analysis-path <dir>]`. 생성 스크립트 순서·조건을 바꾸려면 pipeline.yaml을, 스택을 추가하려면 stacks.yaml과 스택 디렉터리를 수정한다. 하위 프로세스에 `PWD`를 cwd로 넘긴다 (`normalizePath()`가 PWD 기준).
 - `scripts/typescript/gen-eslint.mjs` — 입력: `rules/<framework>/package.json` → 출력(소비 프로젝트): `eslint.config.mjs`(factory 호출, 매번 덮어씀), `kelo.lint.json`(없을 때만 `{}` 생성), `eslint.project.config.mjs`(없을 때만 스텁), `package.json`(패키지 버전, lint-staged와 `scripts.lint`/eslint 기반 `lint:ci`·`lint:fix`를 `kelo-lint-<framework>`로 통일).
 - `scripts/typescript/gen-stylelint.mjs` — 출력(소비 프로젝트): `stylelint.config.mjs`(`eslint-config-kelo-nextjs/stylelint` re-export) + stylelint devDeps.
 - `scripts/flutter/gen-analysis-options.mjs` — 출력(소비 프로젝트): include 한 줄짜리 `analysis_options.yaml` + 엔트리 `pubspec.yaml`의 `kelo_analysis` git 의존성(`ref: v<plugin-version>`). 미배포 체크아웃 검증은 `-analysis-path <dir>`로 path 의존성 사용.
@@ -164,12 +165,24 @@ node scripts/typescript/gen-stylelint-reference.mjs <path-to-stylelint.rules.mjs
 node scripts/flutter/gen-custom-lint-reference.mjs
 ```
 
-Flutter custom lint 동작 검증이 필요하면 기본적으로 `example/flutter/` 프로젝트를 사용한다. `example/` 하위는 Git 추적 대상이 아니므로 로컬에서만 사용한다.
+Flutter custom lint 동작 검증이 필요하면 기본적으로 `example/flutter/` 프로젝트를 사용한다. `example/`은 Git 추적 대상이다 (`node_modules`만 ignore) — 검증으로 바뀐 파일을 커밋할지 확인한다.
 
 - `example/flutter/analysis_options.yaml`은 lint plugin 연결 검증에 사용한다.
 - 검증용 임시 파일은 `example/flutter/lib/features/probe/...` 아래에 만든다.
 - 위반 케이스 확인은 `example/flutter/` 루트에서 `dart analyze <probe-file>` 또는 필요한 범위의 `dart analyze`로 수행한다.
 - 검증이 끝나면 probe 파일은 삭제하고, 필요한 설정 파일만 유지한다.
+
+### `/kelo:setup` 검증 (example)
+
+`example/{nextjs,nestjs,flutter,nx-monorepo}`에 `kelo.yaml`이 있다. 로컬 변경은 다음으로 검증한다.
+
+```bash
+node scripts/kelo.mjs setup -p example/<dir> --no-install --analysis-path rules/flutter/base/analysis/kelo_analysis
+```
+
+- `--no-install`: example의 git 루트가 이 저장소라 `npm install`의 husky `prepare`가 저장소 hook 설정을 바꾸고, 레지스트리 패키지가 로컬 pack을 덮어쓴다. 로컬 패키지는 `npm pack` 결과를 `example/<dir>/node_modules/eslint-config-kelo-<fw>`에 풀어 쓴다.
+- `--analysis-path`: Flutter `kelo_analysis`를 git 태그 대신 상대 path 의존성으로 (절대 경로 금지).
+- Flutter `gen-husky`는 git 루트 ≠ 프로젝트를 모노레포로 보고 이 저장소의 `.husky/pre-commit`에 호출 줄을 추가한다 — 검증 후 `git show HEAD:.husky/pre-commit > .husky/pre-commit`으로 되돌린다.
 
 ## 검증 기준
 

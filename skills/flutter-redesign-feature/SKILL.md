@@ -10,10 +10,10 @@ argument-hint: "<free-form text containing target feature + design source>"
 
 ## Mandatory Docs
 
-**BEFORE running this skill, you MUST first read:**
+시작 전에 Read로 읽는다 (`docs/` 아래, 없으면 프로젝트 루트):
 
-- @ARCHITECTURE.md — 폴더 구조 (lint로 강제)
-- @CONVENTIONS.md — naming, port/adapter, BLoC 컨벤션
+- `docs/ARCHITECTURE.md` — 폴더 구조 (lint로 강제)
+- `docs/CONVENTIONS.md` — lint로 강제할 수 없는 팀 결정 (leaf-kit 컴포넌트·토큰 사용법 포함)
 
 ## $ARGUMENTS Parsing
 
@@ -36,13 +36,13 @@ argument-hint: "<free-form text containing target feature + design source>"
 
 ### 2. 디자인 소스 식별
 
-| 입력 패턴 | 처리 방법 |
-|---|---|
-| `Stitch` + Project ID/Screen ID | `mcp__stitch__get_screen` (가용 시) → 결과의 hosted URL을 `curl -L`/WebFetch로 다운로드 후 시각 인식 |
-| `https://www.figma.com/...` | WebFetch로 페이지 fetch |
-| `.png`/`.jpg`/`.webp`/`.svg` 파일 경로 | Read tool (이미지 시각 인식) |
-| 그 외 URL | WebFetch |
-| 자유 텍스트 설명만 | 텍스트를 디자인 명세로 사용 |
+| 입력 패턴                              | 처리 방법                                                                                            |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `Stitch` + Project ID/Screen ID        | `mcp__stitch__get_screen` (가용 시) → 결과의 hosted URL을 `curl -L`/WebFetch로 다운로드 후 시각 인식 |
+| `https://www.figma.com/...`            | WebFetch로 페이지 fetch                                                                              |
+| `.png`/`.jpg`/`.webp`/`.svg` 파일 경로 | Read tool (이미지 시각 인식)                                                                         |
+| 그 외 URL                              | WebFetch                                                                                             |
+| 자유 텍스트 설명만                     | 텍스트를 디자인 명세로 사용                                                                          |
 
 여러 소스가 동시에 들어오면 모두 fetch한 뒤 종합한다.
 
@@ -66,17 +66,17 @@ argument-hint: "<free-form text containing target feature + design source>"
 - `<entry>/lib/di/**`
 - `<entry>/lib/router/**`
 
-> import 가능 여부는 architecture lint의 `presentation`·`bloc`·`usecases`·`ports`·`adapters` 레이어 룰을 따른다. 본 스킬은 lint 룰을 복제·요약하지 않으며, 위반은 9단계 검증의 `dart analyze`에서 자동 검출된다.
+> import 가능 여부는 architecture lint의 레이어 룰을 따른다. 본 스킬은 lint 룰을 복제·요약하지 않으며, 위반은 8단계 검증의 `dart analyze`에서 자동 검출된다.
 
 ## Markers (디자인 우선 + 사후 보완)
 
 새 디자인이 현재 BLoC/도메인/디자인 토큰으로 완전히 표현되지 않아도 **UI 재작성을 끝까지 진행**한다. 부족한 부분은 코드에 마커를 남기고 9단계 보고서에 surface해서 별도 작업으로 보완한다.
 
-| 마커 | 용도 | 예시 |
-|---|---|---|
-| `// TODO(bloc):` | 새 BLoC Event/State 또는 도메인 확장 필요 | `// TODO(bloc): HomeEvent에 RankingRefreshed 추가 필요` |
+| 마커                | 용도                                          | 예시                                                         |
+| ------------------- | --------------------------------------------- | ------------------------------------------------------------ |
+| `// TODO(bloc):`    | 새 BLoC Event/State 또는 도메인 확장 필요     | `// TODO(bloc): HomeEvent에 RankingRefreshed 추가 필요`      |
 | `// FIXME(design):` | 미정의 디자인 토큰·공용 위젯 — 임시값 사용 중 | `// FIXME(design): primaryAccent 토큰 미정의, 임시 hex 사용` |
-| `// NOTE(scope):` | 정보성 (예: common 승격 후보) | `// NOTE(scope): common 승격 후보` |
+| `// NOTE(scope):`   | 정보성 (예: common 승격 후보)                 | `// NOTE(scope): common 승격 후보`                           |
 
 규칙:
 
@@ -90,8 +90,8 @@ argument-hint: "<free-form text containing target feature + design source>"
 
 이후 모든 경로의 `<entry>` placeholder를 다음 규칙으로 결정:
 
-1. `app/lib/` 디렉토리가 존재하면 → `<entry>` = `app` (Melos workspace 컨벤션).
-2. 그렇지 않고 `lib/`이 존재하면 → `<entry>` = `.` (프로젝트 루트 = entry).
+1. `kelo.yaml`에 `entryDir`이 있으면 그 값 (`.`이면 프로젝트 루트).
+2. 없으면 `app/lib/`이 있을 때 `app`, `lib/`이 있을 때 `.`.
 3. 둘 다 없으면 → halt. AskUserQuestion으로 entry 디렉토리 확인.
 
 이후 단계에서 `<entry>/lib/...` 형식으로 표기된 경로는 위 규칙으로 치환되어 사용된다. `<entry>` = `.` 인 경우 `./lib/...` 또는 단순히 `lib/...`.
@@ -100,9 +100,15 @@ argument-hint: "<free-form text containing target feature + design source>"
 
 위 "$ARGUMENTS Parsing" 규칙으로 feature + 디자인 소스를 추출. 모호하면 즉시 halt + AskUserQuestion.
 
+feature가 확정되면 작업 전 상태를 기록한다 — 8단계 범위 검사에서 이미 있던 변경과 구분하기 위해서다:
+
+```bash
+mkdir -p /tmp/redesign_<feature> && git status --porcelain --untracked-files=all > /tmp/redesign_<feature>/before.txt
+```
+
 ### 2. Mandatory Docs 로드
 
-위 `@` eager imports로 자동 로드. import 제약 위반은 9단계 `dart analyze`에서 확인한다.
+위 "Mandatory Docs"를 Read로 읽는다. leaf-kit 프로젝트면 `docs/CONVENTIONS.md`가 안내하는 leaf-kit `llms.txt`에서 쓸 컴포넌트·토큰 문서를 찾아 읽는다 (API를 기억으로 쓰지 않는다).
 
 ### 3. 계약 읽기 (수정 금지)
 
@@ -121,7 +127,7 @@ Event = UI에서 dispatch 가능한 액션.
 
 ### 5. 디자인 소스 fetch
 
-다운로드 데이터는 소스 종류별로 `/tmp/<source>_<feature>/` 디렉토리에 저장한다 (없으면 `mkdir -p`로 생성). 저장 경로는 9단계 보고서에 surface된다.
+다운로드 데이터는 세션 scratchpad 디렉토리(없으면 `/tmp`) 아래 `<source>_<feature>/`에 저장한다 (없으면 `mkdir -p`로 생성). 아래 `/tmp/...` 표기는 이 위치를 뜻한다. 저장 경로는 9단계 보고서에 surface된다.
 
 - Stitch: `mcp__stitch__get_project` + `mcp__stitch__get_screen` 호출. 결과를 `/tmp/stitch_<feature>/`에 저장.
   - 스크린샷(PNG): `/tmp/stitch_<feature>/<feature>.png` — `curl -L -o`로 hosted image URL 다운로드
@@ -168,7 +174,7 @@ AskUserQuestion으로 옵션 제시: ["진행", "수정 요청", "취소"].
 
 현재 BLoC/도메인/디자인 토큰으로 표현 불가능한 부분은 위 "Markers" 섹션의 컨벤션으로 마커를 남기고 진행한다. 빈 콜백·더미값·임시 hex에 마커 누락 금지.
 
-### 8. 검증 (1단계)
+### 8. 검증
 
 `<entry>` 디렉토리에서 dart analyze 실행:
 
@@ -183,13 +189,13 @@ dart analyze
 - 에러 0이 되어야 통과.
 - architecture lint 위반(레이어 import 제약 등)이 나오면 즉시 수정 후 재실행. 자동 수정 불가능하면 halt + 사용자 보고.
 
-이어서 변경 범위 검사:
+이어서 변경 범위 검사 — 0단계에서 기록한 상태와 비교해 이번 작업으로 생긴 변경만 본다 (새 파일 포함):
 
 ```bash
-git diff --name-only
+git status --porcelain --untracked-files=all | diff /tmp/redesign_<feature>/before.txt - | grep '^>'
 ```
 
-- 결과는 모두 `<entry>/lib/features/<feature>/presentation/(pages|views|widgets)/` 아래여야 한다.
+- 새로 생긴 줄은 모두 `<entry>/lib/features/<feature>/presentation/(pages|views|widgets)/` 아래여야 한다.
 - 다른 경로가 보이면 halt + AskUserQuestion: "범위 밖 변경 — 어떻게 처리할까요?" 옵션 ["롤백", "사용자 검토 후 결정"].
 
 ### 9. 보고서 출력
@@ -224,16 +230,16 @@ dart analyze: 0 errors, 0 warnings
 
 진짜 halt는 disambiguation·fetch 실패·자동 수정 불가 케이스만. BLoC/토큰 부족은 marker 삽입 후 자동 진행.
 
-| 조건 | 처리 |
-|---|---|
-| feature 키워드 모호 / glob 결과 0개 또는 다중 | **halt** + AskUserQuestion (후보 리스트) |
-| 디자인 소스 fetch 실패 | **halt** + "Stitch/Figma fetch 실패: <error>. 재시도 또는 다른 소스?" |
-| `dart analyze` 에러를 자동 수정 불가 | **halt** + 에러 원문 제시 |
-| `git diff`에 범위 밖 파일 존재 | **halt** + "범위 밖 변경: <파일 리스트>. 롤백할까요?" |
-| 새 BLoC Event 필요 | `// TODO(bloc):` 마커 + 빈 콜백, 진행 |
-| 새 BLoC State 필드 필요 | `// TODO(bloc):` 마커 + 더미값/생략 처리, 진행 |
-| 새 공용 위젯 필요 | feature/widgets에 생성 + `// NOTE(scope): common 승격 후보`, 진행 |
-| Theme 토큰 변경 필요 | `// FIXME(design):` 마커 + 임시값, 진행 |
+| 조건                                          | 처리                                                                  |
+| --------------------------------------------- | --------------------------------------------------------------------- |
+| feature 키워드 모호 / glob 결과 0개 또는 다중 | **halt** + AskUserQuestion (후보 리스트)                              |
+| 디자인 소스 fetch 실패                        | **halt** + "Stitch/Figma fetch 실패: <error>. 재시도 또는 다른 소스?" |
+| `dart analyze` 에러를 자동 수정 불가          | **halt** + 에러 원문 제시                                             |
+| 범위 검사에 범위 밖 파일 존재                 | **halt** + "범위 밖 변경: <파일 리스트>. 롤백할까요?"                 |
+| 새 BLoC Event 필요                            | `// TODO(bloc):` 마커 + 빈 콜백, 진행                                 |
+| 새 BLoC State 필드 필요                       | `// TODO(bloc):` 마커 + 더미값/생략 처리, 진행                        |
+| 새 공용 위젯 필요                             | feature/widgets에 생성 + `// NOTE(scope): common 승격 후보`, 진행     |
+| Theme 토큰 변경 필요                          | `// FIXME(design):` 마커 + 임시값, 진행                               |
 
 ## Usage Examples
 

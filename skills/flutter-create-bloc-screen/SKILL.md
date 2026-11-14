@@ -11,29 +11,30 @@ Generates new Screen files along with BLoC files in a Flutter project.
 ## Arguments
 
 - First value of `$ARGUMENTS`: Screen name (required, e.g. Login, Settings)
-- `-entry <dir>`: Entry directory (optional, e.g. `-entry app`). Defaults to `lib/features/...` if omitted.
+- `-entry <dir>`: Entry directory override (optional, e.g. `-entry app`). If omitted, resolved as described in Workflow step 1.
 - `-path <dir>`: Parent feature path (optional, e.g. `-path user`, `-path account`). The screen name (snake_case) is automatically appended under this path.
 
 ## Workflow
 
-1. **Parse arguments**: Extract Screen name, `-entry` option, and `-path` option from `$ARGUMENTS`
-   - If `-entry app` is present, set entry directory to `app`
-   - If `-entry` is absent, use `lib/features/...` as base path
+1. **Parse arguments and resolve entry**: Extract Screen name, `-entry`, and `-path` from `$ARGUMENTS`.
+   - `{entry}` = `-entry` value if given; otherwise `entryDir` from `kelo.yaml`; otherwise `app` if `app/lib/` exists, else `.` (project root).
    - If `-path <dir>` is present, use it as parent directory (screen name is appended automatically)
+   - **Preconditions** — templates import `flutter_leaf_kit` and `freezed_annotation`. Check `{entry}/pubspec.yaml` has both `flutter_leaf_kit` and `freezed` dependencies; if either is missing, stop and tell the user (this skill targets the leaf-kit + freezed stacks).
 2. **Determine path**:
    - `{feature_dir}` = `{path_value}/{screen_name_snake_case}` if `-path` is provided, otherwise `{screen_name_snake_case}`
    - Final path: `{entry}/lib/features/{feature_dir}/presentation/pages`
    - Example (with -path): `Settings -entry app -path user` → `app/lib/features/user/settings/presentation/pages/settings_screen.dart`
    - Example (no -path): `Login -entry app` → `app/lib/features/login/presentation/pages/login_screen.dart`
-   - Example (no entry): `Login` → `lib/features/login/presentation/pages/login_screen.dart`
+   - Example (entry `.`): `Login` → `lib/features/login/presentation/pages/login_screen.dart`
 3. **Determine views path**:
    - Create views folder under the presentation folder
    - Example: `{entry}/lib/features/{feature_path}/presentation/views/`
 4. **Determine BLoC path**:
    - Create bloc folder under the presentation folder (sibling of pages)
    - Example: `{entry}/lib/features/{feature_path}/presentation/bloc/`
-5. **Resolve package name**: Read `<entry>/pubspec.yaml` (or `pubspec.yaml` if no entry) and extract the `name:` field as `<package>`. This is required for emitting `package:` imports per `always_use_package_imports` lint.
+5. **Resolve package name**: Read `{entry}/pubspec.yaml` and extract the `name:` field as `<package>`. This is required for emitting `package:` imports per `always_use_package_imports` lint.
 6. **Generate templates**: Generate template code with the following commands. `<feature_dir>` = `{path_value}/{screen_name_snake_case}` if `-path` provided, otherwise `{screen_name_snake_case}`.
+
    ```bash
    # Screen template (package imports)
    cd ${CLAUDE_PLUGIN_ROOT} && node scripts/flutter/template/flutter-screen-template.mjs <ScreenName> --package <package> --feature-dir <feature_dir>
@@ -47,6 +48,7 @@ Generates new Screen files along with BLoC files in a Flutter project.
    cd ${CLAUDE_PLUGIN_ROOT} && node scripts/flutter/template/flutter-bloc-template.mjs <ScreenName> event
    cd ${CLAUDE_PLUGIN_ROOT} && node scripts/flutter/template/flutter-bloc-template.mjs <ScreenName> state
    ```
+
 7. **Generate filenames**: Convert Screen name to snake_case
 8. **Create directories**: Create directories with mkdir -p if they don't exist
 9. **Save files**: Create files at the specified paths
@@ -54,8 +56,9 @@ Generates new Screen files along with BLoC files in a Flutter project.
     ```bash
     (cd {entry} && dart run build_runner build --delete-conflicting-outputs)
     ```
-    - If no entry, run in the current directory
-11. **Register DI**: Add BLoC registration to `{entry}/lib/di/injection_container.dart`
+
+    - If `{entry}` is `.`, run in the project root
+11. **Register DI**: Add BLoC registration to `{entry}/lib/di/injection_container.dart` (created by `/kelo:flutter-app-scaffold`; if the file does not exist, skip this step and report it)
     - Generate DI registration template:
       ```bash
       cd ${CLAUDE_PLUGIN_ROOT} && node scripts/flutter/template/flutter-di-template.mjs <ScreenName> <feature_dir> --package <package>
@@ -63,9 +66,10 @@ Generates new Screen files along with BLoC files in a Flutter project.
     - Add the import at the top of the file (with other BLoC imports). Use `package:<package>/...` form to satisfy `always_use_package_imports`.
     - Add `sl.registerFactory({ScreenName}Bloc.new);` in the `// BLoCs` section of `setupDependencies()` (tearoff form — avoids `unnecessary_lambdas`).
     - If the BLoC already exists in DI, confirm with the user before proceeding (use AskUserQuestion with options: ["Yes, overwrite", "No, skip"])
-12. **Register route**: Add route to `{entry}/lib/router/router.dart`
+12. **Register route**: Add route to `{entry}/lib/router/router.dart` (if the file does not exist, skip this step and report it)
     - Ask the user whether to use NoTransitionPage before adding the route (use AskUserQuestion with options: ["Yes", "No"])
     - Generate route template:
+
       ```bash
       # Default (using builder)
       cd ${CLAUDE_PLUGIN_ROOT} && node scripts/flutter/template/flutter-route-template.mjs <ScreenName> <path>
@@ -73,9 +77,11 @@ Generates new Screen files along with BLoC files in a Flutter project.
       # NoTransitionPage wrapping (using pageBuilder)
       cd ${CLAUDE_PLUGIN_ROOT} && node scripts/flutter/template/flutter-route-template.mjs <ScreenName> <path> -nt
       ```
+
     - `<path>` rule:
-      - If `-path` is provided: Use `/{path_value}/{screen_name_snake_case}` as route path (e.g. `-path user` + `Settings` → `/user/settings`)
-      - If `-path` is absent: Append `/` to the snake_case of the Screen name (e.g. `Login` → `/login`, `UserSettings` → `/user-settings`)
+      - Route segments use kebab-case of the Screen name (URL convention; file names stay snake_case)
+      - If `-path` is provided: `/{path_value}/{screen_name_kebab_case}` (e.g. `-path user` + `Settings` → `/user/settings`, `-path user` + `NotificationSettings` → `/user/notification-settings`)
+      - If `-path` is absent: `/{screen_name_kebab_case}` (e.g. `Login` → `/login`, `UserSettings` → `/user-settings`)
       - Exception: Use `/` for the first route (home)
     - Insert generated code inside the `routes: <RouteBase>[...]` array (append after existing routes)
     - Add required imports to router.dart (use `package:` form to satisfy `always_use_package_imports`):
@@ -89,6 +95,7 @@ Generates new Screen files along with BLoC files in a Flutter project.
 ## Generated Files
 
 When running `/flutter-create-bloc-screen Login -entry app`:
+
 ```
 app/lib/features/login/presentation/
 ├── bloc/
@@ -104,6 +111,7 @@ app/lib/features/login/presentation/
 ```
 
 When running `/flutter-create-bloc-screen Settings -entry app -path user`:
+
 ```
 app/lib/features/user/settings/presentation/
 ├── bloc/
@@ -138,7 +146,7 @@ app/lib/features/user/settings/presentation/
 → Route path: /login
 
 /flutter-create-bloc-screen Login
-→ Create lib/features/login/presentation/pages/login_screen.dart (no entry)
+→ Create {entryDir}/lib/features/login/presentation/pages/login_screen.dart (entry from kelo.yaml)
 → Create lib/features/login/presentation/bloc/login_bloc.dart
 → ...
 
@@ -163,8 +171,6 @@ app/lib/features/user/settings/presentation/
 
 ## Notes
 
-- If `-entry` is absent, uses default path `lib/features/{feature_dir}/presentation/pages`
-- If `-entry app`, uses default path `app/lib/features/{feature_dir}/presentation/pages`
 - `{feature_dir}` = `{path_value}/{screen_name_snake_case}` if `-path` provided, otherwise `{screen_name_snake_case}`
 - `-path` supports nested directories (e.g. `-path user`, `-path account/sub`)
 - Creates directories first if the path doesn't exist

@@ -120,16 +120,15 @@ node scripts/kelo.mjs setup    -p <dir> [--dry-run] [--no-install] [--move-app]
 | Command                            | Description                                           |
 | ---------------------------------- | ----------------------------------------------------- |
 | `/kelo:flutter-create-bloc-screen` | Screen + BLoC + View + DI + Route 보일러플레이트 생성 |
-| `/kelo:flutter-design`             | 프로덕션급 UI 디자인 (LeafTheme + Atomic Design)      |
+| `/kelo:flutter-design`             | 새 화면·위젯 디자인 컨셉 (+ `--plan` 구현 계획)       |
 | `/kelo:flutter-openapi-gen`        | OpenAPI 3.x → BuiltValue 모델 + Dio 서비스 코드 생성  |
 | `/kelo:flutter-create-package`     | 모노레포 워크스페이스 패키지 생성                     |
 
 ### Flutter — Quality
 
-| Command                   | Description                             |
-| ------------------------- | --------------------------------------- |
-| `/kelo:flutter-build-fix` | 빌드/분석 에러 점진적 수정              |
-| `/kelo:check-conventions` | CONVENTIONS.md 기반 변경 파일 규칙 검증 |
+| Command                   | Description                |
+| ------------------------- | -------------------------- |
+| `/kelo:flutter-build-fix` | 빌드/분석 에러 점진적 수정 |
 
 ### Flutter — Build & Deploy
 
@@ -151,6 +150,7 @@ node scripts/kelo.mjs setup    -p <dir> [--dry-run] [--no-install] [--move-app]
 | Command                   | Description                                         |
 | ------------------------- | --------------------------------------------------- |
 | `/kelo:commit`            | 변경 분석 → 한국어 커밋 메시지 자동 생성 (3개 후보) |
+| `/kelo:check-conventions` | 브랜치 변경 파일을 CONVENTIONS.md 팀 결정과 대조    |
 | `/kelo:typeorm-migration` | TypeORM 마이그레이션 SQL 생성 (dev/prod 분리)       |
 | `/kelo:update-plugin-ref` | `flutter_leaf_kit` git ref 일괄 업데이트            |
 
@@ -242,33 +242,3 @@ NestJS 소비 프로젝트의 `package.json`에 `kelo-rules` 객체를 두면 �
 | `pathAliasCheck` | `true` | 모든 레이어에서 상대 parent import(`../**`) 차단 룰 OFF — `@/*` path alias 강제 해제 |
 
 > 옵션을 추가하지 않거나 객체 자체를 두지 않으면 모든 검사가 활성된 기본값으로 동작합니다.
-
-## ESLint 메시지 포매터 (Next.js / NestJS)
-
-`boundaries/no-unknown-files`, `boundaries/no-unknown-dependencies` 등 일부 룰의 기본 에러 메시지를
-프로젝트 컨텍스트에 맞는 가이드 문구(대응 순서, 참조 문서 링크)로 재작성한 뒤
-ESLint 기본 `stylish` formatter로 렌더링합니다. 그 외 룰 메시지는 원본 그대로 통과합니다.
-
-프로젝트 `package.json` lint 스크립트에 `--format` 지정:
-
-**Next.js**
-
-```json
-{
-  "scripts": {
-    "lint": "eslint --format eslint-config-kelo-nextjs/formatter ."
-  }
-}
-```
-
-**NestJS**
-
-```json
-{
-  "scripts": {
-    "lint": "eslint --format eslint-config-kelo-nestjs/formatter ."
-  }
-}
-```
-
-메시지를 추가/변경하려면 해당 포매터 파일의 `MESSAGE_OVERRIDES` 맵에 룰 ID를 키로 추가합니다.

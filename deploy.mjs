@@ -3,7 +3,7 @@
 // Bumps the plugin version, commits, tags, and pushes in one shot.
 //
 // Usage:
-//   deploy.mjs [<version>|patch|minor|major] [--yes] [--otp <code>] [--no-publish] [--no-release]
+//   deploy.mjs [<version>|patch|minor|major] [--yes] [--no-publish] [--no-release]
 // =============================================================================
 
 import { execFileSync, spawnSync } from "node:child_process";
@@ -14,7 +14,7 @@ import process from "node:process";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 
-const HELP = `Usage: ./deploy.mjs [<version>|patch|minor|major] [--yes] [--otp <code>] [--no-publish] [--no-release]
+const HELP = `Usage: ./deploy.mjs [<version>|patch|minor|major] [--yes] [--no-publish] [--no-release]
 
 Bumps the plugin version, commits, tags, pushes, publishes the ESLint config
 packages to the npm registry, and creates the GitHub Release in one shot.
@@ -35,7 +35,8 @@ Updates:
 Then:
   - git add + commit "chore: 버전 <new> 범프"
   - git tag v<new>
-  - npm publish ./rules/nextjs, ./rules/nestjs → npm registry (needs 'npm login')
+  - npm publish ./rules/nextjs, ./rules/nestjs → npm registry (needs 'npm login';
+    with npm 2FA, each publish opens browser authentication — run in a regular terminal)
   - git push origin <branch> --follow-tags   (after publish — on failure the remote is untouched)
   - npm pack ./rules/nextjs, ./rules/nestjs → GitHub Release v<new> assets (gh)
 
@@ -47,9 +48,6 @@ Arguments:
 
 Options:
   --yes, -y     Skip confirmation prompt
-  --otp <code>  npm 2FA one-time password, passed to every npm publish.
-                Required when npm 2FA covers writes and stdin is not a TTY
-                (e.g. Claude Code '!' commands) — npm can't prompt there.
   --no-publish  Skip npm publish
   --no-release  Skip the GitHub Release
   -h, --help Show this help
@@ -59,7 +57,6 @@ Examples:
   ./deploy.mjs patch
   ./deploy.mjs 0.1.28
   ./deploy.mjs minor --yes
-  ./deploy.mjs patch --yes --otp 123456
 `;
 
 function usage(code = 1) {
@@ -72,7 +69,6 @@ function parseArgs(argv) {
     bump: "patch",
     explicitVersion: "",
     yes: false,
-    otp: "",
     publish: true,
     release: true,
   };
@@ -89,13 +85,6 @@ function parseArgs(argv) {
       case "--yes":
       case "-y":
         args.yes = true;
-        break;
-      case "--otp":
-        args.otp = rest.shift() ?? "";
-        if (!/^\d{6,8}$/.test(args.otp)) {
-          process.stderr.write("Error: --otp needs a 6-8 digit code\n");
-          usage();
-        }
         break;
       case "--no-publish":
         args.publish = false;
@@ -301,9 +290,9 @@ async function main() {
       process.exit(1);
     }
     process.stdout.write(`npm user:        ${who.stdout.trim()}\n`);
-    // 2FA가 쓰기에 걸려 있으면 npm이 OTP(또는 브라우저 인증)를 대화형으로 받는다.
-    // stdin이 TTY가 아니면 npm이 기다리지 못하고 EOTP로 끝나므로 시작 전에 막는다.
-    if (!args.otp && !process.stdin.isTTY) {
+    // 2FA가 쓰기에 걸려 있으면 publish마다 npm이 브라우저 인증을 띄우고 대화형으로 기다린다.
+    // stdin이 TTY가 아니면 기다리지 못하고 EOTP로 끝나므로 시작 전에 막는다.
+    if (!process.stdin.isTTY) {
       const profile = spawnSync("npm", ["profile", "get", "--json"], {
         encoding: "utf-8",
       });
@@ -315,8 +304,8 @@ async function main() {
       }
       if (tfaMode === "auth-and-writes") {
         process.stderr.write(
-          "Error: npm 2FA가 publish에 필요하지만 stdin이 TTY가 아니라 npm이 OTP를 물을 수 없습니다.\n" +
-            "       일반 터미널에서 실행하거나 --otp <code>를 넘기세요.\n",
+          "Error: npm 2FA가 publish에 필요하지만 stdin이 TTY가 아니라 브라우저 인증을 기다릴 수 없습니다.\n" +
+            "       일반 터미널에서 실행하세요 (publish마다 브라우저 인증 창이 열립니다).\n",
         );
         process.exit(1);
       }
@@ -406,7 +395,7 @@ async function main() {
   process.stdout.write(`  11. git tag ${tag}\n`);
   process.stdout.write(
     args.publish
-      ? `  12. npm publish ${npmPackageDirs.map((d) => `./${d}`).join(", ")}${args.otp ? " (--otp)" : ""}\n`
+      ? `  12. npm publish ${npmPackageDirs.map((d) => `./${d}`).join(", ")}\n`
       : "  12. npm publish (skipped: --no-publish)\n",
   );
   process.stdout.write(`  13. git push origin ${branch} --follow-tags\n`);
@@ -463,16 +452,10 @@ async function main() {
     const published = [];
     for (const dir of npmPackageDirs) {
       process.stdout.write(`\nPublishing ./${dir} to npm...\n`);
-      // stdio inherit — 2FA OTP 입력이 필요하면 npm이 직접 묻는다 (--otp면 그대로 전달)
+      // stdio inherit — 2FA면 npm이 브라우저 인증 URL을 띄우고 완료될 때까지 기다린다
       const r = spawnSync(
         "npm",
-        [
-          "publish",
-          `./${dir}`,
-          "--access",
-          "public",
-          ...(args.otp ? [`--otp=${args.otp}`] : []),
-        ],
+        ["publish", `./${dir}`, "--access", "public"],
         {
           stdio: "inherit",
         },

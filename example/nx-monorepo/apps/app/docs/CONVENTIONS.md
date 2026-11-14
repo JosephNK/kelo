@@ -63,7 +63,7 @@
 
 ### 컴포넌트
 
-- 레이아웃·제스처 위젯(`Container`/`Row`/`Column`/`Stack`/`Padding`/`SizedBox`/`GestureDetector` 등)은 Flutter 기본, 그 외 시각 컴포넌트는 Leaf 컴포넌트 우선 (예: `Text` 대신 `LeafText('Hello', style: context.leafTypography.bodyLg)`).
+- 레이아웃·제스처 위젯(`Container`/`Row`/`Column`/`Stack`/`Padding`/`SizedBox`/`GestureDetector` 등)은 Flutter 기본, 그 외 시각 컴포넌트는 Leaf 컴포넌트 우선 (예: `Text` 대신 `LeafText('Hello', style: context.leafTypography.bodyLarge)`).
 - 색·타이포는 항상 `context.leafColors` / `context.leafTypography`. Leaf에 없는 컴포넌트만 Flutter 기본·외부 패키지를 쓴다.
 
 ### Network (Remote API를 쓸 때)

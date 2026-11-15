@@ -36,9 +36,10 @@ const PACKAGE_MANAGERS = ["npm", "yarn", "pnpm", "bun"];
 const DOCS = ["docs/ARCHITECTURE.md", "docs/CONVENTIONS.md"];
 
 const PROJECT_KEYS = ["framework", "name", "stacks", "agents", "entryDir"];
-const SINGLE_KEYS = [...PROJECT_KEYS, "packageManager"];
+// orchestration은 루트 설정이다 (.claude/는 세션을 시작하는 디렉터리 기준) — 워크스페이스 항목에는 없다
+const SINGLE_KEYS = [...PROJECT_KEYS, "packageManager", "orchestration"];
 const WORKSPACE_KEYS = ["path", ...PROJECT_KEYS];
-const ROOT_WS_KEYS = ["packageManager", "workspaces"];
+const ROOT_WS_KEYS = ["packageManager", "orchestration", "workspaces"];
 
 const HELP = `Usage:
   kelo.mjs detect   [-p <dir>]
@@ -126,6 +127,29 @@ function normalizeProject(where, raw, dir) {
   };
 }
 
+// kelo.yaml orchestration → gen-orchestration.mjs 인자 (없으면 null = 아무것도 안 함).
+// 기본 모델은 gen-orchestration.mjs가 정한다 — 여기서 모델 ID를 중복하지 않는다.
+function normalizeOrchestration(where, value) {
+  if (value === undefined) return null;
+  if (value === true) return [];
+  if (value === false) return ["--remove"];
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new KeloError(
+      `${where}: orchestration은 true/false 또는 { model } 객체여야 합니다`,
+    );
+  }
+  assertKeys(`${where} orchestration`, value, ["model"]);
+  const { model } = value;
+  if (model === undefined) return [];
+  if (model === false) return ["--no-model"];
+  if (typeof model !== "string" || !model.trim()) {
+    throw new KeloError(
+      `${where}: orchestration.model은 비어 있지 않은 문자열 또는 false여야 합니다`,
+    );
+  }
+  return ["--model", model];
+}
+
 function loadConfig(root) {
   const file = path.join(root, CONFIG_FILE);
   if (!fs.existsSync(file)) {
@@ -162,6 +186,7 @@ function loadConfig(root) {
       mode: "workspaces",
       root,
       packageManager: raw.packageManager,
+      orchestration: normalizeOrchestration(file, raw.orchestration),
       workspaces,
     };
   }
@@ -171,6 +196,7 @@ function loadConfig(root) {
     mode: "single",
     root,
     packageManager: raw.packageManager,
+    orchestration: normalizeOrchestration(file, raw.orchestration),
     workspaces: [{ ...normalizeProject(file, raw, root), path: "." }],
   };
 }
@@ -589,8 +615,26 @@ function setup(root, { dryRun, moveApp, noInstall, analysisPath }) {
     const project = config.workspaces[0];
     for (const step of loadPipeline(project.framework))
       runner.runStep(step, project, project.framework);
-    return;
+  } else {
+    setupWorkspaces(runner, config);
   }
+  applyOrchestration(runner, config);
+}
+
+// 프레임워크와 무관한 루트 설정이라 pipeline 단계가 아니다 — 모든 단계 뒤 루트에서 한 번
+function applyOrchestration(runner, config) {
+  if (!config.orchestration) return;
+  const args = ["-p", ".", ...config.orchestration];
+  runner.log("root", `gen-orchestration.mjs ${args.join(" ")}`);
+  runner.spawn(
+    process.execPath,
+    [path.join(PLUGIN_ROOT, "scripts", "gen-orchestration.mjs"), ...args],
+    config.root,
+  );
+}
+
+function setupWorkspaces(runner, config) {
+  const { root } = config;
 
   // 모노레포: [워크스페이스별 install 이전 단계] → [루트 단계 + install] → [워크스페이스별 install 이후 단계]
   const plans = config.workspaces.map((ws) => {

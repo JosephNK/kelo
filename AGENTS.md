@@ -34,6 +34,7 @@ class AlS1FileSizeLint extends DartLint { ... }
 - `scripts/kelo.mjs` — 실행기 (`detect` / `validate` / `setup`). 소비 프로젝트 `kelo.yaml`을 읽는다.
 - `rules/<fw>/stacks.yaml` — 스택 정의. 스택이 기여하는 산출물은 `rules/<fw>/<stack>/`의 파일 존재로 정해진다.
 - `rules/<fw>/pipeline.yaml` — 실행 단계와 순서.
+- `kelo.yaml`의 `orchestration`(루트 키)은 pipeline 단계가 아니다 — `setup()`이 모든 단계 뒤 루트에서 `scripts/gen-orchestration.mjs`를 실행한다.
 - 생성 스크립트는 상대 경로를 `PWD` 기준으로 푼다 — 하위 프로세스에 `PWD`를 cwd로 넘길 것.
 
 ## example 검증

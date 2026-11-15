@@ -16,5 +16,9 @@
   ],
   "commands": [
     "./commands/"
+  ],
+  "agents": [
+    "./agents/implementer.md",
+    "./agents/verifier.md"
   ]
 }

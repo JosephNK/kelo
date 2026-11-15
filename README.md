@@ -83,9 +83,11 @@ stacks: [tanstack-query]
 agents: true             # AGENTS.md + CLAUDE.md 생성 (기본 true)
 packageManager: pnpm     # 생략하면 매번 감지
 # entryDir: app          # flutter만 (기본 app)
+# orchestration: true    # 오케스트레이션 모드 (아래 참고, 기본: 생략 = 사용 안 함)
 
 # 모노레포 — 루트 kelo.yaml
 packageManager: pnpm
+# orchestration: { model: opus }   # 루트에만 둘 수 있음
 workspaces:
   - path: apps/web
     framework: nextjs
@@ -96,6 +98,20 @@ workspaces:
 ```
 
 모노레포에서는 워크스페이스별 생성 → 루트에서 install 한 번 → 워크스페이스별 후속 단계 순으로 실행하고, 루트 `.husky/`·`commitlint.config.mjs`는 없을 때만 만듭니다.
+
+### 오케스트레이션 모드 (`orchestration`)
+
+메인 세션은 분석·설계만 하고 구현은 `kelo:implementer`, 검증은 `kelo:verifier`(플러그인 포함 서브에이전트)에 위임합니다. setup이 모든 단계 뒤 루트에서 `scripts/gen-orchestration.mjs`를 실행해 `.claude/rules/kelo-orchestration.md`를 쓰고 `.claude/settings.json`의 `model` 키만 설정합니다 (나머지 키 보존). `.claude/`는 세션을 시작하는 디렉터리 기준이라 모노레포에서도 루트 키입니다.
+
+| 값                 | 효과                                                           |
+| ------------------ | -------------------------------------------------------------- |
+| (생략)             | 아무것도 하지 않음                                             |
+| `true` 또는 `{}`   | 사용, 메인 모델은 기본값(`claude-fable-5-2`)                   |
+| `{ model: opus }`  | 사용, 메인 모델 지정 (별칭 또는 풀 ID)                         |
+| `{ model: false }` | 규칙 파일만 — `settings.json`은 건드리지 않음                  |
+| `false`            | 해제 — 규칙 파일 삭제, setup이 쓴 `model`이면 이전 값으로 복원 |
+
+새 세션부터 적용되며, `/model`·`claude --model`·`ANTHROPIC_MODEL`이 settings의 `model`보다 우선합니다.
 
 setup 후 `node scripts/kelo.mjs doctor -p <프로젝트>`로 워크스페이스별 lint 요약(오류·경고·경계 위반 수, 상위 규칙, 미분류 파일을 폴더별로 묶고 옮길 위치 제안)을 봅니다. `--json`으로 기계 출력. 제안은 `rules/<framework>/doctor.yaml`의 힌트이며 파일을 옮기지는 않습니다.
 
@@ -171,6 +187,10 @@ node scripts/kelo.mjs setup    -p <dir> [--dry-run] [--no-install] [--move-app]
 
 # Commitlint config (Conventional Commits + 프로젝트 허용 타입)
 ./scripts/gen-commitlint.mjs -p /path/to/project
+
+# Orchestration mode (.claude/rules/kelo-orchestration.md + settings.json model)
+./scripts/gen-orchestration.mjs -p /path/to/project [--model <id> | --no-model]
+./scripts/gen-orchestration.mjs -p /path/to/project --remove
 
 # TypeScript (Next.js / NestJS)
 ./scripts/typescript/gen-eslint.mjs <framework> -p /path/to/project

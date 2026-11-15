@@ -123,6 +123,23 @@ test("gen: --model --remove, --model ''는 오류이며 아무것도 쓰지 않�
   }
 });
 
+test("gen: --remove는 비게 된 .claude/rules/를 지우고 .claude/는 남긴다", () => {
+  const dir = project();
+  assert.equal(gen(dir, "--no-model").code, 0);
+  const r = gen(dir, "--remove");
+  assert.equal(r.code, 0, r.err);
+  assert.equal(exists(dir, ".claude/rules"), false);
+  assert.ok(exists(dir, ".claude"));
+});
+
+test("gen: --remove는 다른 파일이 있는 .claude/rules/를 남긴다", () => {
+  const dir = project({ ".claude/rules/other.md": "x\n" });
+  assert.equal(gen(dir, "--no-model").code, 0);
+  assert.equal(gen(dir, "--remove").code, 0);
+  assert.equal(exists(dir, RULE), false);
+  assert.equal(read(dir, ".claude/rules/other.md"), "x\n");
+});
+
 test("gen: 잘못된 settings.json이면 아무것도 쓰지 않고 실패한다", () => {
   const dir = project({ [SETTINGS]: "{ not json" });
   const r = gen(dir);
@@ -161,6 +178,11 @@ for (const [value, message] of [
   ["orchestration: { model: 1 }", /orchestration\.model/],
   ["orchestration: { foo: 1 }", /알 수 없는 키 foo/],
   ['orchestration: "yes"', /orchestration은 true\/false/],
+  ["orchestration: 1", /orchestration은 true\/false/],
+  ["orchestration: []", /orchestration은 true\/false/],
+  ["orchestration: { model: true }", /orchestration\.model/],
+  ['orchestration: { model: "-x" }', /orchestration\.model/],
+  ['orchestration: { model: " opus" }', /orchestration\.model/],
 ]) {
   test(`validate 거부: ${value}`, () => {
     const dir = keloProject(value);
@@ -198,6 +220,24 @@ test("setup --dry-run: orchestration 단계를 출력만 하고 .claude/는 만�
   assert.equal(exists(dir, ".claude"), false);
 });
 
+for (const [value, args] of [
+  ["orchestration: true", "-p ."],
+  ["orchestration: {}", "-p ."],
+  ["orchestration: { model: false }", "-p . --no-model"],
+  ["orchestration: false", "-p . --remove"],
+  ["orchestration: { model: sonnet }", "-p . --model sonnet"],
+]) {
+  test(`setup --dry-run 인자: ${value} → ${args}`, () => {
+    const dir = keloProject(value);
+    const r = run(KELO, ["setup", "-p", ".", "--dry-run"], dir);
+    assert.equal(r.code, 0, r.err);
+    const lines = r.out
+      .split("\n")
+      .filter((l) => l.startsWith("▶ [root] gen-orchestration.mjs"));
+    assert.deepEqual(lines, [`▶ [root] gen-orchestration.mjs ${args}`]);
+  });
+}
+
 test("setup --dry-run: orchestration 키가 없으면 단계도 없다", () => {
   const dir = keloProject("");
   const r = run(KELO, ["setup", "-p", ".", "--dry-run"], dir);
@@ -229,4 +269,57 @@ test("setup --no-install: { model: opus } 적용 → false로 해제", () => {
   assert.match(r.out, /▶ \[root\] gen-orchestration\.mjs -p \. --remove/);
   assert.equal(exists(dir, RULE), false);
   assert.deepEqual(settings(dir), { a: 1, model: "sonnet" });
+});
+
+// orchestration 단계는 정확히 한 번, 모든 pipeline 단계(▶ 줄) 뒤에 온다
+function assertOrchestrationLast(out) {
+  const steps = out.split("\n").filter((l) => l.startsWith("▶ "));
+  const orch = steps.filter((l) => l.includes("gen-orchestration.mjs"));
+  assert.equal(orch.length, 1, out);
+  assert.ok(steps.length > 1, out);
+  assert.equal(steps.at(-1), orch[0], out);
+}
+
+test("setup --no-install(단일): orchestration 단계는 마지막에 한 번", () => {
+  const dir = keloProject("orchestration: { model: opus }");
+  fs.writeFileSync(path.join(dir, "tsconfig.json"), "{}\n");
+  const r = run(KELO, ["setup", "-p", ".", "--no-install"], dir);
+  assert.equal(r.code, 0, r.err);
+  assertOrchestrationLast(r.out);
+  assert.ok(exists(dir, RULE));
+});
+
+test("setup --no-install(모노레포): 규칙 파일은 루트에만, 단계는 마지막에 한 번", () => {
+  const dir = project({
+    "kelo.yaml":
+      "packageManager: npm\norchestration: { model: opus }\nworkspaces:\n  - path: apps/web\n    framework: nextjs\n  - path: apps/api\n    framework: nestjs\n",
+    "package.json":
+      '{"name":"m","version":"1.0.0","private":true,"workspaces":["apps/*"]}\n',
+    "apps/web/package.json": '{"name":"web","version":"1.0.0"}\n',
+    "apps/web/tsconfig.json": "{}\n",
+    "apps/api/package.json": '{"name":"api","version":"1.0.0"}\n',
+    "apps/api/tsconfig.json": "{}\n",
+  });
+  const r = run(KELO, ["setup", "-p", ".", "--no-install"], dir);
+  assert.equal(r.code, 0, r.err);
+  assertOrchestrationLast(r.out);
+  assert.match(r.out, /▶ \[root\] gen-orchestration\.mjs -p \. --model opus\n/);
+  assert.ok(exists(dir, RULE));
+  assert.deepEqual(settings(dir), { model: "opus" });
+  for (const ws of ["apps/web", "apps/api"]) {
+    assert.ok(exists(dir, `${ws}/eslint.config.mjs`), ws);
+    assert.equal(exists(dir, `${ws}/.claude`), false, ws);
+  }
+});
+
+test("setup --no-install: 잘못된 settings.json이면 실패하고 규칙 파일을 쓰지 않는다", () => {
+  const dir = keloProject("orchestration: true");
+  fs.writeFileSync(path.join(dir, "tsconfig.json"), "{}\n");
+  fs.mkdirSync(path.join(dir, ".claude"));
+  fs.writeFileSync(path.join(dir, SETTINGS), "{ not json");
+  const r = run(KELO, ["setup", "-p", ".", "--no-install"], dir);
+  assert.notEqual(r.code, 0);
+  assert.match(r.err, /not valid JSON/);
+  assert.equal(exists(dir, RULE), false);
+  assert.equal(read(dir, SETTINGS), "{ not json");
 });

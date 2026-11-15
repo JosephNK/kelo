@@ -101,7 +101,7 @@ git diff -- '*pubspec.lock' | grep -E '^[-+]    version:' | wc -l
 - `/model`, `claude --model`, `ANTHROPIC_MODEL`이 settings의 `model`보다 우선합니다.
 - `kelo:implementer` / `kelo:verifier`는 플러그인에 포함되어 있고 에이전트 정의의 모델로 실행됩니다.
 - verifier는 `ocr` CLI(`npm i -g @alibaba-group/open-code-review`)가 있으면 OCR delegate 리뷰를 함께 하고, 없으면 그 단계를 건너뜁니다.
-- `orchestration: false`로 바꿔 setup을 다시 실행하면 규칙 파일을 지우고 이전 `model`을 복원합니다.
+- `orchestration: false`로 바꿔 setup을 다시 실행하면 규칙 파일을 지우고, `model`이 setup이 쓴 값 그대로일 때만 이전 값으로 복원합니다 (이전 값이 없었으면 키를 지우고, 그 뒤 바뀐 `model`은 그대로 둡니다).
 
 ## 6. 진단
 

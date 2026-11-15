@@ -142,9 +142,14 @@ function normalizeOrchestration(where, value) {
   const { model } = value;
   if (model === undefined) return [];
   if (model === false) return ["--no-model"];
-  if (typeof model !== "string" || !model.trim()) {
+  if (
+    typeof model !== "string" ||
+    !model.trim() ||
+    model !== model.trim() ||
+    model.startsWith("-")
+  ) {
     throw new KeloError(
-      `${where}: orchestration.model은 비어 있지 않은 문자열 또는 false여야 합니다`,
+      `${where}: orchestration.model은 앞뒤 공백 없이 '-'로 시작하지 않는 비어 있지 않은 문자열 또는 false여야 합니다`,
     );
   }
   return ["--model", model];

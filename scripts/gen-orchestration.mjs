@@ -19,7 +19,8 @@
 // only updates `model`. With --no-model no state is written, but an existing
 // state line is carried over unchanged (settings are not touched).
 //
-// --remove deletes the rule file and, using the state line:
+// --remove deletes the rule file (and .claude/rules/ if that leaves it empty;
+// .claude/ is never removed) and, using the state line:
 //   - settings `model` still equals state.model → restore previousModel in the
 //     same key position, or delete the key if previousModel is null
 //   - settings `model` differs → leave settings alone (changed after setup)
@@ -254,6 +255,9 @@ function remove(outputDir) {
   if (fs.existsSync(ruleFile)) {
     fs.rmSync(ruleFile);
     process.stdout.write(`Removed: ${ruleFile}\n`);
+    // Drop .claude/rules/ only if this left it empty; .claude/ itself stays.
+    const rulesDir = path.dirname(ruleFile);
+    if (fs.readdirSync(rulesDir).length === 0) fs.rmdirSync(rulesDir);
   } else {
     process.stdout.write(`Not found: ${ruleFile}\n`);
   }

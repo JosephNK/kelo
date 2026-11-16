@@ -4,6 +4,8 @@
 // - Next.js/NestJS: `kelo-lint-<fw> --format json` → 오류·경고 수, 경계 위반 수,
 //   상위 규칙, 미분류 파일(local/no-unknown-files)을 폴더별로 묶고
 //   rules/<fw>/doctor.yaml의 힌트로 옮길 위치를 제안한다 (파일은 옮기지 않는다).
+//   tsconfig에 없어 projectService 파싱에 실패한 파일은 원인과 해결 방법을
+//   안내한다 (tsconfig는 고치지 않는다).
 // - Flutter: `dart analyze --format=machine` → 심각도별 수와 상위 코드.
 // =============================================================================
 
@@ -19,6 +21,8 @@ const BOUNDARY_RULES = new Set([
 ]);
 const UNKNOWN_FILE_RULE = "local/no-unknown-files";
 const TOP_N = 5;
+const NOT_IN_PROJECT = "was not found by the project service";
+const SAMPLE_N = 3;
 const DEFAULT_HINT =
   "docs/ARCHITECTURE.md 트리에서 맞는 레이어 위치를 찾으세요";
 
@@ -41,6 +45,36 @@ export function loadHints(pluginRoot, framework) {
   if (!fs.existsSync(file)) return [];
   const { hints = [] } = YAML.parse(fs.readFileSync(file, "utf8")) ?? {};
   return hints.map((h) => ({ ...h, re: globToRegExp(h.match) }));
+}
+
+/**
+ * ruleId 없는 파싱 오류 중 "tsconfig에 없는 파일"(typescript-eslint projectService)을
+ * 요약한다 — 수와 대표 파일 몇 개, tsconfig.spec.json 존재 여부.
+ */
+export function summarizeNotInTsconfig(files, { specTsconfig = false } = {}) {
+  if (!files.length) return undefined;
+  return {
+    count: files.length,
+    samples: files.slice(0, SAMPLE_N),
+    specTsconfig,
+  };
+}
+
+export function isNotInTsconfigMessage(m) {
+  return m.ruleId == null && (m.message ?? "").includes(NOT_IN_PROJECT);
+}
+
+/** summarizeNotInTsconfig 결과 → 사람이 읽을 안내 줄. */
+export function notInTsconfigLines(n) {
+  const more = n.count > n.samples.length ? ", …" : "";
+  return [
+    `  tsconfig에 없는 파일 ${n.count}개 — lint 파싱 실패 (${n.samples.join(", ")}${more})`,
+    "    원인: tsconfig.json이 이 파일을 include하지 않음 (예: exclude에 *.spec.* / *.test.*)",
+    "    해결 1: tsconfig.json의 exclude에서 해당 패턴을 뺀다",
+    n.specTsconfig
+      ? '    해결 2: tsconfig.json에 references: [{ path: "./tsconfig.spec.json" }]를 추가하고 tsconfig.spec.json에 composite: true를 넣는다'
+      : "    해결 2: 테스트용 tsconfig.spec.json을 만들어 tsconfig.json references로 연결한다 (tsconfig.spec.json에 composite: true 필요)",
+  ];
 }
 
 function topCounts(counter) {
@@ -72,6 +106,7 @@ function runEslintProject(project, hints) {
   let boundary = 0;
   const rules = new Map();
   const unknownByDir = new Map();
+  const notInTsconfig = [];
   for (const result of results) {
     const rel = path
       .relative(project.dir, result.filePath)
@@ -80,6 +115,7 @@ function runEslintProject(project, hints) {
     for (const m of result.messages) {
       if (m.severity === 2) errors++;
       else warnings++;
+      if (isNotInTsconfigMessage(m)) notInTsconfig.push(rel);
       const id = m.ruleId ?? "(parse)";
       rules.set(id, (rules.get(id) ?? 0) + 1);
       if (BOUNDARY_RULES.has(id)) boundary++;
@@ -105,6 +141,9 @@ function runEslintProject(project, hints) {
     unknownFiles: unknown.reduce((n, u) => n + u.count, 0),
     topRules: topCounts(rules),
     unknown,
+    notInTsconfig: summarizeNotInTsconfig(notInTsconfig, {
+      specTsconfig: fs.existsSync(path.join(project.dir, "tsconfig.spec.json")),
+    }),
   };
 }
 
@@ -154,6 +193,7 @@ function formatReport(label, project, r) {
     for (const u of r.unknown)
       out.push(`    ${u.dir}/ (${u.count}) → ${u.suggest}`);
   }
+  if (r.notInTsconfig) out.push(...notInTsconfigLines(r.notInTsconfig));
   return out.join("\n");
 }
 

@@ -181,11 +181,18 @@ function main() {
   }
 
   const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, "utf8"));
+  const before = JSON.stringify(tsconfig);
   const dir = path.dirname(tsconfigPath);
 
   for (const pf of patchFiles) {
     const patch = JSON.parse(fs.readFileSync(pf, "utf8"));
     applyPatch(tsconfig, patch, dir);
+  }
+
+  // 값이 그대로면 다시 쓰지 않는다 — 다시 쓰면 prettier가 맞춘 서식(한 줄 배열 등)이 setup마다 풀린다.
+  if (JSON.stringify(tsconfig) === before) {
+    process.stdout.write(`Unchanged: ${tsconfigPath}\n`);
+    return;
   }
 
   fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2) + "\n");

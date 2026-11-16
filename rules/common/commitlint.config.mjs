@@ -10,5 +10,8 @@ export default {
       "always",
       ["feat", "fix", "refactor", "docs", "test", "chore", "perf", "ci"],
     ],
+    // 한국어 커밋은 항목을 한 줄(`- ...`)로 써서 기본 100자를 쉽게 넘는다 — 200자 초과만 막는다.
+    "body-max-line-length": [2, "always", 200],
+    "footer-max-line-length": [2, "always", 200],
   },
 };

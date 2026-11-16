@@ -2,7 +2,8 @@
 // =============================================================================
 // Writes <output-dir>/ARCHITECTURE.md — the project folder tree extracted from
 // rules/<framework>/base/lint-rules-structure-reference.md (generated from the
-// lint boundary elements, so the documented layout is the enforced layout).
+// lint boundary elements, so the documented layout is the enforced layout),
+// plus the layers/rules the project added in <cwd>/kelo.lint.json.
 //
 // Usage:
 //   gen-architecture.mjs <framework> -p <output-dir>
@@ -13,6 +14,10 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import {
+  readProjectLintConfig,
+  renderProjectExtensions,
+} from "./architecture-extensions.mjs";
 import { ensureGitRepo, normalizePath } from "./common.mjs";
 
 const HELP = `Usage: gen-architecture.mjs <framework> -p <output-dir>
@@ -125,6 +130,12 @@ function main() {
   const next = text.indexOf("\n## ", bodyStart);
   const body = text.slice(bodyStart, next < 0 ? undefined : next).trim();
 
+  // 프로젝트 루트(PWD)의 kelo.lint.json 확장 — 기본 트리에는 나오지 않으므로 따로 덧붙인다
+  const projectRoot = process.env.PWD || process.cwd();
+  const extensions = renderProjectExtensions(
+    readProjectLintConfig(projectRoot),
+  );
+
   const outputFile = path.join(outputDir, "ARCHITECTURE.md");
   fs.writeFileSync(
     outputFile,
@@ -137,6 +148,7 @@ function main() {
       "",
       body,
       "",
+      ...(extensions ? [extensions, ""] : []),
     ].join("\n"),
   );
 

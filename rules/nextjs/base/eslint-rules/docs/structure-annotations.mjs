@@ -21,6 +21,10 @@ export const baseStructureAnnotations = {
           { name: "error.tsx", note: "Error boundary ('use client' 필수)" },
           { name: "not-found.tsx", note: "404 페이지 (선택)" },
           {
+            name: "actions.ts",
+            note: "Server Actions ('use server') — `*-actions.ts`도 인정",
+          },
+          {
             name: "_components",
             note: "Page-colocated Client Components ('use client')",
           },

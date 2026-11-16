@@ -28,7 +28,7 @@ test("Next.js: 배열 형태 allow에서 같은/다른 모듈 허용 목록 계�
   // 모듈 레이어가 아닌 from은 기존 형식 (모듈 레이어 대상은 어느 모듈이든)
   assert.match(
     messageFor(nextElements, nextRules, "route-handler"),
-    /route-handler가 import할 수 있는 레이어: domain-error, domain-model, domain-service, http-factory, i18n-config, shared-type\./,
+    /route-handler가 import할 수 있는 레이어: domain-error, domain-model, domain-service, http-factory, i18n-config, lib-shared, lib-shared-barrel, shared-type\./,
   );
   assert.match(
     messageFor(nextElements, nextRules, "http-client"),

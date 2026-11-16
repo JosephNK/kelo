@@ -18,6 +18,7 @@
     │   │   │   ├── [id]/         # Next.js 동적 세그먼트 — 브래킷이 진짜 폴더명. 안의 이름은 가변 (`[id]`, `[slug]`, `[orderId]` 등)
     │   │   │   │   └── page.tsx
     │   │   │   └── page.tsx
+    │   │   ├── actions.ts        # server-action — Server Actions ('use server') — `*-actions.ts`도 인정
     │   │   ├── dictionaries.ts   # dictionary — i18n dictionary loader
     │   │   ├── error.tsx         # Error boundary ('use client' 필수)
     │   │   ├── layout.tsx        # Root layout (Server Component)

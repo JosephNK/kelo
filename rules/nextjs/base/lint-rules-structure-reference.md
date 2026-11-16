@@ -26,6 +26,7 @@
     │   │   │   ├── [id]/         # Next.js 동적 세그먼트 — 브래킷이 진짜 폴더명. 안의 이름은 가변 (`[id]`, `[slug]`, `[orderId]` 등)
     │   │   │   │   └── page.tsx
     │   │   │   └── page.tsx
+    │   │   ├── actions.ts        # server-action — Server Actions ('use server') — `*-actions.ts`도 인정
     │   │   ├── dictionaries.ts   # dictionary — i18n dictionary loader
     │   │   ├── error.tsx         # Error boundary ('use client' 필수)
     │   │   ├── layout.tsx        # Root layout (Server Component)
@@ -113,4 +114,5 @@
 | `page-provider` | `src/app/\[locale\]/**/_providers` | — | 페이지 전용 Provider ([locale] 아래) |
 | `email-template` | `src/email-templates` | — | React Email 등 이메일 템플릿 |
 | `route-handler` | `src/app/**/route.ts` | `full` | API 진입점 (얇은 HTTP 어댑터) |
+| `server-action` | `src/app/**/actions.ts` / `src/app/**/*-actions.ts` | `full` | Server Action 진입점 (얇은 어댑터) |
 | `page` | `src/app` | — | 최상위 페이지 catch-all |

@@ -40,6 +40,15 @@ export const baseCustomRules = defineConfig(
     },
   },
 
+  // src/lib/types: 타입 선언 전용 — 값 export·값 import 등 런타임 코드 경고.
+  // 이 폴더는 boundary 검사에서 제외되므로 런타임 코드를 두면 레이어 우회로가 된다.
+  {
+    files: ["src/lib/types/**/*.{ts,tsx}"],
+    rules: {
+      "local/types-only-file": "warn",
+    },
+  },
+
   // DO NOT REMOVE — Tailwind CSS 차단 룰 보존. 현재 custom-rules/index.mjs 에서
   // 플러그인 rule 등록 자체가 주석 처리되어 있어 활성화하면 "definition not found"
   // 에러가 난다. 함께 활성화하려면 이 블록과 index.mjs 양쪽 주석을 모두 해제.

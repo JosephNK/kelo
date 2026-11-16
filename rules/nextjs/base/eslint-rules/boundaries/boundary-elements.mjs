@@ -115,6 +115,12 @@ export const baseBoundaryElements = [
   { type: "email-template", pattern: ["src/email-templates"] }, // React Email 등 이메일 템플릿
   // Route Handler — Next.js App Router HTTP 엔드포인트 (GET/POST 등 export)
   { type: "route-handler", mode: "full", pattern: ["src/app/**/route.ts"] }, // API 진입점 (얇은 HTTP 어댑터)
+  // Server Action — `'use server'` 함수 모음. Client Component가 호출하는 서버 진입점
+  {
+    type: "server-action",
+    mode: "full",
+    pattern: ["src/app/**/actions.ts", "src/app/**/*-actions.ts"],
+  }, // Server Action 진입점 (얇은 어댑터)
   // Page (catch-all) — 위 패턴에 매칭 안 된 src/app 전부.
   // `fallback: true` — 스택·kelo.lint.json element보다도 뒤에 매칭된다 (orderBoundaryElements).
   { type: "page", pattern: ["src/app"], fallback: true }, // 최상위 페이지 catch-all

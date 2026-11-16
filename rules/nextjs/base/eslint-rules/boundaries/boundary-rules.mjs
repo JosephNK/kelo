@@ -155,6 +155,7 @@ export const baseBoundaryRules = [
       { to: { type: "shared-hook" } },
       { to: { type: "domain-model" } },
       { to: { type: "page-component" } },
+      { to: { type: "server-action" } }, // form action·mutation 호출
       { to: { type: "lib-shared" } },
       { to: { type: "lib-shared-barrel" } },
       { to: { type: "shared-type" } },
@@ -215,8 +216,26 @@ export const baseBoundaryRules = [
       { to: { type: "domain-model" } },
       { to: { type: "domain-error" } },
       { to: { type: "domain-service" } },
+      { to: { type: "lib-shared" } }, // 순수 공용 유틸 (의존 0개라 서버 코드에서도 안전)
+      { to: { type: "lib-shared-barrel" } },
       { to: { type: "shared-type" } },
       { to: { type: "i18n-config" } },
+    ],
+  },
+  {
+    // Server Action (`'use server'`): Route Handler와 같은 얇은 서버 어댑터 — factory로 service를 조립해 호출.
+    // page-component가 import하므로 UI 레이어 import 금지 (서버 코드 경계 위반).
+    from: { type: "server-action" },
+    allow: [
+      { to: { type: "http-factory" } },
+      { to: { type: "domain-model" } },
+      { to: { type: "domain-error" } },
+      { to: { type: "domain-service" } },
+      { to: { type: "lib-shared" } }, // 순수 공용 유틸 (의존 0개라 서버 코드에서도 안전)
+      { to: { type: "lib-shared-barrel" } },
+      { to: { type: "shared-type" } },
+      { to: { type: "i18n-config" } },
+      { to: { type: "server-action" } },
     ],
   },
   {
@@ -232,7 +251,10 @@ export const baseBoundaryRules = [
       { to: { type: "domain-model" } },
       { to: { type: "page-component" } },
       { to: { type: "page-provider" } },
+      { to: { type: "server-action" } }, // <form action> 바인딩
       { to: { type: "shared-ui" } },
+      { to: { type: "lib-shared" } }, // 순수 공용 유틸 (의존 0개라 서버 코드에서도 안전)
+      { to: { type: "lib-shared-barrel" } },
       { to: { type: "dictionary" } },
       { to: { type: "shared-type" } },
       { to: { type: "i18n-config" } },

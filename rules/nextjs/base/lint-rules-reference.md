@@ -539,6 +539,27 @@ export async function GET(
 }
 ```
 
+### `server-action`
+
+**Role** — Next.js Server Action — `'use server'` 함수를 export하는 얇은 서버 어댑터. Client Component(page-component)와 page의 `<form action>`이 호출.
+
+**Contains**
+
+- Server Action 모음 — `src/app/**/actions.ts`, `src/app/**/*-actions.ts`
+
+**Forbids**
+
+- UI 레이어 import (shared-ui/page-component 금지; 서버 경계 위반)
+- 비즈니스 로직 포함 (→ http-factory로 만든 service 호출에 집중)
+
+```ts
+// src/app/[locale]/orders/actions.ts
+"use server";
+export async function cancelOrder(id: string) {
+  await createOrderService().cancel(id);
+}
+```
+
 ### `page`
 
 **Role** — `src/app` 최상위 컨슈머 (Server Component). 위 패턴에 매칭 안 된 App Router 파일의 catch-all.
@@ -585,7 +606,7 @@ export async function GET(
 | `db` | _(no layer imports)_ | _(모듈 무관)_ |
 | `shared-hook` | `lib-shared`, `lib-shared-barrel`, `shared-type`, `domain-model`, `shared-hook`, `style` | _(모듈 무관)_ |
 | `shared-ui` | `domain-model`, `shared-ui`, `shared-hook`, `shared-type`, `i18n-config`, `style`, `theme` | _(모듈 무관)_ |
-| `page-component` | `http-hook`, `shared-ui`, `shared-hook`, `domain-model`, `page-component`, `lib-shared`, `lib-shared-barrel`, `shared-type`, `i18n-config`, `style`, `theme` | _(모듈 무관)_ |
+| `page-component` | `http-hook`, `shared-ui`, `shared-hook`, `domain-model`, `page-component`, `server-action`, `lib-shared`, `lib-shared-barrel`, `shared-type`, `i18n-config`, `style`, `theme` | _(모듈 무관)_ |
 | `page-provider` | `lib-shared`, `lib-shared-barrel`, `shared-hook`, `style`, `theme` | _(모듈 무관)_ |
 | `style` | `style` | _(모듈 무관)_ |
 | `theme` | `style`, `theme` | _(모듈 무관)_ |
@@ -593,8 +614,9 @@ export async function GET(
 | `i18n-config` | `dictionary`, `i18n-config` | _(모듈 무관)_ |
 | `shared-type` | `dictionary` | _(모듈 무관)_ |
 | `email-template` | `dictionary`, `shared-type` | _(모듈 무관)_ |
-| `route-handler` | `http-factory`, `domain-model`, `domain-error`, `domain-service`, `shared-type`, `i18n-config` | _(모듈 무관)_ |
-| `page` | `http-factory`, `domain-model`, `page-component`, `page-provider`, `shared-ui`, `dictionary`, `shared-type`, `i18n-config`, `style`, `theme`, `page` | _(모듈 무관)_ |
+| `route-handler` | `http-factory`, `domain-model`, `domain-error`, `domain-service`, `lib-shared`, `lib-shared-barrel`, `shared-type`, `i18n-config` | _(모듈 무관)_ |
+| `server-action` | `http-factory`, `domain-model`, `domain-error`, `domain-service`, `lib-shared`, `lib-shared-barrel`, `shared-type`, `i18n-config`, `server-action` | _(모듈 무관)_ |
+| `page` | `http-factory`, `domain-model`, `page-component`, `page-provider`, `server-action`, `shared-ui`, `lib-shared`, `lib-shared-barrel`, `dictionary`, `shared-type`, `i18n-config`, `style`, `theme`, `page` | _(모듈 무관)_ |
 
 ## Restricted Patterns (Import 금지 패턴)
 
@@ -650,12 +672,12 @@ ESLint 오버라이드 중 **LLM이 코드 작성 시 명시적으로 따라야 
 ## Ignored Paths (무시 경로)
 
 Boundary 검사 제외 (local/no-unknown-files 오탐 방지).
-테스트/스펙/설정, 루트 메타 파일, 프레임워크 진입점(`src/proxy.ts`), scripts/e2e 빌드 유틸, 전역 타입,
+테스트/스펙/설정, 루트 메타 파일, 프레임워크 진입점(`src/proxy.ts`, `src/instrumentation*.ts`), scripts/e2e 빌드 유틸, 전역 타입,
 모노레포 sibling workspace로 resolve된 import 등.
 
 ### 무시 패턴 목록
 
 - **테스트/설정 파일**: `**/*.test.ts`, `**/*.test.tsx`, `**/*.spec.ts`, `**/*.spec.tsx`, `*.config.*`, `eslint.project.config.mjs`, `prettier.config.mjs`, `commitlint.config.mjs`
 - **타입/메타 파일**: `*.ts`, `*.d.ts`, `types/**`, `src/lib/types/**`
-- **특수 경로**: `src/proxy.ts`, `specs/**`, `**/packages/**`, `src/http/_generated/**`, `src/theme.generated.ts`
+- **특수 경로**: `src/proxy.ts`, `src/instrumentation.ts`, `src/instrumentation-client.ts`, `specs/**`, `**/packages/**`, `src/http/_generated/**`, `src/theme.generated.ts`
 - **빌드/툴 산출물 (코드 작성 무관)**: `.kelo/**`, `scripts/**`, `e2e/**`, `eslint.config.mjs`, `.next/**`, `out/**`, `build/**`, `coverage/**`, `next-env.d.ts`

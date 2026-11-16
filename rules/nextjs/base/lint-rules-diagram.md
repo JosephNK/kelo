@@ -43,6 +43,7 @@ graph LR
   style["style"]
   i18n_config["i18n-config"]
   theme["theme"]
+  server_action["server-action"]
   dictionary["dictionary"]
   email_template["email-template"]
   route_handler["route-handler"]
@@ -88,6 +89,7 @@ graph LR
   page_component --> shared_ui
   page_component --> shared_hook
   page_component --> domain_model
+  page_component --> server_action
   page_component --> lib_shared
   page_component --> lib_shared_barrel
   page_component --> shared_type
@@ -109,13 +111,26 @@ graph LR
   route_handler --> domain_model
   route_handler --> domain_error
   route_handler --> domain_service
+  route_handler --> lib_shared
+  route_handler --> lib_shared_barrel
   route_handler --> shared_type
   route_handler --> i18n_config
+  server_action --> http_factory
+  server_action --> domain_model
+  server_action --> domain_error
+  server_action --> domain_service
+  server_action --> lib_shared
+  server_action --> lib_shared_barrel
+  server_action --> shared_type
+  server_action --> i18n_config
   page --> http_factory
   page --> domain_model
   page --> page_component
   page --> page_provider
+  page --> server_action
   page --> shared_ui
+  page --> lib_shared
+  page --> lib_shared_barrel
   page --> dictionary
   page --> shared_type
   page --> i18n_config

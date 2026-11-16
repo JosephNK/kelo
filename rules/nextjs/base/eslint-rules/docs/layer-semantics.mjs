@@ -451,6 +451,24 @@ export const baseLayerSemantics = {
     ].join("\n"),
   },
 
+  "server-action": {
+    role: "Next.js Server Action — `'use server'` 함수를 export하는 얇은 서버 어댑터. Client Component(page-component)와 page의 `<form action>`이 호출.",
+    contains: [
+      "Server Action 모음 — `src/app/**/actions.ts`, `src/app/**/*-actions.ts`",
+    ],
+    forbids: [
+      "UI 레이어 import (shared-ui/page-component 금지; 서버 경계 위반)",
+      "비즈니스 로직 포함 (→ http-factory로 만든 service 호출에 집중)",
+    ],
+    example: [
+      "// src/app/[locale]/orders/actions.ts",
+      '"use server";',
+      "export async function cancelOrder(id: string) {",
+      "  await createOrderService().cancel(id);",
+      "}",
+    ].join("\n"),
+  },
+
   page: {
     role: "`src/app` 최상위 컨슈머 (Server Component). 위 패턴에 매칭 안 된 App Router 파일의 catch-all.",
     contains: [

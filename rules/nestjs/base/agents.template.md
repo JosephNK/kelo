@@ -1,6 +1,7 @@
 # {{PROJECT_NAME}}
 
 **Before writing code, read:**
+
 - @{{DOCS_DIR}}ARCHITECTURE.md — folder structure (enforced by lint)
 - @{{DOCS_DIR}}CONVENTIONS.md — team conventions lint cannot enforce
 

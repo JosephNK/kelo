@@ -1,6 +1,7 @@
 # example-nextjs
 
 **Before writing code, read:**
+
 - @docs/ARCHITECTURE.md — folder structure (enforced by lint)
 - @docs/CONVENTIONS.md — team conventions lint cannot enforce
 

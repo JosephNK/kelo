@@ -8,6 +8,10 @@ import tseslint from "typescript-eslint";
 
 import { baseSonarjsConfig } from "./sonarjs.mjs";
 
+// Next.js 설정에서 react 플러그인을 등록한 블록의 files — react/* 룰은 이 범위에만 걸 수 있다.
+const nextReactFiles = nextVitals.find((config) => config.plugins?.react)
+  ?.files ?? ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"];
+
 /**
  * Next.js 공용 ESLint 베이스. 블록 순서대로 뒤가 앞을 override.
  * 각 블록 의도는 인라인 주석 참조.
@@ -102,6 +106,14 @@ export const baseConfig = defineConfig([
       "@typescript-eslint/no-explicit-any": "warn", // any 명시 사용 시 경고 (완전 금지는 과도)
       // TODO/FIXME/HACK 추적 (warn, 차단하지 않음)
       "no-warning-comments": ["warn", { terms: ["TODO", "FIXME", "HACK"] }],
+    },
+  },
+
+  // [7] React 스타일 룰 — Next.js가 react 플러그인을 등록한 파일 범위에만 적용
+  // (`.cjs`는 범위 밖이라 files 없이 걸면 "Could not find plugin react"로 lint 전체가 실패)
+  {
+    files: nextReactFiles,
+    rules: {
       "react/function-component-definition": [
         // 컴포넌트 선언 스타일 통일
         "error",

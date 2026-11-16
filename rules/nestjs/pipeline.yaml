@@ -11,6 +11,7 @@
 #                               rules/<framework>/<stack>/<having> 파일이 있는 스택만 (없으면 플래그 생략)
 #   analysisPathFlag: <flag>  — setup --analysis-path <dir>가 주어지면 `<flag> <dir>`을 덧붙임 (개발용)
 #   monorepoRootFlag: <flag>  — kelo.yaml이 workspaces 모드면 `<flag> <모노레포 루트>`를 덧붙임
+#   monorepoOnly: true        — kelo.yaml이 workspaces 모드일 때만 실행 (단일 프로젝트에서는 건너뜀)
 #   scope: root               — 모노레포(kelo.yaml workspaces)에서는 워크스페이스가 아닌 루트에서 한 번만 실행.
 #                               rootIfMissing 경로가 루트에 이미 있으면 건너뜀 (단일 프로젝트에서는 항상 실행)
 # 치환: {framework} {name} {entryDir}
@@ -34,6 +35,11 @@ steps:
     scope: root
     rootIfMissing: commitlint.config.mjs
   - builtin: install
+  # 모노레포: 루트 .husky/pre-commit이 이 워크스페이스에서 lint-staged를 실행하게 한다
+  # (저장소의 lint-staged 설정이 하나뿐이면 루트에서 실행돼 kelo-lint 바이너리를 못 찾는다)
+  - run: gen-husky.mjs {framework} -p .
+    monorepoRootFlag: --monorepo-root
+    monorepoOnly: true
   - builtin: peers
     packages:
       - "eslint-plugin-boundaries@>=7"

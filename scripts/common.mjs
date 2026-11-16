@@ -170,3 +170,32 @@ export function patchLintStaged(lintStaged, lintGlob, lintCmd, detectToken) {
 export function keloPackageSpec(_name, version) {
   return version;
 }
+
+// ─── 모노레포 루트 pre-commit의 lint-staged 연결 ─────────────────────────────
+// lint-staged는 저장소에 설정이 2개 이상일 때만 각 설정의 폴더에서 명령을 실행한다.
+// 설정이 하나뿐이면 실행 위치(루트)에서 돌려, 워크스페이스에만 설치된
+// kelo-lint-<fw>를 찾지 못한다(ENOENT). 그 경우 `--cwd <워크스페이스>`로 고정한다.
+//   - 이미 `--cwd <rel>` 줄이 있음            → 그대로            ("unchanged")
+//   - 인자 없는 lint-staged 줄 + 설정 2개 이상 → 그대로 (정상 동작) ("unchanged")
+//   - 인자 없는 lint-staged 줄 + 설정 1개      → 그 줄에 --cwd 추가 ("replaced")
+//   - 인자 없는 줄이 없음                      → --cwd 줄을 덧붙임  ("appended")
+const BARE_LINT_STAGED_RE =
+  /^(?![ \t]*#)([ \t]*(?:\S+[ \t]+)*lint-staged)[ \t]*$/m;
+
+export function wireLintStagedHook(hook, rel, configCount) {
+  const escaped = rel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const wired = new RegExp(
+    `^(?![ \\t]*#).*lint-staged\\b.*--cwd[= ]["']?${escaped}["']?[ \\t]*$`,
+    "m",
+  );
+  if (wired.test(hook)) return { hook, action: "unchanged" };
+  if (BARE_LINT_STAGED_RE.test(hook)) {
+    if (configCount >= 2) return { hook, action: "unchanged" };
+    return {
+      hook: hook.replace(BARE_LINT_STAGED_RE, `$1 --cwd ${rel}`),
+      action: "replaced",
+    };
+  }
+  const block = `\n# kelo: ${rel} lint-staged (gen-husky가 추가)\nnpx lint-staged --cwd ${rel}\n`;
+  return { hook: hook.replace(/\n*$/, "\n") + block, action: "appended" };
+}

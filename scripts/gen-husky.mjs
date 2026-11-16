@@ -19,18 +19,25 @@
 // so instead of creating <output-dir>/.husky the pre-commit template is written
 // to <output-dir>/scripts/kelo-pre-commit.sh ({{PROJECT}} = path from the
 // monorepo root) and the root .husky/pre-commit gets one line that calls it.
+//
+// Next.js/NestJS in a monorepo (--monorepo-root <dir>): nothing is written to
+// <output-dir>; the root .husky/pre-commit is made to run lint-staged inside
+// this workspace (`--cwd <path>`) when it is the only lint-staged config in the
+// repository — otherwise lint-staged runs its commands from the root and
+// cannot find the workspace-local kelo-lint-<framework> binary.
 // package.json is left untouched. Without the flag the project is standalone.
 //
 // Usage:
 //   gen-husky.mjs <framework> -p <output-dir> [-entry <dir>] [--monorepo-root <dir>]
 // =============================================================================
 
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
-import { setDep } from "./common.mjs";
+import { setDep, wireLintStagedHook } from "./common.mjs";
 
 const HELP = `Usage: gen-husky.mjs <framework> -p <output-dir> [-entry <dir>] [--monorepo-root <dir>]
 
@@ -43,7 +50,8 @@ Arguments:
 Options:
   -p <dir>       Output directory (required)
   -entry <dir>   Substitute {{ENTRY}} in hook files (e.g. -entry app)
-  --monorepo-root <dir>  Flutter: wire into <dir>/.husky/pre-commit instead of creating <output-dir>/.husky
+  --monorepo-root <dir>  Wire into <dir>/.husky/pre-commit instead of creating <output-dir>/.husky
+                         (Flutter: call the app's check script; Next.js/NestJS: run lint-staged in the workspace)
   -h, --help     Show this help
 
 Examples:
@@ -172,6 +180,74 @@ function wireMonorepoFlutter(huskySrc, outputDir, entry, monorepoRoot, rel) {
   process.stdout.write(`  Appended:  ${rootHook} → ${call}\n`);
 }
 
+// 저장소 안의 lint-staged 설정 수 (lint-staged와 같은 방식: git이 아는 파일 중 설정 파일).
+function countLintStagedConfigs(monorepoRoot) {
+  let out;
+  try {
+    out = execFileSync(
+      "git",
+      [
+        "ls-files",
+        "-z",
+        "--cached",
+        "--others",
+        "--exclude-standard",
+        "--",
+        ":(glob)**/package.json",
+        ":(glob)**/.lintstagedrc*",
+        ":(glob)**/lint-staged.config.*",
+      ],
+      { cwd: monorepoRoot, encoding: "utf8" },
+    );
+  } catch {
+    return 1; // git을 못 쓰면 가장 안전한 쪽(--cwd 고정)으로
+  }
+  return out
+    .split("\0")
+    .filter(Boolean)
+    .filter((file) => {
+      if (path.basename(file) !== "package.json") return true;
+      try {
+        const pkg = JSON.parse(
+          fs.readFileSync(path.join(monorepoRoot, file), "utf8"),
+        );
+        return pkg["lint-staged"] !== undefined;
+      } catch {
+        return false;
+      }
+    }).length;
+}
+
+// 모노레포 Next.js/NestJS: 루트 .husky/pre-commit이 이 워크스페이스에서 lint-staged를 실행하게 한다.
+function wireMonorepoLintStaged(monorepoRoot, rel) {
+  const rootHook = path.join(monorepoRoot, ".husky", "pre-commit");
+  const call = `npx lint-staged --cwd ${rel}`;
+  if (!fs.existsSync(rootHook)) {
+    process.stdout.write(
+      `  Note:      ${rootHook} 없음 — 모노레포 루트 husky에 다음 줄을 추가하세요: ${call}\n`,
+    );
+    return;
+  }
+  const before = fs.readFileSync(rootHook, "utf8");
+  const { hook, action } = wireLintStagedHook(
+    before,
+    rel,
+    countLintStagedConfigs(monorepoRoot),
+  );
+  if (action === "unchanged") {
+    process.stdout.write(
+      `  Unchanged: ${rootHook} (lint-staged가 ${rel}에서 실행됨)\n`,
+    );
+    return;
+  }
+  fs.writeFileSync(rootHook, hook);
+  process.stdout.write(
+    action === "replaced"
+      ? `  Updated:   ${rootHook} → lint-staged --cwd ${rel} (저장소의 lint-staged 설정이 하나뿐)\n`
+      : `  Appended:  ${rootHook} → ${call}\n`,
+  );
+}
+
 function copyHooks(huskySrc, huskyDest, entry) {
   fs.mkdirSync(huskyDest, { recursive: true });
 
@@ -265,7 +341,7 @@ function main() {
     process.exit(1);
   }
 
-  if (args.framework === "flutter" && args.monorepoRoot) {
+  if (args.monorepoRoot) {
     const monorepoRoot = path.resolve(args.monorepoRoot);
     const rel = path
       .relative(
@@ -277,13 +353,17 @@ function main() {
     process.stdout.write(
       `Monorepo member (${rel} under ${monorepoRoot}) — root .husky / package.json are left to the monorepo.\n`,
     );
-    wireMonorepoFlutter(
-      huskySrc,
-      args.outputDir,
-      args.entry,
-      monorepoRoot,
-      rel,
-    );
+    if (args.framework === "flutter") {
+      wireMonorepoFlutter(
+        huskySrc,
+        args.outputDir,
+        args.entry,
+        monorepoRoot,
+        rel,
+      );
+    } else {
+      wireMonorepoLintStaged(monorepoRoot, rel);
+    }
     return;
   }
 

@@ -486,6 +486,7 @@ class Runner {
   runStep(step, project, label) {
     const cwd = project.dir;
     if (step.if && !project[step.if]) return;
+    if (step.monorepoOnly && !this.monorepoRoot) return;
     if (
       this.noInstall &&
       (step.exec ||
@@ -585,7 +586,9 @@ class Runner {
         this.pinYarnResolutions(step.pin ?? [], cwd);
         return;
       case "format-docs": {
-        const files = DOCS.filter((f) => fs.existsSync(path.join(cwd, f)));
+        // AGENTS.md는 kelo가 생성한 경우(agents: true)에만 — 아니면 프로젝트가 직접 쓴 파일이다
+        const docs = project.agents ? [...DOCS, "AGENTS.md"] : DOCS;
+        const files = docs.filter((f) => fs.existsSync(path.join(cwd, f)));
         if (!files.length || this.dryRun) return;
         // 프로젝트 prettier 설정으로 맞춘다 — lint:ci의 prettier --check 대비 (prettier가 없으면 건너뜀)
         spawnSync("npx", ["--no-install", "prettier", "--write", ...files], {

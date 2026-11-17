@@ -14,6 +14,11 @@ import process from "node:process";
 import readline from "node:readline";
 import { fileURLToPath } from "node:url";
 
+import {
+  exampleCommitMessage,
+  releaseExampleSync,
+} from "./scripts/sync-example-versions.mjs";
+
 const HELP = `Usage: ./deploy.mjs [<version>|patch|minor|major] [--yes] [--no-publish] [--no-release]
 
 Bumps the plugin version, commits, tags, pushes, publishes the ESLint config
@@ -37,6 +42,10 @@ Then:
   - git tag v<new>
   - npm publish ./rules/nextjs, ./rules/nestjs → npm registry (needs 'npm login';
     with npm 2FA, each publish opens browser authentication — run in a regular terminal)
+  - sync example/ kelo dependencies to <new> (after publish; skipped with --no-publish)
+    → git commit "chore(example): 예제 kelo 의존성 <new> 동기화"
+    (non-fatal: on failure the example files are restored and the release continues;
+     run 'node scripts/sync-example-versions.mjs <new>' later)
   - git push origin <branch> --follow-tags   (after publish — on failure the remote is untouched)
   - npm pack ./rules/nextjs, ./rules/nestjs → GitHub Release v<new> assets (gh)
 
@@ -48,7 +57,7 @@ Arguments:
 
 Options:
   --yes, -y     Skip confirmation prompt
-  --no-publish  Skip npm publish
+  --no-publish  Skip npm publish (and the example dependency sync)
   --no-release  Skip the GitHub Release
   -h, --help Show this help
 
@@ -398,11 +407,16 @@ async function main() {
       ? `  12. npm publish ${npmPackageDirs.map((d) => `./${d}`).join(", ")}\n`
       : "  12. npm publish (skipped: --no-publish)\n",
   );
-  process.stdout.write(`  13. git push origin ${branch} --follow-tags\n`);
+  process.stdout.write(
+    args.publish
+      ? `  13. Sync example/ kelo deps → ${newVersion}, git commit -m "${exampleCommitMessage(newVersion)}" (non-fatal)\n`
+      : "  13. Sync example/ kelo deps (skipped: --no-publish)\n",
+  );
+  process.stdout.write(`  14. git push origin ${branch} --follow-tags\n`);
   process.stdout.write(
     args.release
-      ? `  14. GitHub Release ${tag} ← npm pack ${npmPackageDirs.map((d) => `./${d}`).join(", ")}\n\n`
-      : "  14. GitHub Release (skipped: --no-release)\n\n",
+      ? `  15. GitHub Release ${tag} ← npm pack ${npmPackageDirs.map((d) => `./${d}`).join(", ")}\n\n`
+      : "  15. GitHub Release (skipped: --no-release)\n\n",
   );
 
   if (!args.yes) {
@@ -479,6 +493,22 @@ async function main() {
     }
   }
 
+  // 예제 의존성 동기화 — 새 버전이 레지스트리에 있어야 lockfile을 만들 수 있어 publish 뒤,
+  // push 전에 별도 커밋으로 한다. 이미 배포됐으므로 실패해도 경고만 하고 계속한다.
+  process.stdout.write(
+    args.publish
+      ? `\nSyncing example/ kelo dependencies to ${newVersion}...\n`
+      : "\nSkipping example/ dependency sync (--no-publish).\n",
+  );
+  const { warning: exampleSyncWarning } = await releaseExampleSync({
+    version: newVersion,
+    root: scriptDir,
+    publish: args.publish,
+  });
+  if (exampleSyncWarning) {
+    process.stderr.write(`Warning: ${exampleSyncWarning}\n`);
+  }
+
   process.stdout.write("\nPushing commit and tag...\n");
   const pushResult = spawnSync(
     "git",
@@ -532,6 +562,9 @@ async function main() {
   }
 
   process.stdout.write(`\n✓ Released ${tag}\n`);
+  if (exampleSyncWarning) {
+    process.stderr.write(`Warning: ${exampleSyncWarning}\n`);
+  }
 }
 
 main();

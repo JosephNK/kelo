@@ -52,3 +52,5 @@ node scripts/kelo.mjs setup -p example/<nextjs|nestjs|flutter|nx-monorepo> --no-
 ## 배포
 
 `./deploy.mjs`로만 한다 (버전 동기화·태그·`npm publish`·GitHub Release). 실행 전 반드시 사용자에게 확인한다.
+
+publish 뒤·push 전에 `scripts/sync-example-versions.mjs`가 example의 kelo 의존성·lockfile을 새 버전으로 맞춰 별도 커밋한다. 실패해도 릴리스는 계속되므로, 경고가 나오면 `node scripts/sync-example-versions.mjs <version>` 실행 후 커밋한다.

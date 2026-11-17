@@ -2941,10 +2941,10 @@ escape-string-regexp@^4.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz#14ba83a5d373e3d311e5afca29cf5bfad965bf34"
   integrity sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==
 
-eslint-config-kelo-nestjs@1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/eslint-config-kelo-nestjs/-/eslint-config-kelo-nestjs-1.1.0.tgz#072043a254d04bee9d9a131a64100d565fce7c65"
-  integrity sha512-i9o9gOB5yxODncVbboIQO1ErE7dcZV7J8deAdyePRFBcfs8P+hmtP05sqHwZXa7CpuVHjrvWo/rwVSwBU6ohUg==
+eslint-config-kelo-nestjs@2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/eslint-config-kelo-nestjs/-/eslint-config-kelo-nestjs-2.2.4.tgz#a728929df4216617d787b02a304d51d8572837ef"
+  integrity sha512-5fwTL0jiQgaw9lqRfP3DjkJdA+8I7jleW+edWhMpo7efHHbg5Z+UkMSPjppE2UcIPD2yzTG0qAeKXe/G6wRyjA==
 
 eslint-config-prettier@^10.1.8:
   version "10.1.8"

@@ -13,6 +13,8 @@ import { pathToFileURL } from "node:url";
 
 import { ESLint } from "eslint";
 
+import { parseArgs, resolveCacheLocation } from "./lint-cli-args.mjs";
+
 const PROJECT_CONFIG_FILE = "eslint.project.config.mjs";
 const LINT_CONFIG_FILE = "kelo.lint.json";
 
@@ -52,29 +54,6 @@ function groupByProjectRoot(patterns, cwd) {
   return groups;
 }
 
-function parseArgs(argv, binName) {
-  const args = { fix: false, maxWarnings: -1, format: "stylish", patterns: [] };
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === "--fix") args.fix = true;
-    else if (a === "--max-warnings") args.maxWarnings = Number(argv[++i]);
-    else if (a === "--format") args.format = argv[++i];
-    else if (a === "-h" || a === "--help") {
-      process.stdout.write(
-        `Usage: ${binName} [--fix] [--max-warnings <n>] [--format <name>] [patterns...]\n\n` +
-          "프로젝트의 eslint.config.mjs 대신 kelo 규칙(+ kelo.lint.json,\n" +
-          "eslint.project.config.mjs)으로 검사합니다. 패턴 생략 시 '.' 전체.\n" +
-          "--format: ESLint formatter 이름 (기본 stylish, kelo doctor는 json).\n",
-      );
-      process.exit(0);
-    } else if (a.startsWith("-")) {
-      process.stderr.write(`Unknown option: ${a}\n`);
-      process.exit(2);
-    } else args.patterns.push(a);
-  }
-  return args;
-}
-
 async function loadProjectConfig(root) {
   const file = path.join(root, PROJECT_CONFIG_FILE);
   if (!fs.existsSync(file)) return [];
@@ -93,16 +72,23 @@ export async function runLintCli({ binName, factory }) {
   try {
     const results = [];
     let eslint;
-    for (const [root, patterns] of groupByProjectRoot(
-      args.patterns,
-      process.cwd(),
-    )) {
+    const cwd = process.cwd();
+    const groups = groupByProjectRoot(args.patterns, cwd);
+    for (const [root, patterns] of groups) {
       const project = await loadProjectConfig(root);
       eslint = new ESLint({
         cwd: root,
         overrideConfigFile: true,
         overrideConfig: factory({ root, project }),
         fix: args.fix,
+        cache: args.cache,
+        cacheLocation: resolveCacheLocation({
+          location: args.cacheLocation,
+          cwd,
+          root,
+          rootCount: groups.size,
+        }),
+        cacheStrategy: args.cacheStrategy,
         errorOnUnmatchedPattern: false,
         // lint-staged가 kelo.lint.json ignores 대상 파일을 넘겨도 경고하지 않는다
         warnIgnored: false,

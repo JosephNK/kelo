@@ -15,6 +15,7 @@ const read = (p) => fs.readFileSync(path.join(ROOT, p), "utf8");
 const SHARED_FILES = [
   "lib/factory-helpers.mjs",
   "lib/run-lint-cli.mjs",
+  "lib/lint-cli-args.mjs",
   "base/eslint-rules/builders/to-boundaries-policies.mjs",
   "base/eslint-rules/quality/sonarjs.mjs",
   "base/custom-rules/boundaries-unknown.mjs",

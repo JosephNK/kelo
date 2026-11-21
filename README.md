@@ -241,7 +241,7 @@ export default nestjs({ root: import.meta.dirname, project: projectConfig });
   - `boundaryElements` 항목에 `capture: ["module"]`을 주면 base 모듈 레이어처럼 모듈 레이어가 된다 (`pattern`의 `**`/`*`가 모듈 이름). `boundaryRules` 항목의 `scope: "module"`은 모듈 레이어 대상을 같은 모듈로 한정하고, `scope: "cross-module"`이나 `scope` 없음은 어느 모듈이든 허용한다.
 - `eslint.project.config.mjs` — 사용자 소유. 새 규칙·플러그인 **추가만** 허용. kelo 규칙/settings 재정의, `linterOptions`, 전역 ignores는 로드 시 에러
 - inline `eslint-disable` 주석은 무시됩니다 (`noInlineConfig`)
-- `kelo-lint-<framework>` — 프로젝트 `eslint.config.mjs`를 무시하고 패키지 규칙으로 검사. `scripts.lint`(eslint 기반 `lint:ci`/`lint:fix` 포함)와 lint-staged가 모두 이 CLI로 통일됩니다. 경로/`--ignore-pattern` 인자는 `kelo.lint.json`의 `ignores`로 옮깁니다. 에디터 실시간 표시는 `eslint.config.mjs`가 담당합니다
+- `kelo-lint-<framework>` — 프로젝트 `eslint.config.mjs`를 무시하고 패키지 규칙으로 검사. `scripts.lint`(eslint 기반 `lint:ci`/`lint:fix` 포함)와 lint-staged가 모두 이 CLI로 통일됩니다. 경로/`--ignore-pattern` 인자는 `kelo.lint.json`의 `ignores`로 옮깁니다. 에디터 실시간 표시는 `eslint.config.mjs`가 담당합니다. CI에서는 `--cache --cache-location <path> --cache-strategy content`로 바뀐 파일만 다시 검사할 수 있습니다 (캐시는 파일 단위라 다른 파일의 타입·import 변경으로 생기는 위반은 놓칠 수 있으니, 캐시 없는 전체 검사를 한 곳에 남겨 둡니다)
 
 배포는 **npm 레지스트리**입니다: `./deploy.mjs`(버전 범프 + 태그 + `npm publish` + GitHub Release) → 소비 프로젝트는 `package.json`에 플러그인과 같은 정확한 버전(`"eslint-config-kelo-<fw>": "<ver>"`)을 쓰고, `/kelo:setup`으로 버전을 올립니다.
 

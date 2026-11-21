@@ -17,7 +17,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
-    "eslint-config-kelo-nextjs": "2.2.4",
+    "eslint-config-kelo-nextjs": "2.3.0",
     "eslint-config-next": "^16.3.6",
     "eslint-config-prettier": "^9.1.2",
     "eslint-import-resolver-typescript": "^3.10.1",

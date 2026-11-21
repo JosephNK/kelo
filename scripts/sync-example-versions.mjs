@@ -209,7 +209,7 @@ export async function syncExampleVersions({
   run = defaultRun,
   log = (msg) => process.stdout.write(`${msg}\n`),
   sleep = (ms) => new Promise((r) => setTimeout(r, ms)),
-  registryAttempts = 6,
+  registryAttempts = 30,
   registryDelayMs = 10_000,
 } = {}) {
   if (!VERSION_RE.test(version ?? "")) {
